@@ -6,9 +6,15 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\BooleanColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -23,7 +29,28 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')->required(),
+                TextInput::make('email')->email()->required(),
+
+                TextInput::make('phone')->label('Telefon'),
+                TextInput::make('address')->label('Adres'),
+                DatePicker::make('joined_at')->label('Data zapisu'),
+
+                Select::make('group_id')
+                    ->label('Grupa')
+                    ->relationship('group', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                // 👇 Pole hasła z logiką bcrypt 
+                TextInput::make('password')
+                    ->password()
+                    ->label('Hasło')
+                    ->required(fn(string $context) => $context === 'create')
+                    ->dehydrated(fn($state) => filled($state)) // tylko gdy coś wpisano
+                    ->dehydrateStateUsing(fn($state) => bcrypt($state)) // zawsze hashuj
+                    ->maxLength(255),
+                Toggle::make('is_active')->label('Aktywny'),
             ]);
     }
 
@@ -31,7 +58,11 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('email')->searchable(),
+                TextColumn::make('phone')->label('Telefon')->searchable(),
+                TextColumn::make('group.name')->label('Grupa'),
+                BooleanColumn::make('is_active')->label('Aktywny'),
             ])
             ->filters([
                 //
