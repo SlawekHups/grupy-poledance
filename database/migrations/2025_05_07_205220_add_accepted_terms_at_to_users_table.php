@@ -12,11 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('phone')->nullable();
-            $table->string('address')->nullable();
-            $table->date('joined_at')->nullable();
-            $table->foreignId('group_id')->nullable()->constrained()->nullOnDelete();
-            $table->boolean('is_active')->default(true); // status aktywny
+            $table->timestamp('accepted_terms_at')->nullable();
         });
     }
 
