@@ -10,6 +10,14 @@ class EditPayment extends EditRecord
 {
     protected static string $resource = PaymentResource::class;
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (!empty($data['paid'])) {
+            $data['payment_link'] = null;
+        }
+
+        return $data;
+    }
     protected function getHeaderActions(): array
     {
         return [
