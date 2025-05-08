@@ -25,6 +25,7 @@ class User extends Authenticatable
         'address',
         'is_active',
         'joined_at',
+        'accepted_terms_at',
 
     ];
 

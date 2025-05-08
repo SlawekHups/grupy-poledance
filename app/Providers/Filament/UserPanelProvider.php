@@ -19,8 +19,14 @@ class UserPanelProvider extends PanelProvider
         return $panel
             ->id('user')
             ->path('panel')
-            ->login()
             ->authGuard('web')
+            ->login()
+            ->discoverResources(app_path('Filament/UserPanel/Resources'), 'App\\Filament\\UserPanel\\Resources')
+            ->discoverPages(app_path('Filament/UserPanel/Pages'), 'App\\Filament\\UserPanel\\Pages')
+            ->discoverWidgets(app_path('Filament/UserPanel/Widgets'), 'App\\Filament\\UserPanel\\Widgets')
+            ->navigationGroups([
+                'Moje konto',
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -29,8 +35,10 @@ class UserPanelProvider extends PanelProvider
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
             ])
+
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\EnsureUserHasAcceptedTerms::class,
             ]);
     }
 }
