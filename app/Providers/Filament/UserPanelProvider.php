@@ -21,6 +21,7 @@ class UserPanelProvider extends PanelProvider
             ->path('panel')
             ->authGuard('web')
             ->login()
+            ->pages([])
             ->discoverResources(app_path('Filament/UserPanel/Resources'), 'App\\Filament\\UserPanel\\Resources')
             ->discoverPages(app_path('Filament/UserPanel/Pages'), 'App\\Filament\\UserPanel\\Pages')
             ->discoverWidgets(app_path('Filament/UserPanel/Widgets'), 'App\\Filament\\UserPanel\\Widgets')
@@ -38,7 +39,7 @@ class UserPanelProvider extends PanelProvider
 
             ->authMiddleware([
                 Authenticate::class,
-                \App\Http\Middleware\EnsureUserHasAcceptedTerms::class,
+               // \App\Http\Middleware\EnsureUserHasAcceptedTerms::class,
             ]);
     }
 }
