@@ -11,6 +11,7 @@ use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 
 class PaymentResource extends Resource
@@ -22,7 +23,7 @@ class PaymentResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('user_id', auth()->id());
+            ->where('user_id', Auth::id());
     }
 
     public static function form(Form $form): Form
@@ -37,22 +38,26 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('month')->label('Miesiąc'),
-                TextColumn::make('amount')->label('Kwota')->money('PLN'),
-                BooleanColumn::make('paid')->label('Opłacone'),
-                TextColumn::make('updated_at')->label('Data_zapłaty'),
+                TextColumn::make('rowNumber')
+                    ->label('Lp.')
+                    ->state(function ($record, $livewire, $rowLoop) {
+                        return $rowLoop->iteration;
+                    }),
+                TextColumn::make('month')
+                    ->label('Miesiąc')
+                    ->weight('bold'),
+                TextColumn::make('amount')
+                    ->label('Kwota')
+                    ->money('PLN'),
+                TextColumn::make('updated_at')
+                    ->label('Data_zapłaty'),
+                    BooleanColumn::make('paid')
+                    ->label('Opłacone'),
             ])
+
             ->filters([
                 //
             ]);
-        // ->actions([
-        //    /Tables\Actions\EditAction::make(),
-        // ])
-        // // ->bulkActions([
-        //     Tables\Actions\BulkActionGroup::make([
-        //         Tables\Actions\DeleteBulkAction::make(),
-        //     ]),
-        // ]);
     }
 
     public static function getRelations(): array
