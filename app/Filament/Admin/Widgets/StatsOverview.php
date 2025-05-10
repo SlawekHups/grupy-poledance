@@ -7,12 +7,13 @@ use App\Models\Payment;
 use App\Models\Group;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
+use Illuminate\Support\Collection;
 
 class StatsOverview extends BaseWidget
 {
     protected function getCards(): array
     {
-        return [
+        $cards = [
             // 👤 Użytkownicy
             Card::make('Liczba użytkowników', User::count())
                 ->icon('heroicon-o-users')
@@ -47,7 +48,7 @@ class StatsOverview extends BaseWidget
                 ->color('info')
                 ->description(
                     'Wpłaty (30 dni): ' . Payment::where('paid', true)->where('updated_at', '>=', now()->subDays(30))->sum('amount') . ' zł' . PHP_EOL .
-                    'Zaległości: ' . Payment::where('paid', false)->count()
+                        'Zaległości: ' . Payment::where('paid', false)->count()
                 ),
 
             // 📂 Grupy
@@ -55,6 +56,22 @@ class StatsOverview extends BaseWidget
                 ->icon('heroicon-o-folder')
                 ->color('warning')
                 ->description('Wszystkie zarejestrowane grupy'),
+
+            Card::make('Grupa Poniedziałek 20:00  tlko wybrabna', \App\Models\User::where('group_id', 4)->count())
+                ->icon('heroicon-o-user-group')
+                ->color('warning')
+                ->description('Liczba użytkowników w tej grupie'),
         ];
+
+        // 👥 Liczba użytkowników w każdej grupie
+        foreach (Group::all() as $group) {
+            $cards[] = Card::make("Grupa: {$group->name}", $group->users()->count())
+                ->icon('heroicon-o-user-group')
+                ->color('info')
+                ->description('Liczba przypisanych użytkowników');
+        }
+
+
+        return $cards;
     }
 }
