@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\GroupResource\Pages;
 
 use App\Filament\Admin\Resources\GroupResource;
+use App\Filament\Admin\Resources\GroupResource\Widgets\GroupStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -14,6 +15,13 @@ class ListGroups extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+
+        ];
+    }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            GroupStats::class,
         ];
     }
 }

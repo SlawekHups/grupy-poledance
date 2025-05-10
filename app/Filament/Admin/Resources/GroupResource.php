@@ -65,4 +65,11 @@ class GroupResource extends Resource
             'edit' => Pages\EditGroup::route('/{record}/edit'),
         ];
     }
+    public static function getWidgets(): array
+    {
+        return [
+            \App\Filament\Admin\Resources\GroupResource\Widgets\GroupStats::class,
+
+        ];
+    }
 }
