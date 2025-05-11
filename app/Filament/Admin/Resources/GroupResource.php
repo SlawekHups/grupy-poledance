@@ -35,6 +35,7 @@ class GroupResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id')->searchable(),
                 TextColumn::make('name')->searchable(),
             ])
             ->filters([
