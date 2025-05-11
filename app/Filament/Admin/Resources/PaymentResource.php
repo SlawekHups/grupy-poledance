@@ -62,8 +62,11 @@ class PaymentResource extends Resource
                 TextColumn::make('user.name')->label('Użytkownik')->searchable(),
                 TextColumn::make('month')->label('Miesiąc'),
                 TextColumn::make('amount')->label('Kwota')->money('PLN'),
-                BooleanColumn::make('paid')->label('Opłacone'),
                 TextColumn::make(name: 'updated_at')->label('Data_zapłaty'),
+                BooleanColumn::make('paid')
+                    ->label('Opłacone')
+                    ->trueIcon('heroicon-o-shield-check')
+                    ->falseIcon('heroicon-o-currency-dollar')
             ])
             ->filters([
                 //
@@ -83,6 +86,12 @@ class PaymentResource extends Resource
         return [
             //
         ];
+    }
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->orderBy('paid') // false (0) na górze, true (1) niżej
+            ->orderByDesc('updated_at'); // dodatkowo sortuj wg daty
     }
 
     public static function getPages(): array
