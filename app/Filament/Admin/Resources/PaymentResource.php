@@ -69,7 +69,11 @@ class PaymentResource extends Resource
                     ->falseIcon('heroicon-o-currency-dollar')
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('paid')
+                    ->label('Status płatności')
+                    ->trueLabel('Opłacone')
+                    ->falseLabel('Nieopłacone')
+                    ->default(null),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -100,6 +104,14 @@ class PaymentResource extends Resource
             'index' => Pages\ListPayments::route('/'),
             'create' => Pages\CreatePayment::route('/create'),
             'edit' => Pages\EditPayment::route('/{record}/edit'),
+        ];
+    }
+    public static function getTabs(): array
+    {
+        return [
+            'Wszystkie' => Payment::query(),
+            'Opłacone' => Payment::query()->where('paid', true),
+            'Nieopłacone' => Payment::query()->where('paid', false),
         ];
     }
 }
