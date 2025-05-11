@@ -51,7 +51,14 @@ class PaymentResource extends Resource
                     ->money('PLN'),
                 TextColumn::make('updated_at')
                     ->label('Data_zapłaty'),
-                    BooleanColumn::make('paid')
+                TextColumn::make('payment_link')
+                    ->label('Płatność Online')
+                    ->url(fn($record) => $record->payment_link)
+                    ->openUrlInNewTab()
+                    ->limit(30)
+                    ->view('tables.columns.payment-link')
+                    ->extraAttributes(['class' => 'text-center']),
+                BooleanColumn::make('paid')
                     ->label('Opłacone'),
             ])
 
