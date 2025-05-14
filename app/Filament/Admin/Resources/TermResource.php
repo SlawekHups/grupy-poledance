@@ -29,6 +29,9 @@ class TermResource extends Resource
     {
         return $form
             ->schema([
+                 TextInput::make('name')
+                    ->label('Tytuł')
+                    ->required(),
                 MarkdownEditor::make('content')
                     ->label('Treść regulaminu')
                     ->required()
