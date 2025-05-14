@@ -18,6 +18,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists\Components\HtmlEntry;
+
+
 
 class TermResource extends Resource
 {
@@ -25,7 +28,7 @@ class TermResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Regulamin';
-    protected static ?string $navigationGroup = 'Ustawienia';
+    protected static ?string $navigationGroup = 'Informacje';
     protected static ?int $navigationSort = 90;
 
     public static function form(Form $form): Form
