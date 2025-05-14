@@ -11,7 +11,7 @@ use Filament\Infolists\Components\HtmlEntry;
 
 class ExamplePage extends Page
 {
-    protected static ?string $navigationLabel = 'Przykład';
+    protected static ?string $navigationLabel = 'Regulami dla User';
     protected static ?string $slug = 'Regulamin';
     protected static ?string $navigationGroup = 'Informacje';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
