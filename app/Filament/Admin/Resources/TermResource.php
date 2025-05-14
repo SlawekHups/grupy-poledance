@@ -9,13 +9,16 @@ use Filament\Forms\Components\MarkdownEditor;
 use App\Models\Group;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 class TermResource extends Resource
 {
     protected static ?string $model = Term::class;
@@ -29,23 +32,27 @@ class TermResource extends Resource
     {
         return $form
             ->schema([
-                 TextInput::make('name')
+                TextInput::make('name')
                     ->label('Tytuł')
                     ->required(),
                 MarkdownEditor::make('content')
                     ->label('Treść regulaminu')
                     ->required()
                     ->columnSpan('full'),
+                Toggle::make('active')
+                    ->label('Aktywny')
+                    ->default(false),
             ]);
     }
 
-      public static function table(Table $table): Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('id')->searchable(),
                 TextColumn::make('name')->searchable(),
-            
+                BooleanColumn::make('active')->label('Aktywny'),
+
             ]);
     }
 

@@ -17,17 +17,18 @@ class ExamplePage extends Page
 
     protected static string $view = 'filament.admin.pages.example-page';
 
-    public function getInfolist(string $name): ?Infolist
-    {
-        $record = Term::find(1) ?? new class(['content' => 'Brak treści regulaminu.']) extends Model {
-            protected $guarded = [];
-            public $timestamps = false;
-        };
+public function getInfolist(string $name): ?Infolist
+{
+    $terms = \App\Models\Term::where('active', true)->get();
 
-        return Infolist::make()
-            ->record($record)
-            ->schema([
-                TextEntry::make('content')->label(false),
-            ]);
-    }
+    return Infolist::make()
+        ->schema(
+            $terms->map(function ($term) {
+                return TextEntry::make('content_' . $term->id)
+                    ->label($term->name ?? 'Regulamin')
+                    ->html()
+                    ->state($term->content);
+            })->toArray()
+        );
+}
 }

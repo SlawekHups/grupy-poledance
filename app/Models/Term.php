@@ -9,5 +9,6 @@ class Term extends Model
     protected $fillable = [
         'name',
         'content',
+        'active',
     ];
 }
