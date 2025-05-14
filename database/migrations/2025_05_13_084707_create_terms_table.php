@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-           // $table->timestamp('accepted_terms_at')->nullable();
+        Schema::create('terms', function (Blueprint $table) {
+            $table->id();
+            $table->text('content');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('terms');
     }
 };
