@@ -53,6 +53,9 @@ class TermResource extends Resource
                 TextColumn::make('name')->searchable(),
                 BooleanColumn::make('active')->label('Aktywny'),
 
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
             ]);
     }
 
