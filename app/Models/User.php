@@ -26,6 +26,11 @@ class User extends Authenticatable
         'is_active',
         'joined_at',
         'accepted_terms_at',
+        'user_id',
+        'type',
+        'street',
+        'city',
+        'postal_code',
 
     ];
 
@@ -54,5 +59,9 @@ class User extends Authenticatable
     public function group()
     {
         return $this->belongsTo(Group::class);
+    }
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
     }
 }
