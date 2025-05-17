@@ -31,10 +31,58 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->required(),
-                TextInput::make('email')->email()->required(),
+                TextInput::make('name')
+                    ->label('Imię i nazwisko')
+                    ->required()
+                    ->minLength(3)
+                    ->maxLength(45)
+                    ->validationMessages([
+                        'minLength' => 'Imię musi mieć minimum 3 znaki.',
+                        'maxLength' => 'Imię może mieć maksymalnie 10 znaków.',
+                    ]),
+                TextInput::make('email')
+                    ->label('E-mail')
+                    ->required()
+                    ->email()
+                    ->rules([
+                        fn($context, $record) => \Illuminate\Validation\Rule::unique('users', 'email')->ignore($record?->id),
+                    ])
+                    ->validationMessages([
+                        'unique' => 'Ten e-mail już istnieje w systemie.',
+                    ]),
 
-                TextInput::make('phone')->label('Telefon'),
+                TextInput::make('phone')
+                    ->label('Telefon')
+                    ->tel()
+                    ->required()
+                    ->minLength(9)
+                    ->maxLength(9)
+                    ->rule(function () {
+                        return \Illuminate\Validation\Rule::unique('users', 'phone')->ignore(request()->route('record'));
+                    })
+                    ->validationMessages([
+                        'unique' => 'Ten numer telefonu już istnieje w systemie.',
+                        'min' => 'Numer telefonu musi mieć co najmniej 9 cyfr.',
+                        'max' => 'Numer telefonu nie może mieć więcej niż 15 znaków.',
+                    ])
+                    ->dehydrated(true) // pole będzie zapisywane
+                    ->afterStateHydrated(function (\Filament\Forms\Components\TextInput $component, $state) {
+                        // Przy edycji usuń prefiks (dla czystości formularza)
+                        if (str_starts_with($state, '+48')) {
+                            $component->state(substr($state, 3));
+                        }
+                    })
+                    ->dehydrateStateUsing(function ($state) {
+                        $number = preg_replace('/\D/', '', $state); // usuń wszystko oprócz cyfr
+                        if (strlen($number) === 9) {
+                            return '+48' . $number;
+                        } elseif (str_starts_with($number, '48') && strlen($number) === 11) {
+                            return '+' . $number;
+                        } elseif (str_starts_with($number, '+48') && strlen($number) === 12) {
+                            return $number;
+                        }
+                        return $state; // fallback
+                    }),
                 TextInput::make('address')->label('Adres'),
                 DatePicker::make('joined_at')->label('Data zapisu'),
 
@@ -83,7 +131,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-             AddressesRelationManager::class,
+            AddressesRelationManager::class,
         ];
     }
 
