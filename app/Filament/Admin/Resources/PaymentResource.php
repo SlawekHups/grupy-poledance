@@ -17,6 +17,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Carbon\Carbon;
+
 
 class PaymentResource extends Resource
 {
@@ -33,25 +35,42 @@ class PaymentResource extends Resource
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
-                    ->disabled(fn(?Payment $record) => $record !== null),
+                    ->disabled(fn(?Payment $record) => $record !== null)
+                    ->reactive() // pozwala reagować na zmianę
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $user = \App\Models\User::find($state);
+                        if ($user) {
+                            $set('amount', $user->amount); // ustaw kwotę z User
+                        }
+                    }),
 
-                TextInput::make('month')
+                Select::make('month')
                     ->label('Miesiąc')
-                    ->placeholder('np. 2025-05')
+                    ->options(
+                        collect(range(-12, 12))->mapWithKeys(function ($i) {
+                            $date = now()->addMonths($i);
+                            return [
+                                $date->format('Y-m') => mb_strtoupper($date->translatedFormat('F Y'), 'UTF-8'), // np. "maj 2025"
+                            ];
+                        })->toArray()
+                    )
+                    ->default(now()->format('Y-m'))
                     ->required(),
 
                 TextInput::make('amount')
                     ->label('Kwota (PLN)')
                     ->numeric()
                     ->suffix('zł')
-                    ->step(0.01),
+                    ->step(0.01)
+                    ->required(),
 
                 TextInput::make('payment_link')
                     ->label('Link do płatności')
                     ->url()
                     ->prefix('https://'),
 
-                Toggle::make('paid')->label('Opłacone'),
+                Toggle::make('paid')
+                    ->label('Opłacone'),
             ]);
     }
 
@@ -90,6 +109,15 @@ class PaymentResource extends Resource
         return [
             //
         ];
+    }
+    public static function mutateFormDataBeforeCreate(array $data): array
+    {
+        $user = \App\Models\User::find($data['user_id']);
+        if ($user) {
+            $data['amount'] = $user->amount; // kopiujemy na stałe do płatności
+        }
+
+        return $data;
     }
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {

@@ -31,6 +31,7 @@ class User extends Authenticatable
         'street',
         'city',
         'postal_code',
+        'amount',
 
     ];
 

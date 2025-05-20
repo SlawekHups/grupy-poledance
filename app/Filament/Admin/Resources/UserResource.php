@@ -100,6 +100,11 @@ class UserResource extends Resource
                     ->dehydrated(fn($state) => filled($state)) // tylko gdy coś wpisano
                     ->dehydrateStateUsing(fn($state) => bcrypt($state)) // zawsze hashuj
                     ->maxLength(255),
+                TextInput::make('amount')
+                    ->label('Kwota miesięczna (zł)')
+                    ->numeric()
+                    ->required()
+                    ->default(200),
                 Toggle::make('is_active')->label('Aktywny'),
             ]);
     }
@@ -113,7 +118,10 @@ class UserResource extends Resource
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('phone')->label('Telefon')->searchable(),
                 TextColumn::make('group.name')->label('Grupa'),
-                BooleanColumn::make('is_active')->label('Aktywny'),
+                TextColumn::make('amount')
+                    ->label('Kwota (PLN)')
+                    ->suffix(' zł'),
+                BooleanColumn::make('is_active')->label('Aktywny')
             ])
             ->filters([
                 //
