@@ -31,7 +31,6 @@ class GenerateMonthlyPayments extends Command
                     'amount' => $user->amount,
                     'month' => $month,
                     'link' => null, // lub generuj tutaj np. przez API Przelewy24
-                    'status' => 'unpaid',
                 ]);
 
                 $this->info("Dodano płatność dla {$user->name}");
