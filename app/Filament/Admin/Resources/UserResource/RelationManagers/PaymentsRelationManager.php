@@ -7,9 +7,9 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\BooleanColumn;
 use Filament\Forms;
-
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -59,6 +59,21 @@ class PaymentsRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                // Dodaj przycisk "Oznacz jako opłacone/nieopłacone"
+                Action::make('togglePaid')
+                    ->label(fn($record) => $record->paid ? 'Oznacz jako nieopłacone' : 'Oznacz jako opłacone')
+                    ->icon(fn($record) => $record->paid ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                    ->color(fn($record) => $record->paid ? 'warning' : 'success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Potwierdź zmianę statusu płatności')
+                    ->modalDescription(fn($record) => $record->paid
+                        ? 'Czy na pewno oznaczyć tę płatność jako NIEOPŁACONĄ?'
+                        : 'Czy na pewno oznaczyć tę płatność jako OPŁACONĄ?'
+                    )
+                    ->action(function ($record) {
+                        $record->paid = !$record->paid;
+                        $record->save();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
