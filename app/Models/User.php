@@ -65,4 +65,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(Address::class);
     }
+    public function payments()
+    {
+        return $this->hasMany(\App\Models\Payment::class, 'user_id', 'id');
+    }
 }

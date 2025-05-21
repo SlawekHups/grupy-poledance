@@ -12,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -78,7 +79,10 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')->label('Użytkownik')->searchable(),
+                TextColumn::make('user.name')
+                    ->label('Użytkownik')
+                    ->searchable()
+                    ->url(fn($record) => route('filament.admin.resources.users.edit', $record->user_id)),
                 TextColumn::make('month')->label('Miesiąc'),
                 TextColumn::make('amount')->label('Kwota')->money('PLN'),
                 TextColumn::make(name: 'updated_at')->label('Data_zapłaty'),
