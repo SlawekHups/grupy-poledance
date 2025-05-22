@@ -83,7 +83,6 @@ class UserResource extends Resource
                         }
                         return $state; // fallback
                     }),
-                TextInput::make('address')->label('Adres'),
                 DatePicker::make('joined_at')->label('Data zapisu'),
 
                 Select::make('group_id')
@@ -114,7 +113,9 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->searchable(),
-                TextColumn::make('name')->searchable(),
+                TextColumn::make('name')
+                    ->label('Imię i nazwisko')
+                    ->searchable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('phone')->label('Telefon')->searchable(),
                 TextColumn::make('group.name')->label('Grupa'),
