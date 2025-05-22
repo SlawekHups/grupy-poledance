@@ -10,6 +10,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\BooleanColumn;
 use Filament\Forms;
+use Filament\Notifications\Notification;
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -73,11 +74,19 @@ class PaymentsRelationManager extends RelationManager
                     )
                     ->action(function ($record) {
                         $record->paid = !$record->paid;
-                        // Usuwamy link, jeśli ustawiamy jako opłacone
                         if ($record->paid) {
                             $record->payment_link = null;
+                            $record->save();
+
+                            // Wyślij notyfikację o usunięciu linku
+                            Notification::make()
+                                ->success()
+                                ->title('Link do płatności został usunięty')
+                                ->body('Oznaczyłeś płatność jako opłaconą. Link został automatycznie wyczyszczony.')
+                                ->send();
+                        } else {
+                            $record->save();
                         }
-                        $record->save();
                     }),
             ])
             ->bulkActions([
