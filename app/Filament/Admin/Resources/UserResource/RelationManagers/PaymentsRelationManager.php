@@ -66,12 +66,17 @@ class PaymentsRelationManager extends RelationManager
                     ->color(fn($record) => $record->paid ? 'warning' : 'success')
                     ->requiresConfirmation()
                     ->modalHeading('Potwierdź zmianę statusu płatności')
-                    ->modalDescription(fn($record) => $record->paid
-                        ? 'Czy na pewno oznaczyć tę płatność jako NIEOPŁACONĄ?'
-                        : 'Czy na pewno oznaczyć tę płatność jako OPŁACONĄ?'
+                    ->modalDescription(
+                        fn($record) => $record->paid
+                            ? 'Czy na pewno oznaczyć tę płatność jako NIEOPŁACONĄ?'
+                            : 'Czy na pewno oznaczyć tę płatność jako OPŁACONĄ?'
                     )
                     ->action(function ($record) {
                         $record->paid = !$record->paid;
+                        // Usuwamy link, jeśli ustawiamy jako opłacone
+                        if ($record->paid) {
+                            $record->payment_link = null;
+                        }
                         $record->save();
                     }),
             ])
