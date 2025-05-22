@@ -28,9 +28,7 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            // ->where('user_id', Auth::id());
-            ->where(column: 'id', operator: auth()->id()); // filtruj po własnym ID
-
+            ->where('id', Auth::id());
     }
     public static function form(Form $form): Form
     {
@@ -40,7 +38,7 @@ class UserResource extends Resource
                     ->label('Imię i nazwisko')
                     ->required()
                     ->minLength(3)
-                    ->maxLength(10)
+                    ->maxLength(45)
                     ->validationMessages(messages: [
                         'minLength' => 'Imię musi mieć minimum 3 znaki.',
                         'maxLength' => 'Imię może mieć maksymalnie 10 znaków.',
@@ -56,7 +54,7 @@ class UserResource extends Resource
                         'unique' => 'Ten e-mail już istnieje w systemie.',
                     ]),
 
-                        TextInput::make('phone')
+                TextInput::make('phone')
                     ->label('Telefon')
                     ->tel()
                     ->required()
@@ -88,8 +86,6 @@ class UserResource extends Resource
                         }
                         return $state; // fallback
                     }),
-
-                TextInput::make('address')->label('Adres'),
                 // 👇 Pole hasła z logiką bcrypt 
                 TextInput::make('password')
                     ->password()
@@ -105,7 +101,8 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
+                TextColumn::make('name')
+                    ->label('Imię i nazwisko'),
                 TextColumn::make('email'),
                 TextColumn::make('phone')->label('Telefon'),
                 TextColumn::make('group.name')->label('Grupa'),
