@@ -26,4 +26,12 @@ class Attendance extends Model
     {
         return $this->belongsTo(Group::class);
     }
+    protected static function booted()
+    {
+        static::creating(function ($attendance) {
+            if (empty($attendance->group_id) && !empty($attendance->user_id)) {
+                $attendance->group_id = \App\Models\User::find($attendance->user_id)?->group_id;
+            }
+        });
+    }
 }
