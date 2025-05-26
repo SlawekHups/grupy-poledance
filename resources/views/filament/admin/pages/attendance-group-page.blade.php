@@ -26,11 +26,6 @@
                     style="background-color:#d97706; color:#fff; border-radius:0.5rem; padding:0.5em 1em; min-width:160px;">
                     Pokaż użytkowników
                 </button>
-                <button type="submit"
-                    class="w-full md:w-auto inline-flex items-center justify-center font-medium rounded-lg outline-none transition focus:ring-2 focus:ring-green-500"
-                    style="background-color:#22c55e; color:#fff; border-radius:0.5rem; padding:0.5em 1em; min-width:160px;">
-                    Zapisz obecność
-                </button>
             </div>
         </div>
 
@@ -84,6 +79,14 @@
                 </div>
                 @endforeach
             </div>
+        </div>
+        <!-- Przycisk na dole -->
+        <div class="flex justify-end mt-6">
+            <button type="submit"
+                class="w-full md:w-auto inline-flex items-center justify-center font-medium rounded-lg outline-none transition focus:ring-2 focus:ring-green-500"
+                style="background-color:#22c55e; color:#fff; border-radius:0.5rem; padding:0.5em 1em; min-width:160px;">
+                Zapisz obecność
+            </button>
         </div>
         @elseif($group_id)
         <div class="w-full flex mt-12 mb-6">
