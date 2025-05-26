@@ -63,10 +63,8 @@ class AttendanceResource extends Resource
                     ->label('Data zajęć')
                     ->default(now()) // domyślnie dziś, można zmienić
                     ->required(),
-
-                Toggle::make('present')->label('Obecny?'),
-
                 TextInput::make('note')->label('Notatka')->nullable(),
+                Toggle::make('present')->label('Obecny?'),
             ]);
     }
 
@@ -85,9 +83,9 @@ class AttendanceResource extends Resource
                 TextColumn::make('group.name')
                     ->label('Grupa')
                     ->sortable(),
-                BooleanColumn::make('present')->label('Obecny?'),
                 TextColumn::make('note')
                     ->label('Notatka'),
+                BooleanColumn::make('present')->label('Obecny?'),
 
             ])
             ->filters([

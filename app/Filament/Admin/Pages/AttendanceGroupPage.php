@@ -84,5 +84,7 @@ class AttendanceGroupPage extends Page
             ->title('Obecność została zaktualizowana!')
             ->success()
             ->send();
+
+        $this->loadUsers();
     }
 }
