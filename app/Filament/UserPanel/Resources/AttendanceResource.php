@@ -9,6 +9,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Filters\SelectFilter;
+
 
 class AttendanceResource extends Resource
 {
@@ -39,7 +41,15 @@ class AttendanceResource extends Resource
                     ->limit(40)
                     ->wrap(),
             ])
-            ->defaultSort('date', 'desc');
+            ->defaultSort('date', 'desc')
+            ->filters([
+                SelectFilter::make('present')
+                    ->label('Status obecności')
+                    ->options([
+                        '1' => 'Obecny',
+                        '0' => 'Nieobecny',
+                    ])
+            ]);
     }
 
     public static function getPages(): array
@@ -48,7 +58,6 @@ class AttendanceResource extends Resource
             'index' => Pages\ListAttendances::route('/'),
         ];
     }
-
     // Blokady akcji
     public static function canCreate(): bool
     {
