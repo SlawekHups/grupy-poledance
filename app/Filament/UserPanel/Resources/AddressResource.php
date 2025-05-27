@@ -15,24 +15,26 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class AddressResource extends Resource
 {
     protected static ?string $model = Address::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Adres';
+    protected static ?string $navigationGroup = 'Panel użytkownika';
 
     public static function form(Form $form): Form
     {
-         return $form
-        ->schema([
-            Hidden::make('user_id')->default(fn () => auth()->id()),
-
-            TextInput::make(name: 'type')->required(),
-            TextInput::make('street'),
-            TextInput::make('postal_code'),
-            TextInput::make('city'),
-        ]);
+        return $form
+            ->schema([
+                Hidden::make('user_id')->default(fn() => Auth::id()),
+                TextInput::make(name: 'type')->required(),
+                TextInput::make('street'),
+                TextInput::make('postal_code'),
+                TextInput::make('city'),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -65,7 +67,8 @@ class AddressResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('user_id', auth()->id());
+        return parent::getEloquentQuery()
+            ->where('user_id', Auth::id());
     }
 
     public static function getPages(): array
