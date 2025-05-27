@@ -112,17 +112,25 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->searchable(),
+                TextColumn::make('id')
+                    ->searchable(),
                 TextColumn::make('name')
                     ->label('Imię i nazwisko')
                     ->searchable(),
-                TextColumn::make('email')->searchable(),
-                TextColumn::make('phone')->label('Telefon')->searchable(),
-                TextColumn::make('group.name')->label('Grupa'),
+                TextColumn::make('email')
+                    ->searchable(),
+                TextColumn::make('phone')
+                    ->label('Telefon')
+                    ->searchable(),
+                TextColumn::make('group.name')
+                    ->label('Grupa')
+                    ->searchable(),
                 TextColumn::make('amount')
                     ->label('Kwota (PLN)')
-                    ->suffix(' zł'),
-                BooleanColumn::make('is_active')->label('Aktywny')
+                    ->suffix(' zł')
+                    ->searchable(),
+                BooleanColumn::make('is_active')
+                    ->label('Aktywny')
             ])
             ->filters([
                 //
