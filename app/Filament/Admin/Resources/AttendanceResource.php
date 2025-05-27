@@ -76,16 +76,21 @@ class AttendanceResource extends Resource
                     ->label('Data')
                     ->sortable()
                     ->date()
-                    ->date('d-m-Y'),
+                    ->date('d-m-Y')
+                    ->searchable(),
                 TextColumn::make('user.name')
                     ->label('Użytkownik')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('group.name')
                     ->label('Grupa')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('note')
-                    ->label('Notatka'),
-                BooleanColumn::make('present')->label('Obecny?'),
+                    ->label('Notatka')
+                    ->searchable(),
+                BooleanColumn::make('present')
+                    ->label('Obecny?'),
 
             ])
             ->filters([
