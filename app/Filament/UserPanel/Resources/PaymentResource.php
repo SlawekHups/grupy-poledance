@@ -19,6 +19,9 @@ class PaymentResource extends Resource
     protected static ?string $model = Payment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Płatności użytkownika';
+    protected static ?string $navigationGroup = 'Panel użytkownika';
+    protected static ?int $navigationSort = 90;
 
     public static function getEloquentQuery(): Builder
     {
@@ -85,5 +88,14 @@ class PaymentResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+    public static function getModelLabel(): string
+    {
+        return 'Płatność';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Płatności';
     }
 }

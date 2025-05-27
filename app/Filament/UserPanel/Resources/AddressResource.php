@@ -79,4 +79,13 @@ class AddressResource extends Resource
             'edit' => Pages\EditAddress::route('/{record}/edit'),
         ];
     }
+    public static function getModelLabel(): string
+    {
+        return 'Adresu';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Adresy';
+    }
 }

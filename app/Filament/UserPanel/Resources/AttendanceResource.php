@@ -76,4 +76,13 @@ class AttendanceResource extends Resource
     {
         return false;
     }
+    public static function getModelLabel(): string
+    {
+        return 'Obecności';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Obecność';
+    }
 }
