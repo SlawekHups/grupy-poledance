@@ -73,4 +73,13 @@ class GroupResource extends Resource
 
         ];
     }
+    public static function getModelLabel(): string
+    {
+        return 'Grupy';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Grupy';
+    }
 }

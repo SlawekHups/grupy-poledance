@@ -146,4 +146,13 @@ class PaymentResource extends Resource
             'Nieopłacone' => Payment::query()->where('paid', false),
         ];
     }
+    public static function getModelLabel(): string
+    {
+        return 'Płatności';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Płatność';
+    }
 }

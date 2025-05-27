@@ -14,6 +14,7 @@ class ExamplePage extends Page
     protected static ?string $navigationLabel = 'Regulami dla User';
     protected static ?string $slug = 'Regulamin';
     protected static ?string $navigationGroup = 'Informacje';
+    //protected static ?string $navigationGroup = 'ℹ️ Informacje';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static string $view = 'filament.admin.pages.example-page';

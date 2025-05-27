@@ -70,4 +70,13 @@ class TermResource extends Resource
             'edit' => Pages\EditTerm::route('/{record}/edit'),
         ];
     }
+    public static function getModelLabel(): string
+    {
+        return 'Dokument';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Dokumenty';
+    }
 }
