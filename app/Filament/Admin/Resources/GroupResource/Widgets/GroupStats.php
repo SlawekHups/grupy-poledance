@@ -24,7 +24,7 @@ class GroupStats extends StatsOverviewWidget
                 ->color('warning')
                 ->description('Wszystkie zarejestrowane grupy'),
 
-            Card::make('Grupa Poniedziałek 20:00  tlko wybrabna', \App\Models\User::where('group_id', 4)->count())
+            Card::make('Bez Grupa', \App\Models\User::where('group_id', 1)->count())
                 ->icon('heroicon-o-user-group')
                 ->color('warning')
                 ->description('Liczba użytkowników w tej grupie'),
