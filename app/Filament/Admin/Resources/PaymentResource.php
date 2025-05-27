@@ -83,8 +83,13 @@ class PaymentResource extends Resource
                     ->label('Użytkownik')
                     ->searchable()
                     ->url(fn($record) => route('filament.admin.resources.users.edit', $record->user_id)),
-                TextColumn::make('month')->label('Miesiąc'),
-                TextColumn::make('amount')->label('Kwota')->money('PLN'),
+                TextColumn::make('month')
+                    ->label('Miesiąc')
+                    ->searchable(),
+                TextColumn::make('amount')
+                    ->label('Kwota')
+                    ->money('PLN')
+                    ->searchable(),
                 TextColumn::make(name: 'updated_at')->label('Data_zapłaty'),
                 BooleanColumn::make('paid')
                     ->label('Opłacone')
