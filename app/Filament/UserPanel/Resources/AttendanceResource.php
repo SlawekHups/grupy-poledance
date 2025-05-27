@@ -10,6 +10,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 
 
 class AttendanceResource extends Resource
@@ -48,7 +50,18 @@ class AttendanceResource extends Resource
                     ->options([
                         '1' => 'Obecny',
                         '0' => 'Nieobecny',
+                    ]),
+                Filter::make('date')
+                    ->label('Data')
+                    ->form([
+                        DatePicker::make('date')->label('Wybierz datę'),
                     ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['date'], fn($query, $date) =>
+                            $query->whereDate('date', $date));
+                    }),
+
             ]);
     }
 
