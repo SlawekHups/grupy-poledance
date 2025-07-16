@@ -26,6 +26,7 @@ class UserPanelProvider extends PanelProvider
             ->discoverPages(app_path('Filament/UserPanel/Pages'), 'App\\Filament\\UserPanel\\Pages')
             ->discoverWidgets(app_path('Filament/UserPanel/Widgets'), 'App\\Filament\\UserPanel\\Widgets')
             ->widgets([
+                \App\Filament\UserPanel\Widgets\ProfileCardWidget::class,
                 \App\Filament\UserPanel\Widgets\PaymentsStatsWidget::class,
             ])
             ->navigationGroups([

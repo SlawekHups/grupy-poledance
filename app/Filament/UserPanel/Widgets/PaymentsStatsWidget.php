@@ -5,11 +5,14 @@ namespace App\Filament\UserPanel\Widgets;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
 use App\Models\Payment;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
+use Illuminate\Support\Facades\Auth;
+use Filament\Support\Components\Card as SupportCard;
+use Filament\Support\Facades\FilamentColor;
 
 class PaymentsStatsWidget extends StatsOverviewWidget
 {
+    // Usunięto getContent()
     protected function getCards(): array
     {
         $userId = Auth::id();
