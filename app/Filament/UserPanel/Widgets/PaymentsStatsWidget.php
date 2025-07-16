@@ -13,6 +13,7 @@ use Filament\Support\Facades\FilamentColor;
 class PaymentsStatsWidget extends StatsOverviewWidget
 {
     // Usunięto getContent()
+    protected static ?int $sort = 1;
     protected function getCards(): array
     {
         $userId = Auth::id();

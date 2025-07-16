@@ -9,7 +9,7 @@ class ProfileCardWidget extends Widget
 {
     protected static string $view = 'filament.user-panel.widgets.profile-card';
 
-    protected static ?int $sort = -1; // Wyświetl na samej górze
+    protected static ?int $sort = 0; 
 
     protected function getViewData(): array
     {
