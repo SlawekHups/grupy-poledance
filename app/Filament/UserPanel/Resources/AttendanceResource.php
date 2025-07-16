@@ -19,7 +19,8 @@ class AttendanceResource extends Resource
     protected static ?string $model = Attendance::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Moja obecność';
-    protected static ?string $navigationGroup = 'Moje konto';
+    protected static ?string $navigationGroup = 'Panel użytkownika';
+    protected static ?int $navigationSort = 40;
 
     public static function getEloquentQuery(): Builder
     {

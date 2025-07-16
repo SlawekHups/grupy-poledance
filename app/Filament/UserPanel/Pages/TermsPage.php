@@ -16,6 +16,7 @@ class TermsPage extends Page
     protected static ?string $navigationGroup = 'Informacje';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $title = 'Regulamin użytkownika';
+    protected static ?int $navigationSort = 100;
 
     protected static string $view = 'filament.admin.pages.example-page';
 

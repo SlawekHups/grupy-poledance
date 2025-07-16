@@ -21,7 +21,7 @@ class PaymentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Płatności użytkownika';
     protected static ?string $navigationGroup = 'Panel użytkownika';
-    protected static ?int $navigationSort = 90;
+    protected static ?int $navigationSort = 30;
 
     public static function getEloquentQuery(): Builder
     {
