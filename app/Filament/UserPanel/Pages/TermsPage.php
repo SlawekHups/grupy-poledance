@@ -14,7 +14,7 @@ class TermsPage extends Page
     protected static ?string $navigationLabel = 'Regulamin';
     protected static ?string $slug = 'Regulamin';
     protected static ?string $navigationGroup = 'Informacje';
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $title = 'Regulamin użytkownika';
     protected static ?int $navigationSort = 100;
 
