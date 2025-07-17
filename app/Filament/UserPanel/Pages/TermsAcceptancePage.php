@@ -18,6 +18,7 @@ class TermsAcceptancePage extends Page
 
     public function acceptTerms()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         if ($user && is_null($user->terms_accepted_at)) {
             $user->terms_accepted_at = Carbon::now();
