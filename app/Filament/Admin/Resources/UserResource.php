@@ -104,7 +104,13 @@ class UserResource extends Resource
                     ->numeric()
                     ->required()
                     ->default(200),
-                Toggle::make('is_active')->label('Aktywny'),
+                Forms\Components\DateTimePicker::make('terms_accepted_at')
+                    ->label('Akceptacja regulaminu')
+                    ->nullable()
+                    ->default(null)
+                    ->dehydrated(true)
+                    ->dehydrateStateUsing(fn($state) => $state ?: null),
+                    Toggle::make('is_active')->label('Aktywny'),
             ]);
     }
 
@@ -130,7 +136,14 @@ class UserResource extends Resource
                     ->suffix(' zł')
                     ->searchable(),
                 BooleanColumn::make('is_active')
-                    ->label('Aktywny')
+                    ->label('Aktywny'),
+                Tables\Columns\BooleanColumn::make('terms_accepted_at')
+                    ->label('Regulamin zaakceptowany')
+                    ->trueIcon('heroicon-o-document-check')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->state(fn($record) => !is_null($record->terms_accepted_at)),
             ])
             ->filters([
                 //
