@@ -32,6 +32,11 @@ class AttendanceResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('rowNumber')
+                    ->label('Lp.')
+                    ->state(function ($record, $livewire, $rowLoop) {
+                        return $rowLoop->iteration;
+                    }),
                 Tables\Columns\TextColumn::make('date')
                     ->label('Data')
                     ->date('d.m.Y')
