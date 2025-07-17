@@ -33,4 +33,9 @@ class TermsAcceptancePage extends Page
             'terms' => $terms,
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 } 
