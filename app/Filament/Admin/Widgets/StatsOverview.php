@@ -69,9 +69,16 @@ class StatsOverview extends BaseWidget
 
         // 👥 Liczba użytkowników w każdej grupie
         foreach (Group::all() as $group) {
-            $cards[] = Card::make("Grupa: {$group->name}", $group->users()->count())
+            $userCount = $group->users()->count();
+            $color = 'success';
+            if ($userCount === 0) {
+                $color = 'danger';
+            } elseif ($userCount >= 1 && $userCount <= 6) {
+                $color = 'purple';
+            }
+            $cards[] = Card::make("Grupa: {$group->name}", $userCount)
                 ->icon('heroicon-o-user-group')
-                ->color('info')
+                ->color($color)
                 ->description('Liczba przypisanych użytkowników');
         }
 
