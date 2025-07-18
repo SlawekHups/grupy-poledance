@@ -17,7 +17,7 @@ class StatsOverview extends BaseWidget
             // 👤 Użytkownicy
             Card::make('Liczba użytkowników', User::count())
                 ->icon('heroicon-o-users')
-                ->color('primary')
+                ->color('success')
                 ->description('Ostatni dodany: ' . User::latest('created_at')->first()?->created_at->format('d.m.Y')),
 
             Card::make('Nowi użytkownicy (7 dni)', User::where('created_at', '>=', now()->subDays(7))->count())
@@ -28,7 +28,7 @@ class StatsOverview extends BaseWidget
             // 💳 Płatności
             Card::make('Łączna liczba płatności', Payment::count())
                 ->icon('heroicon-o-banknotes')
-                ->color('gray')
+                ->color('success')
                 ->description('Wszystkie rekordy płatności'),
 
             Card::make('Wpłaty (30 dni)', Payment::where('paid', true)->where('updated_at', '>=', now()->subDays(30))->sum('amount') . ' zł')
@@ -39,8 +39,8 @@ class StatsOverview extends BaseWidget
             Card::make('Zaległości', Payment::where('paid', false)->count())
                 ->icon('heroicon-o-exclamation-circle')
                 ->color('danger')
-                ->description('Nieopłacone faktury')
-                ->url(route('filament.admin.resources.payments.index'))
+                ->description('Zaległości: ' . Payment::where('paid', false)->count())
+                ->url(route('filament.admin.resources.payments.index', ['tableFilters[paid][value]' => false]))
                 ->extraAttributes(['class' => 'cursor-pointer']),
 
             Card::make(
@@ -50,8 +50,10 @@ class StatsOverview extends BaseWidget
                     ->sum('amount') . ' zł'
             )
                 ->icon('heroicon-o-banknotes')
-                ->color('info')
-                ->description('Zaległości: ' . Payment::where('paid', false)->count()),
+                ->color('danger')
+                ->description('Zaległości: ' . Payment::where('paid', false)->count())
+                ->url(route('filament.admin.resources.payments.index', ['tableFilters[paid][value]' => false]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
             // 📂 Grupy
             Card::make('Liczba grup', Group::count())
