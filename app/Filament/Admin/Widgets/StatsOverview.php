@@ -61,7 +61,7 @@ class StatsOverview extends BaseWidget
                 ->color('warning')
                 ->description('Wszystkie zarejestrowane grupy'),
 
-            Card::make('Grupa Poniedziałek 20:00', \App\Models\User::where('group_id', 4)->count())
+            Card::make('Grupa Poniedziałek 20:00 testowa recznie dodana', \App\Models\User::where('group_id', 4)->count())
                 ->icon('heroicon-o-user-group')
                 ->color('warning')
                 ->description('Liczba użytkowników w tej grupie'),
