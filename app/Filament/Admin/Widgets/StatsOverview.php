@@ -43,13 +43,15 @@ class StatsOverview extends BaseWidget
                 ->url(route('filament.admin.resources.payments.index'))
                 ->extraAttributes(['class' => 'cursor-pointer']),
 
-            Card::make('Podsumowanie płatności', '')
+            Card::make(
+                'Podsumowanie płatności za dany rok.',
+                Payment::where('paid', true)
+                    ->where('updated_at', '>=', now()->startOfYear())
+                    ->sum('amount') . ' zł'
+            )
                 ->icon('heroicon-o-banknotes')
                 ->color('info')
-                ->description(
-                    'Wpłaty (30 dni): ' . Payment::where('paid', true)->where('updated_at', '>=', now()->subDays(30))->sum('amount') . ' zł' . PHP_EOL .
-                        'Zaległości: ' . Payment::where('paid', false)->count()
-                ),
+                ->description('Zaległości: ' . Payment::where('paid', false)->count()),
 
             // 📂 Grupy
             Card::make('Liczba grup', Group::count())
@@ -57,7 +59,7 @@ class StatsOverview extends BaseWidget
                 ->color('warning')
                 ->description('Wszystkie zarejestrowane grupy'),
 
-            Card::make('Grupa Poniedziałek 20:00  tlko wybrabna', \App\Models\User::where('group_id', 4)->count())
+            Card::make('Grupa Poniedziałek 20:00', \App\Models\User::where('group_id', 4)->count())
                 ->icon('heroicon-o-user-group')
                 ->color('warning')
                 ->description('Liczba użytkowników w tej grupie'),
