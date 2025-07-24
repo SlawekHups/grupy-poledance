@@ -16,6 +16,7 @@ class RolesAndUsersSeeder extends Seeder
                 'name' => 'Administrator',
                 'email_verified_at' => now(),
                 'password' => Hash::make('12hups34'), // zmień później na bezpieczne
+                'role' => 'admin',
             ]
         );
 
@@ -25,6 +26,7 @@ class RolesAndUsersSeeder extends Seeder
                 'name' => 'Test User',
                 'email_verified_at' => now(),
                 'password' => Hash::make('test123'),
+                'role' => 'user',
             ]
         );
     }

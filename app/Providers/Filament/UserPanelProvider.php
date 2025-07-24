@@ -46,6 +46,7 @@ class UserPanelProvider extends PanelProvider
                 Authenticate::class,
                 \App\Http\Middleware\EnsureUserIsActive::class,
                 \App\Http\Middleware\EnsureUserAcceptedTerms::class,
+                \App\Http\Middleware\EnsureIsUser::class,
             ]);
     }
 }
