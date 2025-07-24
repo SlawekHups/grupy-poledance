@@ -17,7 +17,9 @@ class GenerateMonthlyPayments extends Command
     {
         $month = Carbon::now()->format('Y-m');
 
-        $activeUsers = User::where('is_active', true)->get();
+        $activeUsers = User::where('is_active', true)
+            ->where('id', '!=', 1)
+            ->get();
 
         foreach ($activeUsers as $user) {
             // sprawdź, czy już istnieje płatność na ten miesiąc
