@@ -125,4 +125,17 @@ class OnboardingWizard extends Page implements HasForms
         Notification::make()->success()->title('Dziękujemy!')->body('Onboarding zakończony.')->send();
         return redirect()->route('filament.user.pages.dashboard');
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        if (!$user) return false;
+        // Ukryj onboarding jeśli user ma adres, rodo i regulamin
+        return (
+            $user->addresses()->count() === 0 ||
+            is_null($user->rodo_accepted_at) ||
+            is_null($user->terms_accepted_at)
+        );
+    }
 } 
