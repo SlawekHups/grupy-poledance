@@ -11,13 +11,14 @@ use App\Models\Address;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\Html;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\ViewField;
 
 class OnboardingWizard extends Page implements HasForms
 {
     use InteractsWithForms;
 
     protected static ?string $slug = 'onboarding';
-    protected static ?string $title = 'Onboarding';
+    protected static ?string $title = 'Rejestracja';
     protected static ?string $navigationLabel = null;
     protected static string $view = 'filament.user-panel.pages.onboarding-wizard';
 
@@ -48,6 +49,7 @@ class OnboardingWizard extends Page implements HasForms
             Forms\Components\Wizard::make([
                 Forms\Components\Wizard\Step::make('Adres')
                     ->schema([
+                        // ViewField welcome usunięty, komunikat jest tylko w widoku Blade
                         Forms\Components\TextInput::make('address_street')
                             ->label('Ulica i numer')
                             ->required(),
