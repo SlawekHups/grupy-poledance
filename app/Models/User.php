@@ -35,6 +35,7 @@ class User extends Authenticatable
         'role',
         'rodo_accepted_at',
         'terms_accepted_at',
+        'group_id',
     ];
 
     /**

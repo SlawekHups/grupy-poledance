@@ -6,14 +6,13 @@ use App\Filament\Admin\Resources\GroupResource\Pages;
 use App\Filament\Admin\Resources\GroupResource\RelationManagers;
 use App\Models\Group;
 use Filament\Forms;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Admin\Resources\GroupResource\RelationManagers\UsersRelationManager;
 
 class GroupResource extends Resource
 {
@@ -25,9 +24,13 @@ class GroupResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')
+                Forms\Components\TextInput::make('name')
                     ->label('Nazwa grupy')
-                    ->required(),
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('description')
+                    ->label('Opis')
+                    ->maxLength(255),
             ]);
     }
 
@@ -35,8 +38,15 @@ class GroupResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->searchable(),
-                TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nazwa grupy')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Opis')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('users_count')
+                    ->label('Liczba użytkowników')
+                    ->counts('users'),
             ])
             ->filters([
                 //
@@ -54,7 +64,7 @@ class GroupResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            UsersRelationManager::class,
         ];
     }
 
