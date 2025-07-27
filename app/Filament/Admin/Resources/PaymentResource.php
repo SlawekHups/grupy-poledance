@@ -102,6 +102,25 @@ class PaymentResource extends Resource
                     ->trueLabel('Opłacone')
                     ->falseLabel('Nieopłacone')
                     ->default(null),
+                Tables\Filters\Filter::make('updated_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Od'),
+                        Forms\Components\DatePicker::make('to')
+                            ->label('Do'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('updated_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('updated_at', '<=', $date),
+                            );
+                    })
+                    ->label('Data aktualizacji'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

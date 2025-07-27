@@ -34,15 +34,31 @@ class StatsOverview extends BaseWidget
                 ->extraAttributes(['class' => 'cursor-pointer']),
 
             // 💳 Płatności
-            Card::make('Łączna liczba płatności', Payment::count())
+            Card::make('Łączna liczba opłaconych płatności', Payment::where('paid', true)->count())
                 ->icon('heroicon-o-banknotes')
                 ->color('success')
-                ->description('Wszystkie rekordy płatności'),
+                ->description('Wszystkie opłacone płatności')
+                ->url(route('filament.admin.resources.payments.index', [
+                    'tableFilters[paid][value]' => 'true'
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
-            Card::make('Wpłaty (30 dni)', Payment::where('paid', true)->where('updated_at', '>=', now()->subDays(30))->sum('amount') . ' zł')
+            Card::make('Suma wpłat (30 dni)', 
+                Payment::query()
+                    ->where('paid', true)
+                    ->whereDate('updated_at', '>=', now()->subDays(30))
+                    ->whereDate('updated_at', '<=', now())
+                    ->sum('amount') . ' zł'
+            )
                 ->icon('heroicon-o-currency-euro')
                 ->color('success')
-                ->description('Suma wpłat z ostatnich 30 dni'),
+                ->description('Suma opłaconych płatności z ostatnich 30 dni')
+                ->url(route('filament.admin.resources.payments.index', [
+                    'tableFilters[paid][value]' => 'true',
+                    'tableFilters[updated_at][from]' => now()->subDays(30)->format('Y-m-d'),
+                    'tableFilters[updated_at][to]' => now()->format('Y-m-d'),
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
             Card::make('Zaległości', Payment::where('paid', false)->count())
                 ->icon('heroicon-o-exclamation-circle')
