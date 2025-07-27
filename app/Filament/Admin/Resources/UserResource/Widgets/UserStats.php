@@ -21,17 +21,31 @@ class UserStats extends BaseWidget
             Stat::make('Wszyscy użytkownicy', $totalUsers)
                 ->description('Łączna liczba użytkowników')
                 ->descriptionIcon('heroicon-m-users')
-                ->color('info'),
+                ->color('info')
+                ->url(route('filament.admin.resources.users.index') . '?' . http_build_query([
+                    'tableFilters[role][value]' => 'user'
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
             Stat::make('Aktywni użytkownicy', $activeUsers)
                 ->description('Liczba aktywnych użytkowników')
                 ->descriptionIcon('heroicon-m-user')
-                ->color('success'),
+                ->color('success')
+                ->url(route('filament.admin.resources.users.index') . '?' . http_build_query([
+                    'tableFilters[role][value]' => 'user',
+                    'tableFilters[is_active][value]' => true
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
             Stat::make('Nieaktywni użytkownicy', $inactiveUsers)
                 ->description('Liczba nieaktywnych użytkowników')
                 ->descriptionIcon('heroicon-m-user-minus')
-                ->color('danger'),
+                ->color('danger')
+                ->url(route('filament.admin.resources.users.index') . '?' . http_build_query([
+                    'tableFilters[role][value]' => 'user',
+                    'tableFilters[is_active][value]' => false
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
         ];
     }
 } 

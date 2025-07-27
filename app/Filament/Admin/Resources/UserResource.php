@@ -154,6 +154,11 @@ class UserResource extends Resource
                     ->label('Grupa')
                     ->searchable()
                     ->preload(),
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Status')
+                    ->placeholder('Wszystkie')
+                    ->trueLabel('Aktywny')
+                    ->falseLabel('Nieaktywny'),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
