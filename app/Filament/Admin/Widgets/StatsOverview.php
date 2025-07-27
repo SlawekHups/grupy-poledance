@@ -103,7 +103,12 @@ class StatsOverview extends BaseWidget
             $cards[] = Card::make("Grupa: {$group->name}", $userCount)
                 ->icon('heroicon-o-user-group')
                 ->color($color)
-                ->description('Liczba przypisanych użytkowników');
+                ->description('Liczba przypisanych użytkowników')
+                ->url(route('filament.admin.resources.users.index', [
+                    'tableFilters[role][value]' => 'user',
+                    'tableFilters[group_id][value]' => strval($group->id),
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']);
         }
 
         return $cards;

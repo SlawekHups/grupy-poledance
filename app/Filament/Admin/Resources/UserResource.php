@@ -20,7 +20,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
@@ -65,15 +64,14 @@ class UserResource extends Resource
                         'min' => 'Numer telefonu musi mieć co najmniej 9 cyfr.',
                         'max' => 'Numer telefonu nie może mieć więcej niż 15 znaków.',
                     ])
-                    ->dehydrated(true) // pole będzie zapisywane
+                    ->dehydrated(true)
                     ->afterStateHydrated(function (\Filament\Forms\Components\TextInput $component, $state) {
-                        // Przy edycji usuń prefiks (dla czystości formularza)
                         if (str_starts_with($state, '+48')) {
                             $component->state(substr($state, 3));
                         }
                     })
                     ->dehydrateStateUsing(function ($state) {
-                        $number = preg_replace('/\D/', '', $state); // usuń wszystko oprócz cyfr
+                        $number = preg_replace('/\D/', '', $state);
                         if (strlen($number) === 9) {
                             return '+48' . $number;
                         } elseif (str_starts_with($number, '48') && strlen($number) === 11) {
@@ -81,7 +79,7 @@ class UserResource extends Resource
                         } elseif (str_starts_with($number, '+48') && strlen($number) === 12) {
                             return $number;
                         }
-                        return $state; // fallback
+                        return $state;
                     }),
                 DatePicker::make('joined_at')->label('Data zapisu'),
 
@@ -91,13 +89,12 @@ class UserResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                // 👇 Pole hasła z logiką bcrypt 
                 TextInput::make('password')
                     ->password()
                     ->label('Hasło')
                     ->required(fn(string $context) => $context === 'create')
-                    ->dehydrated(fn($state) => filled($state)) // tylko gdy coś wpisano
-                    ->dehydrateStateUsing(fn($state) => bcrypt($state)) // zawsze hashuj
+                    ->dehydrated(fn($state) => filled($state))
+                    ->dehydrateStateUsing(fn($state) => bcrypt($state))
                     ->maxLength(255),
                 TextInput::make('amount')
                     ->label('Kwota miesięczna (zł)')
@@ -152,6 +149,11 @@ class UserResource extends Resource
                         'admin' => 'Administrator',
                     ])
                     ->label('Rola'),
+                Tables\Filters\SelectFilter::make('group_id')
+                    ->relationship('group', 'name')
+                    ->label('Grupa')
+                    ->searchable()
+                    ->preload(),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
@@ -187,7 +189,6 @@ class UserResource extends Resource
         return [
             AddressesRelationManager::class,
             \App\Filament\Admin\Resources\UserResource\RelationManagers\PaymentsRelationManager::class,
-
         ];
     }
 
