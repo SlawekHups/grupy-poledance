@@ -134,24 +134,28 @@ class UsersRelationManager extends RelationManager
                     ->form([
                         Forms\Components\Select::make('user_id')
                             ->label('Wybierz użytkownika')
-                            ->options(
-                                \App\Models\User::query()
+                            ->options(function () {
+                                return \App\Models\User::query()
                                     ->where('role', 'user')
-                                    ->whereNull('group_id')
+                                    ->where(function ($query) {
+                                        $query->whereNull('group_id')
+                                            ->orWhere('group_id', 1); // id grupy "Brak grupy"
+                                    })
                                     ->orderBy('name')
                                     ->get()
                                     ->mapWithKeys(function ($user) {
                                         $status = $user->is_active ? '✓' : '✗';
                                         $statusColor = $user->is_active ? 'text-success-500' : 'text-danger-500';
+                                        $groupInfo = $user->group_id == 1 ? ' [Brak grupy]' : '';
                                         return [
-                                            $user->id => "{$user->name} ({$user->email}) " . ($user->phone ? "📱 {$user->phone} " : '') . "<span class='{$statusColor}'>{$status}</span>"
+                                            $user->id => "{$user->name} ({$user->email}) " . ($user->phone ? "📱 {$user->phone} " : '') . "<span class='{$statusColor}'>{$status}</span>{$groupInfo}"
                                         ];
-                                    })
-                            )
+                                    });
+                            })
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->helperText('Lista pokazuje tylko użytkowników, którzy nie są przypisani do żadnej grupy')
+                            ->helperText('Lista pokazuje użytkowników bez przypisanej grupy lub z domyślną grupą "Brak grupy"')
                             ->optionsLimit(50)
                             ->searchable(['name', 'email', 'phone'])
                             ->allowHtml(),
