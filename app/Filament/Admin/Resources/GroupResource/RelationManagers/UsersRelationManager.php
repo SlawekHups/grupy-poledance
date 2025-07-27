@@ -72,6 +72,30 @@ class UsersRelationManager extends RelationManager
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
+                Tables\Columns\BooleanColumn::make('terms_accepted_at')
+                    ->label('Regulamin')
+                    ->trueIcon('heroicon-o-document-check')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->state(fn($record) => !is_null($record->terms_accepted_at))
+                    ->tooltip(fn ($record) => $record->terms_accepted_at ? 'Zaakceptowano: ' . $record->terms_accepted_at->format('d.m.Y') : 'Brak akceptacji regulaminu'),
+                Tables\Columns\IconColumn::make('has_unpaid_payments')
+                    ->label('Płatności')
+                    ->boolean()
+                    ->getStateUsing(fn ($record) => !$record->payments()->where('paid', false)->exists())
+                    ->trueIcon('heroicon-o-banknotes')
+                    ->falseIcon('heroicon-o-exclamation-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->tooltip(fn ($record) => $record->payments()->where('paid', false)->exists() 
+                        ? 'Ma niezapłacone płatności' 
+                        : 'Wszystkie płatności opłacone')
+                    ->url(fn ($record) => route('filament.admin.resources.users.edit', [
+                        'record' => $record,
+                        'activeRelationManager' => 1
+                    ]))
+                    ->openUrlInNewTab(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('is_active')
@@ -80,6 +104,24 @@ class UsersRelationManager extends RelationManager
                         '1' => 'Aktywny',
                         '0' => 'Nieaktywny',
                     ]),
+                Tables\Filters\TernaryFilter::make('terms_accepted_at')
+                    ->label('Regulamin')
+                    ->placeholder('Wszystkie')
+                    ->trueLabel('Zaakceptowany')
+                    ->falseLabel('Niezaakceptowany')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('terms_accepted_at'),
+                        false: fn (Builder $query) => $query->whereNull('terms_accepted_at'),
+                    ),
+                Tables\Filters\TernaryFilter::make('has_unpaid_payments')
+                    ->label('Płatności')
+                    ->placeholder('Wszystkie')
+                    ->trueLabel('Wszystkie opłacone')
+                    ->falseLabel('Ma zaległości')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereDoesntHave('payments', fn ($q) => $q->where('paid', false)),
+                        false: fn (Builder $query) => $query->whereHas('payments', fn ($q) => $q->where('paid', false)),
+                    ),
             ])
             ->headerActions([
                 Action::make('addUser')
