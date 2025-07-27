@@ -104,10 +104,7 @@ class StatsOverview extends BaseWidget
                 ->icon('heroicon-o-user-group')
                 ->color($color)
                 ->description('Liczba przypisanych użytkowników')
-                ->url(route('filament.admin.resources.users.index', [
-                    'tableFilters[role][value]' => 'user',
-                    'tableFilters[group_id][value]' => strval($group->id),
-                ]))
+                ->url(route('filament.admin.resources.groups.edit', ['record' => $group->id]))
                 ->extraAttributes(['class' => 'cursor-pointer']);
         }
 
