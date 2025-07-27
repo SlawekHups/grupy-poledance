@@ -14,16 +14,20 @@ class StatsOverview extends BaseWidget
     protected function getCards(): array
     {
         $cards = [
-            // 👤 Użytkownicy
-            Card::make('Liczba użytkowników', User::count())
+            // 👤 Użytkownicy (tylko zwykli użytkownicy, bez administratorów)
+            Card::make('Liczba użytkowników', User::where('role', 'user')->count())
                 ->icon('heroicon-o-users')
                 ->color('success')
-                ->description('Ostatni dodany: ' . User::latest('created_at')->first()?->created_at->format('d.m.Y')),
+                ->description('Ostatni dodany: ' . User::where('role', 'user')->latest('created_at')->first()?->created_at->format('d.m.Y'))
+                ->url(route('filament.admin.resources.users.index', ['tableFilters[role][value]' => 'user']))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
-            Card::make('Nowi użytkownicy (7 dni)', User::where('created_at', '>=', now()->subDays(7))->count())
+            Card::make('Nowi użytkownicy (7 dni)', User::where('role', 'user')->where('created_at', '>=', now()->subDays(7))->count())
                 ->icon('heroicon-o-user-plus')
                 ->color('success')
-                ->description('Ostatni: ' . optional(User::latest()->first())->created_at->format('d.m.Y')),
+                ->description('Ostatni: ' . optional(User::where('role', 'user')->latest()->first())->created_at->format('d.m.Y'))
+                ->url(route('filament.admin.resources.users.index', ['tableFilters[role][value]' => 'user']))
+                ->extraAttributes(['class' => 'cursor-pointer']),
 
             // 💳 Płatności
             Card::make('Łączna liczba płatności', Payment::count())
@@ -50,9 +54,9 @@ class StatsOverview extends BaseWidget
                     ->sum('amount') . ' zł'
             )
                 ->icon('heroicon-o-banknotes')
-                ->color('danger')
-                ->description('Zaległości: ' . Payment::where('paid', false)->count())
-                ->url(route('filament.admin.resources.payments.index', ['tableFilters[paid][value]' => false]))
+                ->color('success')
+                ->description('Suma wpłat w tym roku')
+                ->url(route('filament.admin.resources.payments.index', ['tableFilters[paid][value]' => true]))
                 ->extraAttributes(['class' => 'cursor-pointer']),
 
             // 📂 Grupy
@@ -69,7 +73,7 @@ class StatsOverview extends BaseWidget
 
         // 👥 Liczba użytkowników w każdej grupie
         foreach (Group::all() as $group) {
-            $userCount = $group->users()->count();
+            $userCount = $group->users()->where('role', 'user')->count();
             $color = 'success';
             if ($userCount === 0) {
                 $color = 'danger';
@@ -81,7 +85,6 @@ class StatsOverview extends BaseWidget
                 ->color($color)
                 ->description('Liczba przypisanych użytkowników');
         }
-
 
         return $cards;
     }
