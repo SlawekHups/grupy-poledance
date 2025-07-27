@@ -26,7 +26,11 @@ class StatsOverview extends BaseWidget
                 ->icon('heroicon-o-user-plus')
                 ->color('success')
                 ->description('Ostatni: ' . optional(User::where('role', 'user')->latest()->first())->created_at->format('d.m.Y'))
-                ->url(route('filament.admin.resources.users.index', ['tableFilters[role][value]' => 'user']))
+                ->url(route('filament.admin.resources.users.index', [
+                    'tableFilters[role]' => 'user',
+                    'tableFilters[created_at][created_from]' => now()->subDays(7)->format('Y-m-d'),
+                    'tableFilters[created_at][created_until]' => now()->format('Y-m-d'),
+                ]))
                 ->extraAttributes(['class' => 'cursor-pointer']),
 
             // 💳 Płatności

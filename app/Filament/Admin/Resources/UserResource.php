@@ -146,7 +146,31 @@ class UserResource extends Resource
                     ->state(fn($record) => !is_null($record->terms_accepted_at)),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('role')
+                    ->options([
+                        'user' => 'Użytkownik',
+                        'admin' => 'Administrator',
+                    ])
+                    ->label('Rola'),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label('Od'),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label('Do'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Data utworzenia'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
