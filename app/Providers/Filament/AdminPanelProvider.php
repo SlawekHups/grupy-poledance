@@ -24,20 +24,15 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
-            ->default()
             ->path('admin')
-            ->login() // ← TO DODAJ!
+            ->login()
             ->colors([
                 'primary' => Color::Amber,
-
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
-                \App\Filament\Admin\Pages\ExamplePage::class,
-                \App\Filament\Admin\Pages\AttendanceGroupPage::class,
-
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
@@ -57,7 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                \App\Http\Middleware\EnsureIsAdmin::class,
+                \App\Http\Middleware\EnsureIsAdmin::class, // TYLKO sprawdzanie czy jest adminem
             ]);
     }
 }
