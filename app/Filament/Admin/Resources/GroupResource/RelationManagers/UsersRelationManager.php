@@ -48,7 +48,9 @@ class UsersRelationManager extends RelationManager
                     ->label('Imię i nazwisko')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->url(fn ($record) => route('filament.admin.resources.users.edit', ['record' => $record]))
+                    ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
