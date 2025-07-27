@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\PaymentResource\Pages;
 use App\Filament\Admin\Resources\PaymentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use App\Filament\Admin\Resources\PaymentResource\Widgets\PaymentStats;
 
 class ListPayments extends ListRecords
 {
@@ -14,6 +15,13 @@ class ListPayments extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            PaymentStats::class,
         ];
     }
 }
