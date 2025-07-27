@@ -78,6 +78,11 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Payment::class, 'user_id', 'id');
     }
 
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
