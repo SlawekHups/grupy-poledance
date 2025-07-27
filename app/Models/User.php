@@ -32,7 +32,9 @@ class User extends Authenticatable
         'city',
         'postal_code',
         'amount',
-
+        'role',
+        'rodo_accepted_at',
+        'terms_accepted_at',
     ];
 
     /**
@@ -55,6 +57,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'joined_at' => 'datetime',
+            'accepted_terms_at' => 'datetime',
+            'rodo_accepted_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
         ];
     }
     public function group()
