@@ -77,6 +77,7 @@ class GroupResource extends Resource
         return [
             RelationManagers\UsersRelationManager::class,
             RelationManagers\LessonsRelationManager::class,
+            RelationManagers\PaymentsRelationManager::class,
         ];
     }
 

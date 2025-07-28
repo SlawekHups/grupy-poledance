@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Group extends Model
 {
@@ -25,5 +26,17 @@ class Group extends Model
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class);
+    }
+
+    public function payments(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Payment::class,
+            User::class,
+            'group_id', // Klucz obcy w tabeli users
+            'user_id',  // Klucz obcy w tabeli payments
+            'id',       // Lokalny klucz w tabeli groups
+            'id'        // Lokalny klucz w tabeli users
+        );
     }
 }
