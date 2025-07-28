@@ -29,6 +29,18 @@ class PaymentResource extends Resource
     protected static ?string $navigationGroup = 'Finanse';
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('paid', false)
+            ->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $unpaidCount = static::getModel()::where('paid', false)->count();
+        return $unpaidCount > 0 ? 'danger' : 'success';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

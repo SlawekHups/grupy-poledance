@@ -23,6 +23,18 @@ class LessonResource extends Resource
     protected static ?string $navigationGroup = 'Zajęcia';
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::whereDate('date', today())
+            ->where('status', 'published')
+            ->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'info';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

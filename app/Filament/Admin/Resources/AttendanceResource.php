@@ -27,6 +27,18 @@ class AttendanceResource extends Resource
     protected static ?string $modelLabel = 'Obecność';
     protected static ?string $pluralModelLabel = 'Obecności';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::whereDate('created_at', today())
+            ->where('present', true)
+            ->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

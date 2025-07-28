@@ -28,6 +28,18 @@ class UserResource extends Resource
     protected static ?string $navigationGroup = 'Użytkownicy i Grupy';
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('is_active', true)
+            ->whereNot('role', 'admin')
+            ->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
