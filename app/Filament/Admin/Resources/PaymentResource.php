@@ -18,6 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 
@@ -52,16 +53,12 @@ class PaymentResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('user_id')
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'name', fn (Builder $query) => $query->where('role', '!=', 'admin'))
                     ->label('Użytkownik')
-                    ->relationship(
-                        'user',
-                        'name',
-                        fn (Builder $query) => $query->whereNot('role', 'admin')->orderBy('name')
-                    )
+                    ->required()
                     ->searchable()
                     ->preload()
-                    ->required()
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
                         if ($state) {
@@ -72,7 +69,7 @@ class PaymentResource extends Resource
                         }
                     }),
 
-                Select::make('month')
+                Forms\Components\Select::make('month')
                     ->label('Miesiąc')
                     ->options(function() {
                         $options = [];
@@ -85,23 +82,35 @@ class PaymentResource extends Resource
                     ->default(now()->format('Y-m'))
                     ->required(),
 
-                TextInput::make('amount')
+                Forms\Components\TextInput::make('amount')
                     ->label('Kwota (PLN)')
                     ->numeric()
-                    ->suffix('zł')
                     ->required()
                     ->step(0.01)
-                    ->default(0),
+                    ->suffix('zł'),
 
-                TextInput::make('payment_link')
+                Forms\Components\Toggle::make('paid')
+                    ->label('Opłacone')
+                    ->default(false)
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $set('payment_link', null);
+                        }
+                    }),
+
+                Forms\Components\TextInput::make('payment_link')
                     ->label('Link do płatności')
                     ->url()
                     ->prefix('https://')
+                    ->visible(fn (callable $get) => !$get('paid'))
                     ->columnSpanFull(),
 
-                Toggle::make('paid')
-                    ->label('Opłacone')
-                    ->default(false),
+                Forms\Components\Textarea::make('notes')
+                    ->label('Notatki')
+                    ->placeholder('Dodatkowe informacje o płatności')
+                    ->columnSpanFull()
+                    ->rows(3),
             ])
             ->columns(3);
     }
@@ -110,48 +119,57 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
+                Tables\Columns\TextColumn::make('user.name')
                     ->label('Użytkownik')
                     ->searchable()
-                    ->url(fn($record) => route('filament.admin.resources.users.edit', $record->user_id)),
-                TextColumn::make('month')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('month')
                     ->label('Miesiąc')
-                    ->searchable(),
-                TextColumn::make('amount')
+                    ->formatStateUsing(fn (string $state): string => mb_strtoupper(Carbon::createFromFormat('Y-m', $state)->translatedFormat('F Y')))
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('amount')
                     ->label('Kwota')
-                    ->money('PLN')
-                    ->searchable(),
-                TextColumn::make(name: 'updated_at')->label('Data_zapłaty'),
-                BooleanColumn::make('paid')
-                    ->label('Opłacone')
-                    ->trueIcon('heroicon-o-shield-check')
-                    ->falseIcon('heroicon-o-currency-dollar')
+                    ->money('pln')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('paid')
+                    ->label('Status')
+                    ->boolean()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('payment_link')
+                    ->label('Link')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('notes')
+                    ->label('Notatki')
+                    ->limit(50)
+                    ->tooltip(function (Model $record): ?string {
+                        return $record->notes;
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Data utworzenia')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('paid')
+                Tables\Filters\SelectFilter::make('paid')
                     ->label('Status płatności')
-                    ->trueLabel('Opłacone')
-                    ->falseLabel('Nieopłacone')
-                    ->default(null),
-                Tables\Filters\Filter::make('updated_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('from')
-                            ->label('Od'),
-                        Forms\Components\DatePicker::make('to')
-                            ->label('Do'),
+                    ->options([
+                        '1' => 'Opłacone',
+                        '0' => 'Nieopłacone',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('updated_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['to'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('updated_at', '<=', $date),
-                            );
-                    })
-                    ->label('Data aktualizacji'),
+                        return $query->when(
+                            $data['value'] !== null,
+                            fn (Builder $query): Builder => $query->where('paid', (bool) $data['value']),
+                        );
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
