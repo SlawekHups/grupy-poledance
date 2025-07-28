@@ -35,16 +35,7 @@ class LessonsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('title')
                     ->label('Tytuł')
                     ->required()
-                    ->maxLength(255),
-
-                Forms\Components\RichEditor::make('description')
-                    ->label('Opis')
-                    ->toolbarButtons([
-                        'bold',
-                        'italic',
-                        'bulletList',
-                        'orderedList',
-                    ])
+                    ->maxLength(255)
                     ->columnSpanFull(),
 
                 Forms\Components\DatePicker::make('date')
@@ -60,6 +51,16 @@ class LessonsRelationManager extends RelationManager
                     ])
                     ->default('draft')
                     ->required(),
+
+                Forms\Components\RichEditor::make('description')
+                    ->label('Opis')
+                    ->toolbarButtons([
+                        'bold',
+                        'italic',
+                        'bulletList',
+                        'orderedList',
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 
