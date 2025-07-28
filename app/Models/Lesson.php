@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Lesson extends Model
 {
@@ -27,6 +27,8 @@ class Lesson extends Model
         'published_at' => 'datetime',
     ];
 
+    protected $appends = ['avatar'];
+
     // Relacje
     public function group(): BelongsTo
     {
@@ -38,9 +40,10 @@ class Lesson extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function attachments(): HasMany
+    public function getAvatarAttribute(): string
     {
-        return $this->hasMany(LessonAttachment::class);
+        // Zwracamy URL do domyślnego avatara
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->title) . '&background=random';
     }
 
     // Scopes
@@ -101,5 +104,24 @@ class Lesson extends Model
     public function isUpcoming(): bool
     {
         return $this->date->startOfDay()->gte(now()->startOfDay());
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($lesson) {
+            if (!empty($lesson->attachments)) {
+                foreach ($lesson->attachments as $attachment) {
+                    Storage::disk('public')->delete($attachment);
+                }
+            }
+        });
+
+        static::saving(function ($lesson) {
+            if (is_array($lesson->attachments)) {
+                $lesson->attachments = array_values(array_filter($lesson->attachments));
+            }
+        });
     }
 } 

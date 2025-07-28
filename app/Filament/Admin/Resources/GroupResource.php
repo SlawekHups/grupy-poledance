@@ -17,15 +17,16 @@ use App\Filament\Admin\Resources\GroupResource\RelationManagers\UsersRelationMan
 class GroupResource extends Resource
 {
     protected static ?string $model = Group::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $modelLabel = 'grupa';
+    protected static ?string $pluralModelLabel = 'grupy';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Nazwa grupy')
+                    ->label('Nazwa')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('description')
@@ -39,7 +40,7 @@ class GroupResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nazwa grupy')
+                    ->label('Nazwa')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->label('Opis')
@@ -64,7 +65,8 @@ class GroupResource extends Resource
     public static function getRelations(): array
     {
         return [
-            UsersRelationManager::class,
+            RelationManagers\UsersRelationManager::class,
+            RelationManagers\LessonsRelationManager::class,
         ];
     }
 

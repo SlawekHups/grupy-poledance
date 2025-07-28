@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('date');
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->timestamp('published_at')->nullable();
+            $table->json('attachments')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
