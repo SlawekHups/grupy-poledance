@@ -35,6 +35,15 @@ class LessonResource extends Resource
         return 'info';
     }
 
+    public static function getNavigationColor(): ?string
+    {
+        return static::getModel()::whereDate('date', today())
+            ->where('status', 'published')
+            ->exists()
+            ? 'info'
+            : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

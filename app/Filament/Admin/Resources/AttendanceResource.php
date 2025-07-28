@@ -39,6 +39,15 @@ class AttendanceResource extends Resource
         return 'success';
     }
 
+    public static function getNavigationColor(): ?string
+    {
+        return static::getModel()::whereDate('created_at', today())
+            ->where('present', true)
+            ->exists()
+            ? 'success'
+            : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

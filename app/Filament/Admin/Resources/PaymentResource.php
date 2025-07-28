@@ -41,6 +41,13 @@ class PaymentResource extends Resource
         return $unpaidCount > 0 ? 'danger' : 'success';
     }
 
+    public static function getNavigationColor(): ?string
+    {
+        return static::getModel()::where('paid', false)->exists() 
+            ? 'danger'
+            : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

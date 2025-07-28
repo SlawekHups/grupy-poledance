@@ -40,6 +40,15 @@ class UserResource extends Resource
         return 'success';
     }
 
+    public static function getNavigationColor(): ?string
+    {
+        return static::getModel()::where('created_at', '>=', now()->subDays(7))
+            ->whereNot('role', 'admin')
+            ->exists()
+            ? 'info'
+            : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
