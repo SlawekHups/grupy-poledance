@@ -12,25 +12,18 @@ class Group extends Model
         'description',
     ];
 
-    public function users()
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    public function attendances()
+    public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
     }
 
-    protected static function booted()
+    public function lessons(): HasMany
     {
-        static::created(function ($group) {
-            // Create a default attendance for the new group
-            Attendance::create([
-                'group_id' => $group->id,
-                'date' => now(),
-                'status' => 'present',
-            ]);
-        });
+        return $this->hasMany(Lesson::class);
     }
 }
