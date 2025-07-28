@@ -1,37 +1,39 @@
 <?php
 
-namespace App\Filament\Admin\Resources\GroupResource\RelationManagers;
+namespace App\Filament\Admin\Resources;
 
+use App\Filament\Admin\Resources\LessonResource\Pages;
+use App\Models\Lesson;
+use App\Models\Group;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use App\Models\LessonTemplate;
 use Filament\Support\Enums\IconPosition;
-use Filament\Support\Enums\Alignment;
 
-class LessonsRelationManager extends RelationManager
+class LessonResource extends Resource
 {
-    protected static string $relationship = 'lessons';
-    protected static ?string $title = 'Zajęcia';
-    protected static ?string $modelLabel = 'zajęcia';
-    protected static ?string $pluralModelLabel = 'zajęcia';
-    protected static ?string $recordTitleAttribute = 'title';
+    protected static ?string $model = Lesson::class;
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $modelLabel = 'zadanie';
+    protected static ?string $pluralModelLabel = 'zadania';
+    protected static ?string $navigationGroup = 'Zarządzanie';
+    protected static ?int $navigationSort = 3;
 
-    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
-    {
-        return true;
-    }
-
-    public function form(Form $form): Form
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('group_id')
+                    ->label('Grupa')
+                    ->options(Group::query()->pluck('name', 'id'))
+                    ->required()
+                    ->searchable()
+                    ->preload(),
+
                 Forms\Components\TextInput::make('title')
                     ->label('Tytuł')
                     ->required()
@@ -64,7 +66,7 @@ class LessonsRelationManager extends RelationManager
             ]);
     }
 
-    public function table(Table $table): Table
+    public static function table(Table $table): Table
     {
         return $table
             ->contentGrid([
@@ -82,7 +84,7 @@ class LessonsRelationManager extends RelationManager
                     // Nagłówek
                     Tables\Columns\Layout\Panel::make([
                         Tables\Columns\Layout\Stack::make([
-                            // Pierwsza linia: Avatar i tytuł
+                            // Pierwsza linia: Avatar, tytuł i grupa
                             Tables\Columns\Layout\Split::make([
                                 Tables\Columns\Layout\Stack::make([
                                     Tables\Columns\Layout\Split::make([
@@ -102,20 +104,15 @@ class LessonsRelationManager extends RelationManager
                                                 'style' => 'min-width: 0;'
                                             ]),
                                     ])->extraAttributes(['class' => 'items-center gap-x-3 min-w-0 flex-1']),
+
+                                    Tables\Columns\TextColumn::make('group.name')
+                                        ->label('Grupa')
+                                        ->icon('heroicon-m-user-group')
+                                        ->iconPosition(IconPosition::Before)
+                                        ->extraAttributes(['class' => 'text-gray-600']),
                                 ])->extraAttributes(['class' => 'flex-1 min-w-0']),
 
-                                // Pusta kolumna dla zachowania układu
-                                Tables\Columns\TextColumn::make('empty')
-                                    ->label('')
-                                    ->state(''),
-                            ])->extraAttributes(['class' => 'items-center min-w-0']),
-
-                            // Druga linia: Data, autor i status
-                            Tables\Columns\Layout\Split::make([
-                                Tables\Columns\TextColumn::make('empty')
-                                    ->label('')
-                                    ->state(''),
-
+                                // Druga linia: Data, autor i status
                                 Tables\Columns\Layout\Split::make([
                                     Tables\Columns\TextColumn::make('date')
                                         ->label('')
@@ -137,9 +134,9 @@ class LessonsRelationManager extends RelationManager
                                         ->falseIcon('heroicon-o-x-circle')
                                         ->trueColor('success')
                                         ->falseColor('danger')
-                                        ->state(fn (Model $record): bool => $record->status === 'published'),
+                                        ->state(fn ($record): bool => $record->status === 'published'),
                                 ])->extraAttributes(['class' => 'gap-x-6 items-center justify-end']),
-                            ])->extraAttributes(['class' => 'justify-end']),
+                            ])->extraAttributes(['class' => 'justify-between']),
                         ])->space(3),
                     ])->extraAttributes(['class' => 'bg-gray-50 p-4 rounded-t-xl']),
 
@@ -159,6 +156,12 @@ class LessonsRelationManager extends RelationManager
             ])
             ->defaultSort('date', 'asc')
             ->filters([
+                Tables\Filters\SelectFilter::make('group_id')
+                    ->label('Grupa')
+                    ->options(Group::query()->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload(),
+
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
@@ -186,24 +189,20 @@ class LessonsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['created_by'] = Auth::id();
-                        return $data;
-                    }),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('publish')
                     ->label('Opublikuj')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (Model $record): bool => $record->status === 'draft')
-                    ->action(fn (Model $record) => $record->update(['status' => 'published'])),
+                    ->visible(fn ($record): bool => $record->status === 'draft')
+                    ->action(fn ($record) => $record->update(['status' => 'published'])),
                 Tables\Actions\Action::make('unpublish')
                     ->label('Wycofaj')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (Model $record): bool => $record->status === 'published')
-                    ->action(fn (Model $record) => $record->update(['status' => 'draft'])),
+                    ->visible(fn ($record): bool => $record->status === 'published')
+                    ->action(fn ($record) => $record->update(['status' => 'draft'])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -212,29 +211,22 @@ class LessonsRelationManager extends RelationManager
                         ->label('Opublikuj zaznaczone')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(fn (Collection $records) => $records->each(fn ($record) => $record->update(['status' => 'published']))),
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => 'published']))),
                     Tables\Actions\BulkAction::make('unpublish')
                         ->label('Wycofaj zaznaczone')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
-                        ->action(fn (Collection $records) => $records->each(fn ($record) => $record->update(['status' => 'draft']))),
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => 'draft']))),
                 ]),
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->label('Dodaj zajęcia')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['created_by'] = Auth::id();
-                        return $data;
-                    }),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make()
-                    ->label('Dodaj pierwsze zajęcia')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['created_by'] = Auth::id();
-                        return $data;
-                    }),
             ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListLessons::route('/'),
+            'create' => Pages\CreateLesson::route('/create'),
+            'edit' => Pages\EditLesson::route('/{record}/edit'),
+        ];
     }
 } 
