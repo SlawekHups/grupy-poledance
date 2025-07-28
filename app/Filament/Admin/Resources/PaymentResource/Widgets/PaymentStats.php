@@ -9,62 +9,64 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentStats extends BaseWidget
 {
-    protected static ?string $pollingInterval = null;
-    
     protected function getStats(): array
     {
-        $currentMonth = now()->format('Y-m');
-        
-        // Suma zaległości (nieopłacone płatności)
-        $totalUnpaid = Payment::where('paid', false)
+        $currentMonth = now()->format('m');
+        $currentYear = now()->format('Y');
+
+        // Suma zaległości (niezapłacone płatności)
+        $unpaidTotal = Payment::where('paid', false)
             ->sum('amount');
-            
+
         // Suma wpłat w bieżącym miesiącu
-        $currentMonthPaid = Payment::where('paid', true)
-            ->whereYear('updated_at', now()->year)
-            ->whereMonth('updated_at', now()->month)
+        $monthlyTotal = Payment::where('paid', true)
+            ->whereYear('updated_at', $currentYear)
+            ->whereMonth('updated_at', $currentMonth)
             ->sum('amount');
-            
+
         // Ilość wpłat w bieżącym miesiącu
-        $currentMonthCount = Payment::where('paid', true)
-            ->whereYear('updated_at', now()->year)
-            ->whereMonth('updated_at', now()->month)
+        $monthlyCount = Payment::where('paid', true)
+            ->whereYear('updated_at', $currentYear)
+            ->whereMonth('updated_at', $currentMonth)
             ->count();
 
         return [
-            Stat::make('Zaległości', number_format($totalUnpaid, 2) . ' zł')
-                ->description('Suma nieopłaconych płatności')
+            Stat::make('Zaległości', number_format($unpaidTotal, 2) . ' zł')
+                ->description('Suma niezapłaconych płatności')
                 ->descriptionIcon('heroicon-m-exclamation-circle')
                 ->color('danger')
-                ->chart([7, 4, 6, 8, 5, $totalUnpaid/100])
-                ->url(route('filament.admin.resources.payments.index', [
-                    'tableFilters[paid][value]' => 'false'
-                ]))
-                ->extraAttributes(['class' => 'cursor-pointer']),
+                ->chart([7, 4, 6, 8, 5, $unpaidTotal/100])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '0',
+                    ])
+                ),
 
-            Stat::make('Suma wpłat (' . now()->format('m.Y') . ')', number_format($currentMonthPaid, 2) . ' zł')
-                ->description('Suma opłaconych płatności w tym miesiącu')
+            Stat::make('Suma wpłat w tym miesiącu', number_format($monthlyTotal, 2) . ' zł')
+                ->description('Opłacone w ' . now()->format('m/Y'))
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success')
-                ->chart([2, 4, 6, 8, 10, $currentMonthPaid/100])
-                ->url(route('filament.admin.resources.payments.index', [
-                    'tableFilters[paid][value]' => 'true',
-                    'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
-                    'tableFilters[updated_at][to]' => now()->endOfMonth()->format('Y-m-d'),
-                ]))
-                ->extraAttributes(['class' => 'cursor-pointer']),
+                ->chart([2, 4, 6, 8, 5, $monthlyTotal/100])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
+                        'tableFilters[updated_at][until]' => now()->endOfMonth()->format('Y-m-d'),
+                    ])
+                ),
 
-            Stat::make('Ilość wpłat (' . now()->format('m.Y') . ')', $currentMonthCount)
-                ->description('Liczba opłaconych płatności w tym miesiącu')
-                ->descriptionIcon('heroicon-m-check-circle')
-                ->color('success')
-                ->chart([1, 2, 3, 4, 5, $currentMonthCount])
-                ->url(route('filament.admin.resources.payments.index', [
-                    'tableFilters[paid][value]' => 'true',
-                    'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
-                    'tableFilters[updated_at][to]' => now()->endOfMonth()->format('Y-m-d'),
-                ]))
-                ->extraAttributes(['class' => 'cursor-pointer']),
+            Stat::make('Ilość wpłat w tym miesiącu', $monthlyCount)
+                ->description('Liczba opłaconych płatności')
+                ->descriptionIcon('heroicon-m-calculator')
+                ->color('info')
+                ->chart([1, 3, 6, 8, 4, $monthlyCount])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
+                        'tableFilters[updated_at][until]' => now()->endOfMonth()->format('Y-m-d'),
+                    ])
+                ),
         ];
     }
 } 

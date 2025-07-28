@@ -22,19 +22,41 @@ class PaymentsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                TextInput::make('month')
+                Forms\Components\Select::make('month')
                     ->label('Miesiąc')
-                    ->disabled(),
+                    ->options(function() {
+                        $options = [];
+                        for ($i = -12; $i <= 12; $i++) {
+                            $date = now()->addMonths($i)->startOfMonth();
+                            $options[$date->format('Y-m')] = mb_strtoupper($date->translatedFormat('F Y'), 'UTF-8');
+                        }
+                        return $options;
+                    })
+                    ->default(now()->format('Y-m'))
+                    ->required(),
+
                 TextInput::make('amount')
                     ->label('Kwota (PLN)')
                     ->numeric()
-                    ->suffix('zł'),
-                Toggle::make('paid')->label('Opłacone'),
+                    ->suffix('zł')
+                    ->default(function ($livewire) {
+                        // Pobierz kwotę z modelu użytkownika
+                        return number_format($livewire->getOwnerRecord()->amount ?? 0, 2);
+                    })
+                    ->required()
+                    ->step(0.01),
+
                 TextInput::make('payment_link')
                     ->label('Link do płatności')
                     ->url()
-                    ->prefix('https://'),
-            ]);
+                    ->prefix('https://')
+                    ->columnSpanFull(),
+
+                Toggle::make('paid')
+                    ->label('Opłacone')
+                    ->default(false),
+            ])
+            ->columns(2);
     }
 
     public function table(Tables\Table $table): Tables\Table

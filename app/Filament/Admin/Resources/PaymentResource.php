@@ -54,28 +54,34 @@ class PaymentResource extends Resource
             ->schema([
                 Select::make('user_id')
                     ->label('Użytkownik')
-                    ->relationship('user', 'name')
+                    ->relationship(
+                        'user',
+                        'name',
+                        fn (Builder $query) => $query->whereNot('role', 'admin')->orderBy('name')
+                    )
                     ->searchable()
                     ->preload()
-                    ->disabled(fn(?Payment $record) => $record !== null)
-                    ->reactive() // pozwala reagować na zmianę
+                    ->required()
+                    ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
-                        $user = \App\Models\User::find($state);
-                        if ($user) {
-                            $set('amount', $user->amount); // ustaw kwotę z User
+                        if ($state) {
+                            $user = \App\Models\User::find($state);
+                            if ($user) {
+                                $set('amount', number_format($user->amount, 2));
+                            }
                         }
                     }),
 
                 Select::make('month')
                     ->label('Miesiąc')
-                    ->options(
-                        collect(range(-12, 12))->mapWithKeys(function ($i) {
-                            $date = now()->addMonths($i);
-                            return [
-                                $date->format('Y-m') => mb_strtoupper($date->translatedFormat('F Y'), 'UTF-8'), // np. "maj 2025"
-                            ];
-                        })->toArray()
-                    )
+                    ->options(function() {
+                        $options = [];
+                        for ($i = -12; $i <= 12; $i++) {
+                            $date = now()->addMonths($i)->startOfMonth();
+                            $options[$date->format('Y-m')] = mb_strtoupper($date->translatedFormat('F Y'), 'UTF-8');
+                        }
+                        return $options;
+                    })
                     ->default(now()->format('Y-m'))
                     ->required(),
 
@@ -83,17 +89,21 @@ class PaymentResource extends Resource
                     ->label('Kwota (PLN)')
                     ->numeric()
                     ->suffix('zł')
+                    ->required()
                     ->step(0.01)
-                    ->required(),
+                    ->default(0),
 
                 TextInput::make('payment_link')
                     ->label('Link do płatności')
                     ->url()
-                    ->prefix('https://'),
+                    ->prefix('https://')
+                    ->columnSpanFull(),
 
                 Toggle::make('paid')
-                    ->label('Opłacone'),
-            ]);
+                    ->label('Opłacone')
+                    ->default(false),
+            ])
+            ->columns(3);
     }
 
     public static function table(Table $table): Table
