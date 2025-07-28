@@ -48,6 +48,14 @@ class GroupResource extends Resource
                 Tables\Columns\TextColumn::make('users_count')
                     ->label('Liczba użytkowników')
                     ->counts('users'),
+                Tables\Columns\TextColumn::make('lessons_count')
+                    ->label('Liczba zadań')
+                    ->counts('lessons')
+                    ->url(fn ($record) => route('filament.admin.resources.groups.edit', [
+                        'record' => $record,
+                        'activeRelationManager' => 1
+                    ]))
+                    ->color('primary'),
             ])
             ->filters([
                 //
