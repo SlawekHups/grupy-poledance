@@ -6,32 +6,26 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Log;
+use Filament\Notifications\Notification;
 
 class EnsureIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
+        if (!Auth::check()) {
+            return redirect()->route('filament.admin.auth.login');
+        }
 
-        // Dodajemy logowanie dla debugowania
-        Log::info('EnsureIsAdmin middleware check', [
-            'user_id' => $user?->id,
-            'email' => $user?->email,
-            'role' => $user?->role,
-            'is_admin' => $user?->isAdmin(),
-        ]);
+        if (!Auth::user()->isAdmin()) {
+            // Wyświetl komunikat o przekierowaniu
+            Notification::make()
+                ->title('Przekierowanie do panelu użytkownika')
+                ->body('Zostałeś przekierowany do odpowiedniego panelu.')
+                ->info()
+                ->send();
 
-        if (!Auth::check() || !$user?->isAdmin()) {
-            Log::warning('EnsureIsAdmin: Unauthorized access attempt', [
-                'user_id' => $user?->id,
-                'email' => $user?->email,
-                'role' => $user?->role,
-            ]);
-            
-            // Przekieruj na stronę logowania do panelu usera
-            return redirect()->route('filament.user.auth.login');
+            // Przekieruj do panelu użytkownika
+            return redirect()->route('filament.user.pages.dashboard');
         }
 
         return $next($request);
