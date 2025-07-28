@@ -14,12 +14,12 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('month'); // np. "05-2025"
-            $table->decimal('amount', 8, 2)->nullable(); // kwota w zł
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('month');
+            $table->decimal('amount', 8, 2);
             $table->boolean('paid')->default(false);
-            $table->timestamp('paid_at')->nullable();
-            $table->string('payment_link')->nullable(); // link do Przelewy24
+            $table->string('payment_link')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

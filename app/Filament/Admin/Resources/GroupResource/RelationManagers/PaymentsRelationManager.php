@@ -24,13 +24,23 @@ class PaymentsRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Select::make('user_id')
                     ->relationship(
-                        'user',
+                        'user', 
                         'name',
                         fn (Builder $query) => $query->where('group_id', $this->getOwnerRecord()->id)
                     )
+                    ->label('Użytkownik')
                     ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $user = \App\Models\User::find($state);
+                            if ($user) {
+                                $set('amount', number_format($user->amount, 2));
+                            }
+                        }
+                    }),
 
                 Forms\Components\Select::make('month')
                     ->label('Miesiąc')
@@ -48,21 +58,32 @@ class PaymentsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('amount')
                     ->label('Kwota (PLN)')
                     ->numeric()
-                    ->suffix('zł')
                     ->required()
-                    ->default(function ($livewire) {
-                        return number_format($livewire->getOwnerRecord()->users()->first()?->amount ?? 0, 2);
-                    }),
+                    ->step(0.01)
+                    ->suffix('zł'),
 
                 Forms\Components\Toggle::make('paid')
                     ->label('Opłacone')
-                    ->default(false),
+                    ->default(false)
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $set('payment_link', null);
+                        }
+                    }),
 
                 Forms\Components\TextInput::make('payment_link')
                     ->label('Link do płatności')
                     ->url()
                     ->prefix('https://')
+                    ->visible(fn (callable $get) => !$get('paid'))
                     ->columnSpanFull(),
+
+                Forms\Components\Textarea::make('notes')
+                    ->label('Notatki')
+                    ->placeholder('Dodatkowe informacje o płatności')
+                    ->columnSpanFull()
+                    ->rows(3),
             ])
             ->columns(3);
     }
