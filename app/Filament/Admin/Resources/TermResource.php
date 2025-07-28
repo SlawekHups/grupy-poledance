@@ -27,9 +27,8 @@ class TermResource extends Resource
     protected static ?string $model = Term::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationLabel = 'Dokumenty';
-    protected static ?string $navigationGroup = 'Informacje';
-    protected static ?int $navigationSort = 90;
+    protected static ?string $navigationGroup = 'Ustawienia';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

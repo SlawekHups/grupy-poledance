@@ -18,6 +18,8 @@ class GroupResource extends Resource
 {
     protected static ?string $model = Group::class;
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup = 'Użytkownicy i Grupy';
+    protected static ?int $navigationSort = 2;
     protected static ?string $modelLabel = 'grupa';
     protected static ?string $pluralModelLabel = 'grupy';
 

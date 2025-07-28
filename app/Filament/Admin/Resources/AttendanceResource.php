@@ -21,7 +21,9 @@ use Illuminate\Database\Eloquent\Builder;
 class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
-    protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static ?string $navigationGroup = 'Użytkownicy i Grupy';
+    protected static ?int $navigationSort = 3;
     protected static ?string $modelLabel = 'Obecność';
     protected static ?string $pluralModelLabel = 'Obecności';
 

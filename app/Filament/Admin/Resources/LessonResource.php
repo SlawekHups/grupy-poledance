@@ -20,8 +20,8 @@ class LessonResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
     protected static ?string $modelLabel = 'zadanie';
     protected static ?string $pluralModelLabel = 'zadania';
-    protected static ?string $navigationGroup = 'Zarządzanie';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationGroup = 'Zajęcia';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
