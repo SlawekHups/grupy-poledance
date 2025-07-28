@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Admin\Resources\GroupResource\RelationManagers\UsersRelationManager;
+use Illuminate\Database\Eloquent\Model;
 
 class GroupResource extends Resource
 {
@@ -27,13 +28,42 @@ class GroupResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nazwa')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('description')
-                    ->label('Opis')
-                    ->maxLength(255),
+                Forms\Components\Card::make()
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nazwa')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Nazwa grupy')
+                            ->columnSpanFull(),
+
+                        Forms\Components\TextInput::make('description')
+                            ->label('Opis')
+                            ->maxLength(30)
+                            ->placeholder('Krótki opis grupy')
+                            ->helperText(fn ($state) => strlen($state) . '/30 znaków')
+                            ->live()
+                            ->columnSpanFull(),
+
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('status')
+                                    ->label('Status')
+                                    ->options([
+                                        'active' => 'Aktywna',
+                                        'inactive' => 'Nieaktywna',
+                                        'full' => 'Pełna',
+                                    ])
+                                    ->default('active'),
+
+                                Forms\Components\TextInput::make('max_size')
+                                    ->label('Maksymalna liczba uczestników')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(7),
+                            ]),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -44,12 +74,34 @@ class GroupResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nazwa')
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('description')
                     ->label('Opis')
-                    ->searchable(),
+                    ->searchable()
+                    ->limit(30)
+                    ->tooltip(function (Model $record): ?string {
+                        return $record->description;
+                    }),
+
                 Tables\Columns\TextColumn::make('users_count')
-                    ->label('Liczba użytkowników')
-                    ->counts('users'),
+                    ->label('Liczba uczestników')
+                    ->counts('users')
+                    ->description(fn (Group $record) => "{$record->users()->count()}/{$record->max_size}")
+                    ->color(fn (Group $record) => 
+                        $record->users()->count() >= $record->max_size ? 'danger' : 
+                        ($record->users()->count() >= $record->max_size * 0.8 ? 'warning' : 'success')
+                    )
+                    ->alignCenter()
+                    ->size('lg'),
+
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'danger' => 'inactive',
+                        'warning' => 'full',
+                        'success' => 'active',
+                    ]),
+
                 Tables\Columns\TextColumn::make('lessons_count')
                     ->label('Liczba zadań')
                     ->counts('lessons')
@@ -60,7 +112,13 @@ class GroupResource extends Resource
                     ->color('primary'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'active' => 'Aktywna',
+                        'inactive' => 'Nieaktywna',
+                        'full' => 'Pełna',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

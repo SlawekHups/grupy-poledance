@@ -11,6 +11,12 @@ class Group extends Model
     protected $fillable = [
         'name',
         'description',
+        'status',
+        'max_size',
+    ];
+
+    protected $casts = [
+        'max_size' => 'integer',
     ];
 
     public function users(): HasMany
@@ -38,5 +44,30 @@ class Group extends Model
             'id',       // Lokalny klucz w tabeli groups
             'id'        // Lokalny klucz w tabeli users
         );
+    }
+
+    public function updateStatusBasedOnCapacity(): void
+    {
+        $currentCount = $this->users()->count();
+        
+        if ($currentCount >= $this->max_size && $this->status === 'active') {
+            $this->update(['status' => 'full']);
+        } elseif ($currentCount < $this->max_size && $this->status === 'full') {
+            $this->update(['status' => 'active']);
+        }
+    }
+
+    public function hasSpace(): bool
+    {
+        return $this->users()->count() < $this->max_size;
+    }
+
+    protected static function booted()
+    {
+        static::updated(function ($group) {
+            if ($group->wasChanged('max_size')) {
+                $group->updateStatusBasedOnCapacity();
+            }
+        });
     }
 }

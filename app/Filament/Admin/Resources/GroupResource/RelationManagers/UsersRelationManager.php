@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
 use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Collection;
+use App\Models\User;
+use App\Models\Group;
 
 class UsersRelationManager extends RelationManager
 {
@@ -23,19 +27,27 @@ class UsersRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Imię i nazwisko')
-                    ->required(),
-                Forms\Components\TextInput::make('email')
-                    ->label('Email')
-                    ->email()
-                    ->required(),
-                Forms\Components\TextInput::make('phone')
-                    ->label('Telefon')
-                    ->tel(),
-                Forms\Components\TextInput::make('amount')
-                    ->label('Kwota miesięczna (zł)')
-                    ->numeric(),
+                Forms\Components\Select::make('user_id')
+                    ->label('Użytkownik')
+                    ->options(
+                        User::query()
+                            ->whereNull('group_id')
+                            ->whereNot('role', 'admin')
+                            ->orderBy('name')
+                            ->pluck('name', 'id')
+                    )
+                    ->required()
+                    ->searchable()
+                    ->preload()
+                    ->exists('users', 'id')
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $user = User::find($state);
+                            if ($user) {
+                                $set('amount', number_format($user->amount, 2));
+                            }
+                        }
+                    }),
             ]);
     }
 
@@ -126,66 +138,76 @@ class UsersRelationManager extends RelationManager
                     ),
             ])
             ->headerActions([
-                Action::make('addUser')
+                Tables\Actions\Action::make('addUser')
                     ->label('Dodaj użytkownika')
-                    ->modalHeading('Dodaj użytkownika do grupy')
-                    ->icon('heroicon-m-user-plus')
-                    ->color('success')
                     ->form([
                         Forms\Components\Select::make('user_id')
-                            ->label('Wybierz użytkownika')
-                            ->options(function () {
-                                return \App\Models\User::query()
-                                    ->where('role', 'user')
-                                    ->where(function ($query) {
-                                        $query->whereNull('group_id')
-                                            ->orWhere('group_id', 1); // id grupy "Brak grupy"
-                                    })
+                            ->label('Użytkownik')
+                            ->options(
+                                User::query()
+                                    ->whereNull('group_id')
+                                    ->whereNot('role', 'admin')
                                     ->orderBy('name')
-                                    ->get()
-                                    ->mapWithKeys(function ($user) {
-                                        $status = $user->is_active ? '✓' : '✗';
-                                        $statusColor = $user->is_active ? 'text-success-500' : 'text-danger-500';
-                                        $groupInfo = $user->group_id == 1 ? ' [Brak grupy]' : '';
-                                        return [
-                                            $user->id => "{$user->name} ({$user->email}) " . ($user->phone ? "📱 {$user->phone} " : '') . "<span class='{$statusColor}'>{$status}</span>{$groupInfo}"
-                                        ];
-                                    });
-                            })
-                            ->searchable()
-                            ->preload()
+                                    ->pluck('name', 'id')
+                            )
                             ->required()
-                            ->helperText('Lista pokazuje użytkowników bez przypisanej grupy lub z domyślną grupą "Brak grupy"')
-                            ->optionsLimit(50)
-                            ->searchable(['name', 'email', 'phone'])
-                            ->allowHtml(),
+                            ->searchable()
+                            ->preload(),
                     ])
-                    ->action(function (array $data): void {
-                        $user = \App\Models\User::find($data['user_id']);
-                        if ($user) {
-                            $user->update(['group_id' => $this->getOwnerRecord()->id]);
+                    ->action(function (array $data, Group $group): void {
+                        if (!$group->hasSpace()) {
+                            Notification::make()
+                                ->title('Grupa jest pełna')
+                                ->warning()
+                                ->send();
+                            return;
                         }
-                    }),
+
+                        $user = User::find($data['user_id']);
+                        $user->update(['group_id' => $group->id]);
+                        
+                        $group->updateStatusBasedOnCapacity();
+
+                        Notification::make()
+                            ->title('Użytkownik został dodany do grupy')
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn (Group $group) => $group->status !== 'inactive' && $group->hasSpace()),
             ])
             ->actions([
                 Tables\Actions\Action::make('remove')
                     ->label('Usuń z grupy')
                     ->color('danger')
-                    ->icon('heroicon-m-user-minus')
+                    ->icon('heroicon-o-trash')
                     ->requiresConfirmation()
-                    ->modalHeading('Usuń użytkownika z grupy')
-                    ->modalDescription('Czy na pewno chcesz usunąć tego użytkownika z grupy?')
-                    ->action(fn ($record) => $record->update(['group_id' => null])),
+                    ->action(function (User $record, Group $group): void {
+                        $record->update(['group_id' => null]);
+                        $group->updateStatusBasedOnCapacity();
+
+                        Notification::make()
+                            ->title('Użytkownik został usunięty z grupy')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('removeMultiple')
                     ->label('Usuń zaznaczonych z grupy')
                     ->color('danger')
-                    ->icon('heroicon-m-user-minus')
+                    ->icon('heroicon-o-trash')
                     ->requiresConfirmation()
-                    ->modalHeading('Usuń użytkowników z grupy')
-                    ->modalDescription('Czy na pewno chcesz usunąć zaznaczonych użytkowników z grupy?')
-                    ->action(fn ($records) => $records->each->update(['group_id' => null])),
+                    ->action(function (Collection $records, Group $group): void {
+                        $records->each(function (User $user) {
+                            $user->update(['group_id' => null]);
+                        });
+                        $group->updateStatusBasedOnCapacity();
+
+                        Notification::make()
+                            ->title('Użytkownicy zostali usunięci z grupy')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->defaultSort('name', 'asc');
     }
