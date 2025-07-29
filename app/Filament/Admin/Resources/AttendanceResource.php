@@ -52,31 +52,47 @@ class AttendanceResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('user_id')
-                    ->label('Użytkownik')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->required()
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        $user = \App\Models\User::find($state);
-                        if ($user && $user->group_id) {
-                            $set('group_id', $user->group_id);
-                        }
-                    }),
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\Select::make('group_id')
+                            ->label('Grupa')
+                            ->relationship('group', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live(),
 
-                Select::make('group_id')
-                    ->label('Grupa')
-                    ->relationship('group', 'name')
-                    ->disabled()
-                    ->required(),
+                        Forms\Components\Select::make('user_id')
+                            ->label('Użytkownik')
+                            ->options(function (callable $get) {
+                                $groupId = $get('group_id');
+                                if (!$groupId) return [];
+                                
+                                return \App\Models\User::query()
+                                    ->where('group_id', $groupId)
+                                    ->whereNot('role', 'admin')
+                                    ->orderBy('name')
+                                    ->pluck('name', 'id');
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->disabled(fn (callable $get) => !$get('group_id')),
 
-                DatePicker::make('date')
-                    ->label('Data zajęć')
-                    ->default(now())
-                    ->required(),
-                TextInput::make('note')->label('Notatka')->nullable(),
-                Toggle::make('present')->label('Obecny?'),
+                        Forms\Components\DatePicker::make('date')
+                            ->label('Data zajęć')
+                            ->default(now())
+                            ->required(),
+
+                        Forms\Components\TextInput::make('note')
+                            ->label('Notatka')
+                            ->nullable(),
+                    ]),
+
+                Forms\Components\Toggle::make('present')
+                    ->label('Obecny?')
+                    ->default(true)
+                    ->inline(false),
             ]);
     }
 
