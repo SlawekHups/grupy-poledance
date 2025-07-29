@@ -136,6 +136,7 @@ class GroupResource extends Resource
             RelationManagers\UsersRelationManager::class,
             RelationManagers\LessonsRelationManager::class,
             RelationManagers\PaymentsRelationManager::class,
+            RelationManagers\AttendancesRelationManager::class,
         ];
     }
 
