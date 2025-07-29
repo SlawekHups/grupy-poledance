@@ -55,8 +55,8 @@ class AttendanceResource extends Resource
                 Forms\Components\Grid::make(2)
                     ->schema([
                         Forms\Components\Select::make('group_id')
-                            ->label('Grupa')
-                            ->relationship('group', 'name')
+                    ->label('Grupa')
+                    ->relationship('group', 'name')
                             ->searchable()
                             ->preload()
                             ->required()
@@ -80,9 +80,9 @@ class AttendanceResource extends Resource
                             ->disabled(fn (callable $get) => !$get('group_id')),
 
                         Forms\Components\DatePicker::make('date')
-                            ->label('Data zajęć')
+                    ->label('Data zajęć')
                             ->default(now())
-                            ->required(),
+                    ->required(),
 
                         Forms\Components\TextInput::make('note')
                             ->label('Notatka')
