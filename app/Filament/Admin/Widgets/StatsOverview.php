@@ -14,25 +14,6 @@ class StatsOverview extends BaseWidget
     protected function getCards(): array
     {
         $cards = [
-            // 👤 Użytkownicy (tylko zwykli użytkownicy, bez administratorów)
-            Card::make('Liczba użytkowników', User::where('role', 'user')->count())
-                ->icon('heroicon-o-users')
-                ->color('success')
-                ->description('Ostatni dodany: ' . User::where('role', 'user')->latest('created_at')->first()?->created_at->format('d.m.Y'))
-                ->url(route('filament.admin.resources.users.index', ['tableFilters[role][value]' => 'user']))
-                ->extraAttributes(['class' => 'cursor-pointer']),
-
-            Card::make('Nowi użytkownicy (7 dni)', User::where('role', 'user')->where('created_at', '>=', now()->subDays(7))->count())
-                ->icon('heroicon-o-user-plus')
-                ->color('success')
-                ->description('Ostatni: ' . optional(User::where('role', 'user')->latest()->first())->created_at->format('d.m.Y'))
-                ->url(route('filament.admin.resources.users.index', [
-                    'tableFilters[role]' => 'user',
-                    'tableFilters[created_at][created_from]' => now()->subDays(7)->format('Y-m-d'),
-                    'tableFilters[created_at][created_until]' => now()->format('Y-m-d'),
-                ]))
-                ->extraAttributes(['class' => 'cursor-pointer']),
-
             // 💳 Płatności
             Card::make('Łączna liczba opłaconych płatności', Payment::where('paid', true)->count())
                 ->icon('heroicon-o-banknotes')
@@ -78,17 +59,6 @@ class StatsOverview extends BaseWidget
                 ->description('Suma wpłat w tym roku')
                 ->url(route('filament.admin.resources.payments.index', ['tableFilters[paid][value]' => true]))
                 ->extraAttributes(['class' => 'cursor-pointer']),
-
-            // 📂 Grupy
-            Card::make('Liczba grup', Group::count())
-                ->icon('heroicon-o-folder')
-                ->color('warning')
-                ->description('Wszystkie zarejestrowane grupy'),
-
-            Card::make('Grupa Poniedziałek 20:00 testowa recznie dodana', \App\Models\User::where('group_id', 4)->count())
-                ->icon('heroicon-o-user-group')
-                ->color('warning')
-                ->description('Liczba użytkowników w tej grupie'),
         ];
 
         // 👥 Liczba użytkowników w każdej grupie
