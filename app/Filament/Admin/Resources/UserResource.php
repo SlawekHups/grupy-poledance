@@ -22,6 +22,10 @@ use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Livewire\WithFileUploads;
+use Filament\Notifications\Notification;
 
 class UserResource extends Resource
 {
@@ -204,6 +208,122 @@ class UserResource extends Resource
                             );
                     })
                     ->label('Data utworzenia'),
+            ])
+            ->headerActions([
+                Action::make('export')
+                    ->label('Eksportuj użytkowników')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action('exportUsers')
+                    ->color('success'),
+                Action::make('import')
+                    ->label('Importuj użytkowników')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->modalHeading('Importuj użytkowników')
+                    ->modalDescription('Wybierz plik CSV do importu')
+                    ->form([
+                        Forms\Components\FileUpload::make('file')
+                            ->label('Plik CSV')
+                            ->acceptedFileTypes(['text/csv', 'text/plain', '.csv'])
+                            ->required(),
+                        Forms\Components\Select::make('duplicateAction')
+                            ->label('Duplikaty (email)')
+                            ->options([
+                                'skip' => 'Pomiń',
+                                'update' => 'Aktualizuj',
+                            ])
+                            ->default('skip'),
+                    ])
+                    ->action(function (array $data) {
+                        if (!isset($data['file'])) {
+                            Notification::make()
+                                ->title('Błąd')
+                                ->body('Wybierz plik CSV')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        $filePath = $data['file'];
+                        $action = $data['duplicateAction'] ?? 'skip';
+                        $added = $updated = $skipped = 0;
+                        
+                        // Debug - sprawdź ścieżkę pliku
+                        \Illuminate\Support\Facades\Log::info('File path:', ['path' => $filePath]);
+                        \Illuminate\Support\Facades\Log::info('File exists:', ['exists' => file_exists($filePath)]);
+                        \Illuminate\Support\Facades\Log::info('Storage path:', ['storage' => storage_path('app/public/' . $filePath)]);
+                        
+                        try {
+                            // Sprawdź czy plik istnieje
+                            if (!file_exists($filePath)) {
+                                // Spróbuj z storage path
+                                $storagePath = storage_path('app/public/' . $filePath);
+                                if (file_exists($storagePath)) {
+                                    $filePath = $storagePath;
+                                } else {
+                                    Notification::make()
+                                        ->title('Błąd')
+                                        ->body('Plik nie istnieje. Ścieżka: ' . $filePath)
+                                        ->danger()
+                                        ->send();
+                                    return;
+                                }
+                            }
+                            
+                            $handle = fopen($filePath, 'r');
+                            $header = fgetcsv($handle);
+                            
+                            while (($row = fgetcsv($handle)) !== false) {
+                                $rowData = array_combine($header, $row);
+                                
+                                // Nie importuj adminów
+                                if (isset($rowData['role']) && $rowData['role'] === 'admin') {
+                                    $skipped++;
+                                    continue;
+                                }
+                                
+                                // Obsługa pustych dat
+                                if (empty($rowData['joined_at'])) {
+                                    $rowData['joined_at'] = now()->format('Y-m-d');
+                                }
+                                
+                                $user = \App\Models\User::where('email', $rowData['email'])->first();
+                                
+                                if ($user) {
+                                    // Nie nadpisuj admina
+                                    if ($user->role === 'admin') {
+                                        $skipped++;
+                                        continue;
+                                    }
+                                    
+                                    if ($action === 'update') {
+                                        $user->update(collect($rowData)->except(['password', 'role'])->toArray());
+                                        $updated++;
+                                    } else {
+                                        $skipped++;
+                                    }
+                                } else {
+                                    $rowData['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
+                                    \App\Models\User::create(collect($rowData)->except(['id', 'role'])->toArray());
+                                    $added++;
+                                }
+                            }
+                            
+                            fclose($handle);
+                            Notification::make()
+                                ->title('Import zakończony')
+                                ->body("Dodano: $added, Zaktualizowano: $updated, Pominięto: $skipped")
+                                ->success()
+                                ->send();
+                            
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Błąd podczas importu')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->color('warning')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
