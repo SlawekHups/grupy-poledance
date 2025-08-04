@@ -270,21 +270,91 @@ class UserResource extends Resource
                             }
                             
                             $handle = fopen($filePath, 'r');
+                            
+                            // Sprawdź czy plik został otwarty
+                            if (!$handle) {
+                                Notification::make()
+                                    ->title('Błąd')
+                                    ->body('Nie można otworzyć pliku CSV')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            
                             $header = fgetcsv($handle);
                             
+                            // Sprawdź czy nagłówek został odczytany
+                            if (!$header) {
+                                Notification::make()
+                                    ->title('Błąd')
+                                    ->body('Nie można odczytać nagłówka CSV')
+                                    ->danger()
+                                    ->send();
+                                fclose($handle);
+                                return;
+                            }
+                            
+                            // Debug - sprawdź nagłówek
+                            \Illuminate\Support\Facades\Log::info('CSV Header:', ['header' => $header]);
+                            
                             while (($row = fgetcsv($handle)) !== false) {
-                                $rowData = array_combine($header, $row);
+                                // Debug - sprawdź każdy wiersz
+                                \Illuminate\Support\Facades\Log::info('CSV Row:', ['row' => $row, 'header_count' => count($header), 'row_count' => count($row)]);
                                 
-                                // Nie importuj adminów
-                                if (isset($rowData['role']) && $rowData['role'] === 'admin') {
+                                // Sprawdź czy liczba kolumn odpowiada liczbie wartości
+                                if (count($header) !== count($row)) {
+                                    \Illuminate\Support\Facades\Log::info('Skipping row - column count mismatch', ['header_count' => count($header), 'row_count' => count($row)]);
                                     $skipped++;
                                     continue;
                                 }
                                 
-                                // Obsługa pustych dat
-                                if (empty($rowData['joined_at'])) {
-                                    $rowData['joined_at'] = now()->format('Y-m-d');
+                                // Sprawdź czy wiersz nie jest pusty
+                                if (empty(array_filter($row))) {
+                                    \Illuminate\Support\Facades\Log::info('Skipping empty row');
+                                    $skipped++;
+                                    continue;
                                 }
+                                
+                                try {
+                                    $rowData = array_combine($header, $row);
+                                    \Illuminate\Support\Facades\Log::info('Row data created:', ['rowData' => $rowData]);
+                                } catch (\Exception $e) {
+                                    \Illuminate\Support\Facades\Log::error('Array combine error:', ['error' => $e->getMessage(), 'header' => $header, 'row' => $row, 'header_count' => count($header), 'row_count' => count($row)]);
+                                    $skipped++;
+                                    continue;
+                                }
+                                
+                                // Nie importuj adminów
+                                if (isset($rowData['role']) && $rowData['role'] === 'admin') {
+                                    \Illuminate\Support\Facades\Log::info('Skipping admin user:', ['email' => $rowData['email'] ?? 'no email']);
+                                    $skipped++;
+                                    continue;
+                                }
+                                
+                                // Sprawdź czy email jest wymagany
+                                if (empty($rowData['email'])) {
+                                    \Illuminate\Support\Facades\Log::info('Skipping row - empty email');
+                                    $skipped++;
+                                    continue;
+                                }
+                                
+                                // Sprawdź czy nazwa jest wymagana
+                                if (empty($rowData['name'])) {
+                                    \Illuminate\Support\Facades\Log::info('Skipping row - empty name', ['email' => $rowData['email']]);
+                                    $skipped++;
+                                    continue;
+                                }
+                                
+                                \Illuminate\Support\Facades\Log::info('Processing user:', ['email' => $rowData['email'], 'name' => $rowData['name']]);
+                                
+                                // Ustaw domyślne wartości dla opcjonalnych pól
+                                $rowData['phone'] = $rowData['phone'] ?? '';
+                                $rowData['group_id'] = !empty($rowData['group_id']) ? (int)$rowData['group_id'] : null;
+                                $rowData['amount'] = !empty($rowData['amount']) ? (int)$rowData['amount'] : 160;
+                                $rowData['joined_at'] = !empty($rowData['joined_at']) ? $rowData['joined_at'] : now()->format('Y-m-d');
+                                $rowData['is_active'] = !empty($rowData['is_active']) ? (int)$rowData['is_active'] : 1;
+                                
+                                \Illuminate\Support\Facades\Log::info('Final row data:', ['rowData' => $rowData]);
                                 
                                 $user = \App\Models\User::where('email', $rowData['email'])->first();
                                 
@@ -296,15 +366,25 @@ class UserResource extends Resource
                                     }
                                     
                                     if ($action === 'update') {
-                                        $user->update(collect($rowData)->except(['password', 'role'])->toArray());
-                                        $updated++;
+                                        try {
+                                            $user->update(collect($rowData)->except(['password', 'role'])->toArray());
+                                            $updated++;
+                                        } catch (\Exception $e) {
+                                            $skipped++;
+                                            \Illuminate\Support\Facades\Log::error('Update error for user ' . $rowData['email'] . ': ' . $e->getMessage());
+                                        }
                                     } else {
                                         $skipped++;
                                     }
                                 } else {
-                                    $rowData['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
-                                    \App\Models\User::create(collect($rowData)->except(['id', 'role'])->toArray());
-                                    $added++;
+                                    try {
+                                        $rowData['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
+                                        \App\Models\User::create(collect($rowData)->except(['id', 'role'])->toArray());
+                                        $added++;
+                                    } catch (\Exception $e) {
+                                        $skipped++;
+                                        \Illuminate\Support\Facades\Log::error('Create error for user ' . $rowData['email'] . ': ' . $e->getMessage());
+                                    }
                                 }
                             }
                             

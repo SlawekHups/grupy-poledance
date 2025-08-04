@@ -59,7 +59,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
-            'joined_at' => 'datetime',
+            'joined_at' => 'date',
             'accepted_terms_at' => 'datetime',
             'rodo_accepted_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
