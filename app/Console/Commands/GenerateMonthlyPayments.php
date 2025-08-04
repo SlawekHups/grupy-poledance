@@ -22,6 +22,12 @@ class GenerateMonthlyPayments extends Command
             ->get();
 
         foreach ($activeUsers as $user) {
+            // sprawdź, czy użytkownik ma ustawioną kwotę
+            if (empty($user->amount) || $user->amount <= 0) {
+                $this->warn("Pominięto użytkownika {$user->name} - brak kwoty miesięcznej");
+                continue;
+            }
+
             // sprawdź, czy już istnieje płatność na ten miesiąc
             $exists = Payment::where('user_id', $user->id)
                 ->where('month', $month)
