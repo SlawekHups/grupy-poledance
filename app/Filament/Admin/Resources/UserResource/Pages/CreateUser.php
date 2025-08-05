@@ -74,6 +74,7 @@ class CreateUser extends CreateRecord
                                     ->relationship('group', 'name')
                                     ->searchable()
                                     ->preload()
+                                    ->default(1)
                                     ->createOptionForm([
                                         TextInput::make('name')
                                             ->label('Nazwa grupy')

@@ -69,6 +69,7 @@ class ListUsers extends ListRecords
                                 ->relationship('group', 'name')
                                 ->searchable()
                                 ->preload()
+                                ->default(1)
                                 ->createOptionForm([
                                     \Filament\Forms\Components\TextInput::make('name')
                                         ->label('Nazwa grupy')
@@ -217,7 +218,7 @@ class ListUsers extends ListRecords
                 
                 // Ustaw domyślne wartości tylko dla pustych pól
                 $rowData['phone'] = $rowData['phone'] ?? '';
-                $rowData['group_id'] = !empty($rowData['group_id']) ? (int)$rowData['group_id'] : null;
+                $rowData['group_id'] = !empty($rowData['group_id']) ? (int)$rowData['group_id'] : 1; // Domyślnie grupa "Bez grupy"
                 
                 // Zachowaj oryginalną wartość amount z CSV (nie konwertuj na int)
                 if (empty($rowData['amount'])) {
