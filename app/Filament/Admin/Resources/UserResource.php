@@ -118,13 +118,6 @@ class UserResource extends Resource
                     ->searchable()
                     ->preload(),
 
-                TextInput::make('password')
-                    ->password()
-                    ->label('Hasło')
-                    ->required(fn(string $context) => $context === 'create')
-                    ->dehydrated(fn($state) => filled($state))
-                    ->dehydrateStateUsing(fn($state) => bcrypt($state))
-                    ->maxLength(255),
                 TextInput::make('amount')
                     ->label('Kwota miesięczna (zł)')
                     ->numeric()
@@ -434,10 +427,72 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('resend_invitation')
+                    ->label('Wyślij zaproszenie')
+                    ->icon('heroicon-o-envelope')
+                    ->color('info')
+                    ->size('sm')
+                    ->tooltip('Wyślij ponownie link do ustawienia hasła (tylko dla aktywnych użytkowników)')
+                    ->visible(fn (User $record) => !$record->password && $record->is_active)
+                    ->action(function (User $record) {
+                        \App\Events\UserInvited::dispatch($record);
+                        Notification::make()
+                            ->title('Zaproszenie wysłane')
+                            ->body("Link do ustawienia hasła został wysłany na adres: {$record->email}")
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Wyślij ponownie zaproszenie')
+                    ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
+                    ->modalSubmitActionLabel('Wyślij zaproszenie'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('resend_invitations')
+                        ->label('Wyślij zaproszenia')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->tooltip('Wyślij ponownie linki do ustawienia hasła dla aktywnych użytkowników bez hasła')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $sentCount = 0;
+                            $skippedCount = 0;
+                            $inactiveCount = 0;
+                            
+                            foreach ($records as $record) {
+                                if (!$record->is_active) {
+                                    $inactiveCount++;
+                                    continue;
+                                }
+                                
+                                if (!$record->password) {
+                                    \App\Events\UserInvited::dispatch($record);
+                                    $sentCount++;
+                                } else {
+                                    $skippedCount++;
+                                }
+                            }
+                            
+                            $message = "Wysłano {$sentCount} zaproszeń";
+                            if ($skippedCount > 0) {
+                                $message .= " (pominięto {$skippedCount} użytkowników z już ustawionym hasłem)";
+                            }
+                            if ($inactiveCount > 0) {
+                                $message .= " (pominięto {$inactiveCount} nieaktywnych użytkowników)";
+                            }
+                            
+                            Notification::make()
+                                ->title('Zaproszenia wysłane')
+                                ->body($message)
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Wyślij ponownie zaproszenia')
+                        ->modalDescription('Czy na pewno chcesz wysłać ponownie linki do ustawienia hasła dla aktywnych użytkowników bez hasła?')
+                        ->modalSubmitActionLabel('Wyślij zaproszenia'),
                 ]),
             ]);
     }

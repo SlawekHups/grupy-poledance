@@ -21,6 +21,7 @@ class UserPanelProvider extends PanelProvider
             ->path('panel')
             ->authGuard('web')
             ->login()
+            ->profile()
             ->pages([])
             ->discoverResources(app_path('Filament/UserPanel/Resources'), 'App\\Filament\\UserPanel\\Resources')
             ->discoverPages(app_path('Filament/UserPanel/Pages'), 'App\\Filament\\UserPanel\\Pages')
@@ -33,6 +34,13 @@ class UserPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Moje konto',
             ])
+            ->userMenuItems([
+                'profile' => \Filament\Navigation\UserMenuItem::make()
+                    ->label('Profil')
+                    ->url(fn (): string => route('filament.user.auth.profile'))
+                    ->icon('heroicon-o-user'),
+            ])
+            ->defaultAvatarProvider(\Filament\AvatarProviders\UiAvatarsProvider::class)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -47,6 +55,7 @@ class UserPanelProvider extends PanelProvider
                 \App\Http\Middleware\EnsureUserIsActive::class,
                 \App\Http\Middleware\EnsureUserAcceptedTerms::class,
                 \App\Http\Middleware\EnsureIsUser::class,
+                \App\Http\Middleware\EnsureProfileCompleted::class,
             ]);
     }
 }

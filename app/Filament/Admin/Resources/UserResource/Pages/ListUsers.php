@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\UserResource\Pages;
 
+use App\Events\UserInvited;
 use App\Filament\Admin\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -37,12 +38,6 @@ class ListUsers extends ListRecords
                                 ->required()
                                 ->email()
                                 ->unique('users', 'email'),
-                            \Filament\Forms\Components\TextInput::make('password')
-                                ->label('Hasło')
-                                ->password()
-                                ->required()
-                                ->minLength(8)
-                                ->dehydrateStateUsing(fn($state) => bcrypt($state)),
                         ])
                         ->columns(2),
                     \Filament\Forms\Components\Wizard\Step::make('Dane kontaktowe')
@@ -90,7 +85,11 @@ class ListUsers extends ListRecords
                                 ->label('Użytkownik aktywny')
                                 ->default(false),
                         ]),
-                ]),
+                ])
+                ->after(function ($record) {
+                    // Wyślij zaproszenie do użytkownika
+                    UserInvited::dispatch($record);
+                }),
         ];
     }
 
@@ -260,8 +259,8 @@ class ListUsers extends ListRecords
                     }
                 } else {
                     try {
-                        $rowData['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
-                        $userData = collect($rowData)->except(['id', 'role'])->toArray();
+                        // Nie generuj hasła - użytkownik ustawi je przez zaproszenie
+                        $userData = collect($rowData)->except(['id', 'role', 'password'])->toArray();
                         \Illuminate\Support\Facades\Log::info('Creating user with data:', ['userData' => $userData]);
                         
                         // Sprawdź czy wszystkie wymagane pola są obecne
@@ -273,6 +272,10 @@ class ListUsers extends ListRecords
                         
                         $newUser = \App\Models\User::create($userData);
                         \Illuminate\Support\Facades\Log::info('User created successfully:', ['user_id' => $newUser->id, 'email' => $newUser->email]);
+                        
+                        // Wyślij zaproszenie do nowego użytkownika
+                        UserInvited::dispatch($newUser);
+                        
                         $added++;
                     } catch (\Exception $e) {
                         $skipped++;

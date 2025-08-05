@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\UserResource\Pages;
 
+use App\Events\UserInvited;
 use App\Filament\Admin\Resources\UserResource;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Forms\Components\Section;
@@ -12,6 +13,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Grid;
+use Filament\Notifications\Notification;
 
 class CreateUser extends CreateRecord
 {
@@ -45,16 +47,6 @@ class CreateUser extends CreateRecord
                                         'required' => 'To pole jest wymagane',
                                         'email' => 'Podaj prawidłowy adres email',
                                         'unique' => 'Ten email jest już zajęty',
-                                    ]),
-                                TextInput::make('password')
-                                    ->label('Hasło')
-                                    ->password()
-                                    ->required()
-                                    ->minLength(8)
-                                    ->dehydrateStateUsing(fn($state) => bcrypt($state))
-                                    ->validationMessages([
-                                        'required' => 'To pole jest wymagane',
-                                        'min' => 'Hasło musi mieć minimum 8 znaków',
                                     ]),
                                 TextInput::make('phone')
                                     ->label('Telefon')
@@ -104,5 +96,17 @@ class CreateUser extends CreateRecord
                             ]),
                     ]),
             ]);
+    }
+
+    protected function afterCreate(): void
+    {
+        // Wyślij zaproszenie do użytkownika
+        UserInvited::dispatch($this->record);
+
+        Notification::make()
+            ->title('Użytkownik został utworzony')
+            ->body('Zaproszenie zostało wysłane na adres: ' . $this->record->email)
+            ->success()
+            ->send();
     }
 }
