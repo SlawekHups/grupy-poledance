@@ -210,9 +210,11 @@ class UsersRelationManager extends RelationManager
                             ->send();
                     }),
                 Tables\Actions\BulkAction::make('updatePaymentAmount')
-                    ->label('Zmień kwotę płatności')
-                    ->icon('heroicon-o-currency-euro')
+                    ->label('Zmień kwotę dla grupy')
+                    ->icon('heroicon-o-banknotes')
                     ->color('warning')
+                    ->size('sm')
+                    ->tooltip('Zmień kwotę płatności dla zaznaczonych użytkowników')
                     ->form([
                         Forms\Components\TextInput::make('amount')
                             ->label('Nowa kwota miesięczna (zł)')

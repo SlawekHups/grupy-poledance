@@ -130,11 +130,12 @@ class GroupResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('update_payment_amount')
-                    ->label('Zmień kwotę płatności')
-                    ->icon('heroicon-o-currency-euro')
+                    ->label('Zmień kwotę')
+                    ->icon('heroicon-o-banknotes')
                     ->color('warning')
+                    ->size('sm')
+                    ->tooltip('Zmień kwotę płatności dla grupy')
                     ->form([
                         Forms\Components\TextInput::make('amount')
                             ->label('Nowa kwota miesięczna (zł)')
@@ -245,15 +246,18 @@ class GroupResource extends Resource
                     ->modalHeading('Zmień kwotę płatności dla grupy')
                     ->modalDescription(fn (Group $record) => "Zmienisz kwotę płatności dla wszystkich użytkowników w grupie '{$record->name}'")
                     ->modalSubmitActionLabel('Zmień kwotę'),
+                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
                 Tables\Actions\BulkAction::make('update_payment_amount_bulk')
-                    ->label('Zmień kwotę płatności')
-                    ->icon('heroicon-o-currency-euro')
+                    ->label('Zmień kwotę')
+                    ->icon('heroicon-o-banknotes')
                     ->color('warning')
+                    ->size('sm')
+                    ->tooltip('Zmień kwotę płatności dla zaznaczonych grup')
                     ->form([
                         Forms\Components\TextInput::make('amount')
                             ->label('Nowa kwota miesięczna (zł)')
