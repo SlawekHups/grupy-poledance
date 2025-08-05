@@ -22,6 +22,7 @@ class OnboardingWizard extends Page implements HasForms
     protected static ?string $navigationLabel = null;
     protected static string $view = 'filament.user-panel.pages.onboarding-wizard';
 
+    public $phone = '';
     public $address_street = '';
     public $address_postal_code = '';
     public $address_city = '';
@@ -35,6 +36,7 @@ class OnboardingWizard extends Page implements HasForms
         $address = $user->addresses()->first();
 
         $this->form->fill([
+            'phone' => $user->phone ?? '',
             'address_street' => $address?->street ?? '',
             'address_postal_code' => $address?->postal_code ?? '',
             'address_city' => $address?->city ?? '',
@@ -50,6 +52,20 @@ class OnboardingWizard extends Page implements HasForms
                 Forms\Components\Wizard\Step::make('Adres')
                     ->schema([
                         // ViewField welcome usunięty, komunikat jest tylko w widoku Blade
+                        Forms\Components\TextInput::make('phone')
+                            ->label('Telefon')
+                            ->tel()
+                            ->required()
+                            ->minLength(9)
+                            ->maxLength(15)
+                            ->dehydrateStateUsing(function ($state) {
+                                if (!$state) return null;
+                                $number = preg_replace('/\\D/', '', $state);
+                                if (strlen($number) === 9) {
+                                    return '+48' . $number;
+                                }
+                                return $state;
+                            }),
                         Forms\Components\TextInput::make('address_street')
                             ->label('Ulica i numer')
                             ->required(),
@@ -111,6 +127,10 @@ class OnboardingWizard extends Page implements HasForms
             Notification::make()->danger()->title('Błąd')->body('Nie znaleziono użytkownika.')->send();
             return;
         }
+        
+        // Zapisz telefon
+        $user->phone = $data['phone'];
+        
         // Zapisz adres
         Address::updateOrCreate(
             ['user_id' => $user->id],
@@ -120,6 +140,7 @@ class OnboardingWizard extends Page implements HasForms
                 'city' => $data['address_city'],
             ]
         );
+        
         // Zapisz RODO i regulamin
         $user->rodo_accepted_at = now();
         $user->terms_accepted_at = now();

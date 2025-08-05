@@ -29,10 +29,9 @@ class EnsureProfileCompleted
             // Sprawdź czy profil jest ukończony (telefon, grupa, akceptacja regulaminu)
             $missingFields = [];
             
-            // Telefon nie jest obowiązkowy - usunięto sprawdzenie
-            // if (empty($user->phone)) {
-            //     $missingFields[] = 'telefon';
-            // }
+            if (empty($user->phone)) {
+                $missingFields[] = 'telefon';
+            }
             
             if (empty($user->group_id)) {
                 $missingFields[] = 'przypisanie do grupy';
