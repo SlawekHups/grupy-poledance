@@ -88,7 +88,7 @@ class ListUsers extends ListRecords
                         ->schema([
                             \Filament\Forms\Components\Toggle::make('is_active')
                                 ->label('Użytkownik aktywny')
-                                ->default(true),
+                                ->default(false),
                         ]),
                 ]),
         ];
@@ -133,6 +133,11 @@ class ListUsers extends ListRecords
 
     public function importUsers($data = [])
     {
+        // Ustaw limity czasu dla importu
+        set_time_limit(120);
+        ini_set('max_execution_time', 120);
+        ini_set('memory_limit', '256M');
+        
         if (empty($data)) {
             $data = $this->data ?? [];
         }
@@ -158,16 +163,82 @@ class ListUsers extends ListRecords
             $handle = fopen($file->getRealPath(), 'r');
             $header = fgetcsv($handle);
             
+            // Debug - sprawdź nagłówek
+            \Illuminate\Support\Facades\Log::info('CSV Header:', ['header' => $header]);
+            
             while (($row = fgetcsv($handle)) !== false) {
-                $data = array_combine($header, $row);
+                // Debug - sprawdź każdy wiersz
+                \Illuminate\Support\Facades\Log::info('CSV Row:', ['row' => $row, 'header_count' => count($header), 'row_count' => count($row)]);
                 
-                // Nie importuj adminów
-                if (isset($data['role']) && $data['role'] === 'admin') {
+                // Sprawdź czy liczba kolumn odpowiada liczbie wartości
+                if (count($header) !== count($row)) {
+                    \Illuminate\Support\Facades\Log::info('Skipping row - column count mismatch', ['header_count' => count($header), 'row_count' => count($row)]);
                     $skipped++;
                     continue;
                 }
                 
-                $user = \App\Models\User::where('email', $data['email'])->first();
+                // Sprawdź czy wiersz nie jest pusty
+                if (empty(array_filter($row))) {
+                    \Illuminate\Support\Facades\Log::info('Skipping empty row');
+                    $skipped++;
+                    continue;
+                }
+                
+                try {
+                    $rowData = array_combine($header, $row);
+                    \Illuminate\Support\Facades\Log::info('Row data created:', ['rowData' => $rowData]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Array combine error:', ['error' => $e->getMessage(), 'header' => $header, 'row' => $row]);
+                    $skipped++;
+                    continue;
+                }
+                
+                // Nie importuj adminów
+                if (isset($rowData['role']) && $rowData['role'] === 'admin') {
+                    \Illuminate\Support\Facades\Log::info('Skipping admin user:', ['email' => $rowData['email'] ?? 'no email']);
+                    $skipped++;
+                    continue;
+                }
+                
+                // Sprawdź czy email jest wymagany
+                if (empty($rowData['email'])) {
+                    \Illuminate\Support\Facades\Log::info('Skipping row - empty email');
+                    $skipped++;
+                    continue;
+                }
+                
+                // Sprawdź czy nazwa jest wymagana
+                if (empty($rowData['name'])) {
+                    \Illuminate\Support\Facades\Log::info('Skipping row - empty name', ['email' => $rowData['email']]);
+                    $skipped++;
+                    continue;
+                }
+                
+                \Illuminate\Support\Facades\Log::info('Processing user:', ['email' => $rowData['email'], 'name' => $rowData['name']]);
+                
+                // Ustaw domyślne wartości tylko dla pustych pól
+                $rowData['phone'] = $rowData['phone'] ?? '';
+                $rowData['group_id'] = !empty($rowData['group_id']) ? (int)$rowData['group_id'] : null;
+                
+                // Zachowaj oryginalną wartość amount z CSV (nie konwertuj na int)
+                if (empty($rowData['amount'])) {
+                    $rowData['amount'] = 200; // domyślna wartość tylko jeśli puste
+                } else {
+                    $rowData['amount'] = (float)$rowData['amount']; // konwertuj na float aby zachować grosze
+                }
+                
+                $rowData['joined_at'] = !empty($rowData['joined_at']) ? $rowData['joined_at'] : now()->format('Y-m-d');
+                
+                // Zachowaj oryginalną wartość is_active z CSV
+                if (empty($rowData['is_active'])) {
+                    $rowData['is_active'] = 0; // domyślna wartość tylko jeśli puste
+                } else {
+                    $rowData['is_active'] = (bool)(int)$rowData['is_active']; // konwertuj na boolean
+                }
+                
+                \Illuminate\Support\Facades\Log::info('Final row data:', ['rowData' => $rowData]);
+                
+                $user = \App\Models\User::where('email', $rowData['email'])->first();
                 
                 if ($user) {
                     // Nie nadpisuj admina
@@ -177,15 +248,40 @@ class ListUsers extends ListRecords
                     }
                     
                     if ($action === 'update') {
-                        $user->update(collect($data)->except(['password', 'role'])->toArray());
-                        $updated++;
+                        try {
+                            $user->update(collect($rowData)->except(['password', 'role'])->toArray());
+                            $updated++;
+                        } catch (\Exception $e) {
+                            $skipped++;
+                            \Illuminate\Support\Facades\Log::error('Update error for user ' . $rowData['email'] . ': ' . $e->getMessage());
+                        }
                     } else {
                         $skipped++;
                     }
                 } else {
-                    $data['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
-                    \App\Models\User::create(collect($data)->except(['id', 'role'])->toArray());
-                    $added++;
+                    try {
+                        $rowData['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
+                        $userData = collect($rowData)->except(['id', 'role'])->toArray();
+                        \Illuminate\Support\Facades\Log::info('Creating user with data:', ['userData' => $userData]);
+                        
+                        // Sprawdź czy wszystkie wymagane pola są obecne
+                        if (empty($userData['name']) || empty($userData['email'])) {
+                            \Illuminate\Support\Facades\Log::error('Missing required fields:', ['userData' => $userData]);
+                            $skipped++;
+                            continue;
+                        }
+                        
+                        $newUser = \App\Models\User::create($userData);
+                        \Illuminate\Support\Facades\Log::info('User created successfully:', ['user_id' => $newUser->id, 'email' => $newUser->email]);
+                        $added++;
+                    } catch (\Exception $e) {
+                        $skipped++;
+                        \Illuminate\Support\Facades\Log::error('Create error for user ' . $rowData['email'] . ': ' . $e->getMessage(), [
+                            'exception' => $e,
+                            'rowData' => $rowData,
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                    }
                 }
             }
             

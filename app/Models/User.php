@@ -63,6 +63,7 @@ class User extends Authenticatable
             'accepted_terms_at' => 'datetime',
             'rodo_accepted_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
+            'amount' => 'decimal:2',
         ];
     }
     public function group()

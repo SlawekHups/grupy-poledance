@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->date('joined_at')->nullable();
             $table->foreignId('group_id')->nullable()->constrained()->nullOnDelete();
-            $table->boolean('is_active')->default(true); // status aktywny
+            $table->boolean('is_active')->default(false); // status aktywny
         });
     }
 

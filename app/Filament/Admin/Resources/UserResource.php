@@ -83,7 +83,6 @@ class UserResource extends Resource
                 TextInput::make('phone')
                     ->label('Telefon')
                     ->tel()
-                    ->required()
                     ->minLength(9)
                     ->maxLength(9)
                     ->rule(function () {
@@ -347,12 +346,25 @@ class UserResource extends Resource
                                 
                                 \Illuminate\Support\Facades\Log::info('Processing user:', ['email' => $rowData['email'], 'name' => $rowData['name']]);
                                 
-                                // Ustaw domyślne wartości dla opcjonalnych pól
+                                // Ustaw domyślne wartości tylko dla pustych pól
                                 $rowData['phone'] = $rowData['phone'] ?? '';
                                 $rowData['group_id'] = !empty($rowData['group_id']) ? (int)$rowData['group_id'] : null;
-                                $rowData['amount'] = !empty($rowData['amount']) ? (int)$rowData['amount'] : 160;
+                                
+                                // Zachowaj oryginalną wartość amount z CSV (nie konwertuj na int)
+                                if (empty($rowData['amount'])) {
+                                    $rowData['amount'] = 200; // domyślna wartość tylko jeśli puste
+                                } else {
+                                    $rowData['amount'] = (float)$rowData['amount']; // konwertuj na float aby zachować grosze
+                                }
+                                
                                 $rowData['joined_at'] = !empty($rowData['joined_at']) ? $rowData['joined_at'] : now()->format('Y-m-d');
-                                $rowData['is_active'] = !empty($rowData['is_active']) ? (int)$rowData['is_active'] : 1;
+                                
+                                // Zachowaj oryginalną wartość is_active z CSV
+                                if (empty($rowData['is_active'])) {
+                                    $rowData['is_active'] = 0; // domyślna wartość tylko jeśli puste
+                                } else {
+                                    $rowData['is_active'] = (bool)(int)$rowData['is_active']; // konwertuj na boolean
+                                }
                                 
                                 \Illuminate\Support\Facades\Log::info('Final row data:', ['rowData' => $rowData]);
                                 
@@ -379,11 +391,26 @@ class UserResource extends Resource
                                 } else {
                                     try {
                                         $rowData['password'] = \Illuminate\Support\Facades\Hash::make(str()->random(12));
-                                        \App\Models\User::create(collect($rowData)->except(['id', 'role'])->toArray());
+                                        $userData = collect($rowData)->except(['id', 'role'])->toArray();
+                                        \Illuminate\Support\Facades\Log::info('Creating user with data:', ['userData' => $userData]);
+                                        
+                                        // Sprawdź czy wszystkie wymagane pola są obecne
+                                        if (empty($userData['name']) || empty($userData['email'])) {
+                                            \Illuminate\Support\Facades\Log::error('Missing required fields:', ['userData' => $userData]);
+                                            $skipped++;
+                                            continue;
+                                        }
+                                        
+                                        $newUser = \App\Models\User::create($userData);
+                                        \Illuminate\Support\Facades\Log::info('User created successfully:', ['user_id' => $newUser->id, 'email' => $newUser->email]);
                                         $added++;
                                     } catch (\Exception $e) {
                                         $skipped++;
-                                        \Illuminate\Support\Facades\Log::error('Create error for user ' . $rowData['email'] . ': ' . $e->getMessage());
+                                        \Illuminate\Support\Facades\Log::error('Create error for user ' . $rowData['email'] . ': ' . $e->getMessage(), [
+                                            'exception' => $e,
+                                            'rowData' => $rowData,
+                                            'trace' => $e->getTraceAsString()
+                                        ]);
                                     }
                                 }
                             }

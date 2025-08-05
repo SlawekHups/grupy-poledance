@@ -23,3 +23,20 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# PHP Settings for file upload and processing
+<IfModule mod_php.c>
+    php_value max_execution_time 120
+    php_value max_input_time 120
+    php_value memory_limit 256M
+    php_value post_max_size 64M
+    php_value upload_max_filesize 64M
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_value max_execution_time 120
+    php_value max_input_time 120
+    php_value memory_limit 256M
+    php_value post_max_size 64M
+    php_value upload_max_filesize 64M
+</IfModule>

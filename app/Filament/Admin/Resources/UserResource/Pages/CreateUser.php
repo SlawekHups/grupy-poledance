@@ -59,7 +59,6 @@ class CreateUser extends CreateRecord
                                 TextInput::make('phone')
                                     ->label('Telefon')
                                     ->tel()
-                                    ->required()
                                     ->minLength(9)
                                     ->maxLength(9)
                                     ->dehydrateStateUsing(function ($state) {
@@ -100,7 +99,7 @@ class CreateUser extends CreateRecord
                                     ->schema([
                                         Toggle::make('is_active')
                                             ->label('Użytkownik aktywny')
-                                            ->default(true),
+                                            ->default(false),
                                     ]),
                             ]),
                     ]),
