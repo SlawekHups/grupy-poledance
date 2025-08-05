@@ -47,4 +47,51 @@ class GenerateMonthlyPayments extends Command
 
         $this->info('Gotowe.');
     }
+
+    /**
+     * Aktualizuje kwotę płatności dla wszystkich użytkowników w grupie
+     */
+    public static function updateGroupPaymentAmount(int $groupId, float $newAmount, string $scope = 'current_month'): array
+    {
+        $group = \App\Models\Group::find($groupId);
+        
+        if (!$group) {
+            return ['success' => false, 'message' => 'Grupa nie została znaleziona'];
+        }
+
+        $users = $group->users()->where('is_active', true)->get();
+        $updatedUsers = 0;
+        $updatedPayments = 0;
+
+        foreach ($users as $user) {
+            // Aktualizuj kwotę użytkownika
+            $user->update(['amount' => $newAmount]);
+            $updatedUsers++;
+
+            // Aktualizuj płatności w zależności od zakresu
+            $paymentQuery = $user->payments();
+
+            switch ($scope) {
+                case 'current_month':
+                    $paymentQuery->where('month', now()->format('Y-m'));
+                    break;
+                case 'future_months':
+                    $paymentQuery->where('month', '>=', now()->format('Y-m'));
+                    break;
+                case 'all_months':
+                    // Wszystkie płatności
+                    break;
+            }
+
+            $updatedPayments += $paymentQuery->update(['amount' => $newAmount]);
+        }
+
+        return [
+            'success' => true,
+            'message' => "Zaktualizowano kwotę dla {$updatedUsers} użytkowników i {$updatedPayments} płatności w grupie '{$group->name}'",
+            'updated_users' => $updatedUsers,
+            'updated_payments' => $updatedPayments,
+            'group_name' => $group->name
+        ];
+    }
 }

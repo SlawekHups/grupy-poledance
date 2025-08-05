@@ -198,9 +198,10 @@ class UsersRelationManager extends RelationManager
                     ->icon('heroicon-o-trash')
                     ->requiresConfirmation()
                     ->action(function (Collection $records, Group $group): void {
-                        $records->each(function (User $user) {
+                        $records->each(function ($user) {
                             $user->update(['group_id' => null]);
                         });
+                        
                         $group->updateStatusBasedOnCapacity();
 
                         Notification::make()
@@ -208,6 +209,79 @@ class UsersRelationManager extends RelationManager
                             ->success()
                             ->send();
                     }),
+                Tables\Actions\BulkAction::make('updatePaymentAmount')
+                    ->label('Zmień kwotę płatności')
+                    ->icon('heroicon-o-currency-euro')
+                    ->color('warning')
+                    ->form([
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Nowa kwota miesięczna (zł)')
+                            ->numeric()
+                            ->required()
+                            ->minValue(0)
+                            ->step(0.01)
+                            ->suffix('zł'),
+                        Forms\Components\Select::make('scope')
+                            ->label('Zakres zmian')
+                            ->options([
+                                'current_month' => 'Tylko płatności bieżącego miesiąca',
+                                'future_months' => 'Płatności przyszłych miesięcy + nowa kwota domyślna',
+                                'all_months' => 'Wszystkie płatności + nowa kwota domyślna (ostrożnie!)',
+                            ])
+                            ->default('current_month')
+                            ->required(),
+                        Forms\Components\Toggle::make('confirm')
+                            ->label('Potwierdzam zmianę kwoty dla zaznaczonych użytkowników')
+                            ->required()
+                            ->helperText('Ta operacja zmieni kwotę płatności dla zaznaczonych użytkowników.'),
+                    ])
+                    ->action(function (Collection $records, array $data): void {
+                        $amount = (float) $data['amount'];
+                        $scope = $data['scope'];
+                        $updatedUsers = 0;
+                        $updatedPayments = 0;
+                        
+                        foreach ($records as $user) {
+                            // Aktualizuj płatności w zależności od zakresu
+                            $paymentQuery = $user->payments();
+                            
+                            switch ($scope) {
+                                case 'current_month':
+                                    $paymentQuery->where('month', now()->format('Y-m'));
+                                    break;
+                                case 'future_months':
+                                    $paymentQuery->where('month', '>=', now()->format('Y-m'));
+                                    break;
+                                case 'all_months':
+                                    // Wszystkie płatności
+                                    break;
+                            }
+                            
+                            $paymentCount = $paymentQuery->update(['amount' => $amount]);
+                            $updatedPayments += $paymentCount;
+                            
+                            // Jeśli aktualizujemy przyszłe miesiące lub wszystkie, zaktualizuj też kwotę użytkownika
+                            if ($scope === 'future_months' || $scope === 'all_months') {
+                                $user->update(['amount' => $amount]);
+                                $updatedUsers++;
+                            }
+                        }
+                        
+                        $message = "Zaktualizowano {$updatedPayments} płatności";
+                        if ($updatedUsers > 0) {
+                            $message .= " i kwotę dla {$updatedUsers} użytkowników";
+                        }
+                        
+                        Notification::make()
+                            ->title('Kwota płatności zaktualizowana')
+                            ->body($message)
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Zmień kwotę płatności')
+                    ->modalDescription('Zmienisz kwotę płatności dla zaznaczonych użytkowników')
+                    ->modalSubmitActionLabel('Zmień kwotę'),
             ])
             ->defaultSort('name', 'asc');
     }
