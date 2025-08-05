@@ -157,7 +157,7 @@ class UserResource extends Resource
                 BooleanColumn::make('is_active')
                     ->label('Aktywny'),
                 Tables\Columns\BooleanColumn::make('terms_accepted_at')
-                    ->label('Regulamin zaakceptowany')
+                    ->label('Regulamin')
                     ->trueIcon('heroicon-o-document-check')
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
