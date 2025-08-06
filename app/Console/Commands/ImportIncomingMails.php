@@ -43,7 +43,7 @@ class ImportIncomingMails extends Command
         
         try {
             // Połącz z serwerem IMAP
-            $mailbox = "{{$host}:{$port}/imap/ssl}INBOX";
+            $mailbox = "{{$host}:{$port}/imap/ssl/novalidate-cert}INBOX";
             $inbox = imap_open($mailbox, $username, $password);
             
             if (!$inbox) {
