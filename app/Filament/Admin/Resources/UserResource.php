@@ -446,6 +446,30 @@ class UserResource extends Resource
                     ->modalHeading('Wyślij ponownie zaproszenie')
                     ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
                     ->modalSubmitActionLabel('Wyślij zaproszenie'),
+                Tables\Actions\Action::make('reset_password')
+                    ->label('Resetuj hasło')
+                    ->icon('heroicon-o-key')
+                    ->color('warning')
+                    ->size('sm')
+                    ->tooltip('Usuń hasło użytkownika i wyślij nowe zaproszenie (tylko dla aktywnych użytkowników)')
+                    ->visible(fn (User $record) => $record->password && $record->is_active)
+                    ->action(function (User $record) {
+                        // Usuń hasło użytkownika
+                        $record->update(['password' => null]);
+                        
+                        // Wyślij nowe zaproszenie
+                        \App\Events\UserInvited::dispatch($record);
+                        
+                        Notification::make()
+                            ->title('Hasło zresetowane')
+                            ->body("Hasło użytkownika {$record->name} zostało usunięte. Nowe zaproszenie zostało wysłane na adres: {$record->email}")
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Resetuj hasło użytkownika')
+                    ->modalDescription(fn (User $record) => "Czy na pewno chcesz zresetować hasło dla użytkownika {$record->name}?\n\nCo się stanie:\n• Obecne hasło zostanie usunięte\n• Użytkownik nie będzie mógł się zalogować\n• Nowe zaproszenie zostanie wysłane na email: {$record->email}\n• Użytkownik będzie musiał ustawić nowe hasło")
+                    ->modalSubmitActionLabel('Resetuj hasło i wyślij zaproszenie'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -493,6 +517,56 @@ class UserResource extends Resource
                         ->modalHeading('Wyślij ponownie zaproszenia')
                         ->modalDescription('Czy na pewno chcesz wysłać ponownie linki do ustawienia hasła dla aktywnych użytkowników bez hasła?')
                         ->modalSubmitActionLabel('Wyślij zaproszenia'),
+                    Tables\Actions\BulkAction::make('reset_passwords')
+                        ->label('Resetuj hasła')
+                        ->icon('heroicon-o-key')
+                        ->color('warning')
+                        ->tooltip('Usuń hasła użytkowników i wyślij nowe zaproszenia (tylko dla aktywnych użytkowników z hasłem)')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $resetCount = 0;
+                            $skippedCount = 0;
+                            $inactiveCount = 0;
+                            $noPasswordCount = 0;
+                            
+                            foreach ($records as $record) {
+                                if (!$record->is_active) {
+                                    $inactiveCount++;
+                                    continue;
+                                }
+                                
+                                if (!$record->password) {
+                                    $noPasswordCount++;
+                                    continue;
+                                }
+                                
+                                // Usuń hasło i wyślij zaproszenie
+                                $record->update(['password' => null]);
+                                \App\Events\UserInvited::dispatch($record);
+                                $resetCount++;
+                            }
+                            
+                            $message = "Zresetowano {$resetCount} haseł";
+                            if ($skippedCount > 0) {
+                                $message .= " (pominięto {$skippedCount} użytkowników)";
+                            }
+                            if ($inactiveCount > 0) {
+                                $message .= " (pominięto {$inactiveCount} nieaktywnych użytkowników)";
+                            }
+                            if ($noPasswordCount > 0) {
+                                $message .= " (pominięto {$noPasswordCount} użytkowników bez hasła)";
+                            }
+                            
+                            Notification::make()
+                                ->title('Hasła zresetowane')
+                                ->body($message)
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Resetuj hasła użytkowników')
+                        ->modalDescription('Czy na pewno chcesz zresetować hasła dla wybranych użytkowników?\n\nCo się stanie:\n• Obecne hasła zostaną usunięte\n• Użytkownicy nie będą mogli się zalogować\n• Nowe zaproszenia zostaną wysłane na ich emaile\n• Użytkownicy będą musieli ustawić nowe hasła')
+                        ->modalSubmitActionLabel('Resetuj hasła i wyślij zaproszenia'),
                 ]),
             ]);
     }

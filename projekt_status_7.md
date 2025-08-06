@@ -1,227 +1,150 @@
-# Status Projektu - Grupy Poledance v7.0
+# Status Projektu - Grupy Poledance
 
-**Data:** 2025-01-27  
-**Status:** PRODUKCYJNY ✅  
-**Wersja:** 7.0 - System Zaproszeń z Ponownym Wysyłaniem
+## Data: 5 sierpnia 2025
 
-## 🎯 Nowa Funkcjonalność: Ponowne Wysyłanie Zaproszeń
+### ✅ **ZAKOŃCZONE FUNKCJONALNOŚCI**
 
-### ✅ Zaimplementowane Funkcje
+#### 1. **System Zaproszeń Użytkowników** ✅
+- **Tworzenie użytkowników bez hasła** - Admin może tworzyć użytkowników podając tylko podstawowe dane (imię, email)
+- **Automatyczne wysyłanie zaproszeń** - System generuje token i wysyła email z linkiem do ustawienia hasła
+- **Wysyłanie ponownych zaproszeń** - Akcja "Wyślij zaproszenie" dla użytkowników bez hasła
+- **Akcje grupowe** - Bulk action do wysyłania zaproszeń dla wielu użytkowników
+- **Filtrowanie aktywnych użytkowników** - Zaproszenia wysyłane tylko do aktywnych użytkowników
 
-**1. Akcja Pojedyncza - "Wyślij zaproszenie"**
-- Przycisk przy każdym użytkowniku bez hasła w tabeli użytkowników
-- Ikona koperty (heroicon-o-envelope) w kolorze info
-- Tooltip z opisem funkcji
-- Modal z potwierdzeniem przed wysłaniem
-- Automatyczne powiadomienie o sukcesie
+#### 2. **Resetowanie Haseł** ✅ (NOWE)
+- **Reset hasła pojedynczego użytkownika** - Akcja "Resetuj hasło" z modalem potwierdzenia
+- **Reset haseł grupowy** - Bulk action do resetowania haseł wielu użytkowników
+- **Automatyczne wysyłanie nowych zaproszeń** - Po resetowaniu hasła automatycznie wysyłane jest nowe zaproszenie
+- **Szczegółowe potwierdzenia** - Modal wyjaśnia co się stanie po resetowaniu
 
-**2. Akcja Masowa - "Wyślij zaproszenia"**
-- Dostępna w akcjach masowych dla zaznaczonych użytkowników
-- Inteligentne filtrowanie - wysyła tylko do użytkowników bez hasła
-- Podsumowanie operacji z liczbą wysłanych i pominiętych
-- Automatyczne odznaczanie rekordów po zakończeniu
+#### 3. **Onboarding Użytkowników** ✅
+- **Wymuszenie uzupełnienia profilu** - Middleware `EnsureProfileCompleted` sprawdza kompletność danych
+- **Wizard onboarding** - Krok po kroku uzupełnianie: telefon, adres, RODO, regulamin
+- **Automatyczne przypisanie do grupy** - Nowi użytkownicy domyślnie przypisywani do "Bez grupy"
+- **Walidacja wymaganych pól** - Telefon, adres, akceptacja RODO i regulaminu
 
-**3. Bezpieczeństwo i UX**
-- Akcje widoczne tylko dla użytkowników bez hasła (`!$record->password`)
-- Wymagane potwierdzenie przed wysłaniem
-- Szczegółowe komunikaty o statusie operacji
-- Logowanie wszystkich operacji
+#### 4. **System Płatności** ✅
+- **Automatyczne generowanie płatności miesięcznych** - Artisan command `payments:generate`
+- **Zarządzanie kwotami grup** - Akcja "Zmiana płatności dla grupy" z opcjami zakresu
+- **Import/Export CSV** - Import użytkowników z plików CSV
+- **Statystyki płatności** - Widgety z wykresami i statystykami
 
-### 🔧 Implementacja Techniczna
+#### 5. **System Obecności** ✅
+- **Śledzenie obecności** - Resource do zarządzania obecnościami użytkowników
+- **Statystyki obecności** - Wykresy i statystyki obecności
+- **Integracja z grupami** - Obecności powiązane z grupami i lekcjami
 
-**Plik:** `app/Filament/Admin/Resources/UserResource.php`
+### 🔧 **TECHNICZNE SZCZEGÓŁY**
 
+#### **Nowe Akcje w UserResource:**
 ```php
-// Akcja pojedyncza
-Tables\Actions\Action::make('resend_invitation')
-    ->label('Wyślij zaproszenie')
-    ->icon('heroicon-o-envelope')
-    ->color('info')
-    ->size('sm')
-    ->tooltip('Wyślij ponownie link do ustawienia hasła')
-    ->visible(fn (User $record) => !$record->password)
-    ->action(function (User $record) {
-        \App\Events\UserInvited::dispatch($record);
-        Notification::make()
-            ->title('Zaproszenie wysłane')
-            ->body("Link do ustawienia hasła został wysłany na adres: {$record->email}")
-            ->success()
-            ->send();
-    })
-    ->requiresConfirmation()
-    ->modalHeading('Wyślij ponownie zaproszenie')
-    ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla użytkownika {$record->name}?")
-    ->modalSubmitActionLabel('Wyślij zaproszenie')
+// Reset hasła pojedynczego użytkownika
+Tables\Actions\Action::make('reset_password')
+    ->label('Resetuj hasło')
+    ->icon('heroicon-o-key')
+    ->color('warning')
+    ->visible(fn (User $record) => $record->password && $record->is_active)
 
-// Akcja masowa
-Tables\Actions\BulkAction::make('resend_invitations')
-    ->label('Wyślij zaproszenia')
-    ->icon('heroicon-o-envelope')
-    ->color('info')
-    ->tooltip('Wyślij ponownie linki do ustawienia hasła dla zaznaczonych użytkowników')
-    ->deselectRecordsAfterCompletion()
-    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
-        $sentCount = 0;
-        $skippedCount = 0;
-        
-        foreach ($records as $record) {
-            if (!$record->password) {
-                \App\Events\UserInvited::dispatch($record);
-                $sentCount++;
-            } else {
-                $skippedCount++;
-            }
-        }
-        
-        $message = "Wysłano {$sentCount} zaproszeń";
-        if ($skippedCount > 0) {
-            $message .= " (pominięto {$skippedCount} użytkowników z już ustawionym hasłem)";
-        }
-        
-        Notification::make()
-            ->title('Zaproszenia wysłane')
-            ->body($message)
-            ->success()
-            ->send();
-    })
-    ->requiresConfirmation()
-    ->modalHeading('Wyślij ponownie zaproszenia')
-    ->modalDescription('Czy na pewno chcesz wysłać ponownie linki do ustawienia hasła dla zaznaczonych użytkowników?')
-    ->modalSubmitActionLabel('Wyślij zaproszenia')
+// Reset haseł grupowy
+Tables\Actions\BulkAction::make('reset_passwords')
+    ->label('Resetuj hasła')
+    ->icon('heroicon-o-key')
+    ->color('warning')
 ```
 
-### 📊 Funkcjonalności Systemu
+#### **Logika Resetowania:**
+1. **Usuwa hasło** użytkownika (`password = null`)
+2. **Wysyła nowe zaproszenie** (`UserInvited` event)
+3. **Wyświetla potwierdzenie** z informacją o wysłanym emailu
 
-#### Panel Administratora (`/admin`)
-- ✅ **Zarządzanie użytkownikami**
-  - Tworzenie użytkowników bez hasła
-  - Import CSV z automatycznymi zaproszeniami
-  - **NOWE:** Ponowne wysyłanie zaproszeń (pojedyncze i masowe)
-  - Edycja profilu użytkownika
-- ✅ **Zarządzanie grupami**
-  - Tworzenie i edycja grup
-  - Zmiana kwot płatności dla grup
-  - Zarządzanie użytkownikami w grupach
-- ✅ **Zarządzanie płatnościami**
-  - Automatyczne generowanie płatności miesięcznych
-  - Zmiana kwot płatności dla grup
-  - Statystyki płatności
-- ✅ **Zarządzanie obecnościami**
-  - Rejestracja obecności na zajęciach
-  - Statystyki obecności
-  - Raporty grupowe
-- ✅ **Zarządzanie regulaminami**
-  - Tworzenie i edycja regulaminów
-  - Śledzenie akceptacji
+#### **Modal Potwierdzenia:**
+```
+Czy na pewno chcesz zresetować hasło dla użytkownika [Nazwa]?
 
-#### Panel Użytkownika (`/panel`)
-- ✅ **Profil użytkownika**
-  - Uzupełnianie danych profilu
-  - Akceptacja regulaminu
-- ✅ **Płatności**
-  - Przeglądanie historii płatności
-  - Status płatności
-- ✅ **Obecności**
-  - Historia obecności
-  - Statystyki osobiste
-
-### 🔄 System Zaproszeń
-
-#### Proces dla użytkownika
-1. **Otrzymuje email** z linkiem "Ustaw hasło i rozpocznij"
-2. **Klika link** - przechodzi do formularza ustawiania hasła
-3. **Ustawia hasło** - zgodnie z wymaganiami bezpieczeństwa
-4. **Zostaje zalogowany** - automatycznie przekierowany do panelu
-5. **Uzupełnia profil** - telefon, grupa, akceptacja regulaminu
-6. **Otrzymuje pełny dostęp** - do wszystkich funkcji systemu
-
-#### Funkcjonalności zaproszeń
-- ✅ **Tworzenie użytkowników bez hasła**
-- ✅ **Automatyczne wysyłanie zaproszeń**
-- ✅ **Bezpieczne linki** (48h ważności)
-- ✅ **Wymuszenie uzupełnienia profilu**
-- ✅ **Integracja z importem CSV**
-- ✅ **Asynchroniczne wysyłanie**
-- ✅ **Ponowne wysyłanie zaproszeń** (NOWE)
-
-### 🛠️ Technologie
-
-- **Backend:** Laravel 12.14.1
-- **Frontend:** Filament 3.3.14, Livewire 3.6.3
-- **Baza danych:** MySQL 8.0
-- **PHP:** 8.3
-- **Serwer:** Herd (lokalny)
-
-### 📈 Wydajność i Bezpieczeństwo
-
-#### Bezpieczeństwo
-- ✅ Autoryzacja oparta na rolach
-- ✅ Middleware bezpieczeństwa
-- ✅ Walidacja danych wejściowych
-- ✅ Szyfrowanie sesji
-- ✅ Ochrona CSRF
-- ✅ Bezpieczne linki zaproszeń (48h)
-- ✅ Logowanie wszystkich operacji
-
-#### Wydajność
-- ✅ Cache dla widgetów i statystyk
-- ✅ Zoptymalizowane zapytania SQL
-- ✅ Asynchroniczne wysyłanie emaili
-- ✅ Inteligentne filtrowanie akcji
-
-### 🧪 Testy
-
-Wszystkie testy przechodzą pomyślnie:
-
-```bash
-php artisan test --filter=UserInvitationTest
+Co się stanie:
+• Obecne hasło zostanie usunięte
+• Użytkownik nie będzie mógł się zalogować
+• Nowe zaproszenie zostanie wysłane na email: [email]
+• Użytkownik będzie musiał ustawić nowe hasło
 ```
 
-**Wyniki:**
-- ✅ user can be created without password
-- ✅ user invitation event is dispatched
-- ✅ invitation email is sent
-- ✅ set password form is accessible
-- ✅ user can set password
-- ✅ user without password cannot access panel
-- ✅ user with incomplete profile is redirected
+### 🚀 **FUNKCJONALNOŚCI ADMINA**
 
-### 📋 Instrukcje Użycia
+#### **Zarządzanie Użytkownikami:**
+- ✅ Tworzenie użytkowników bez hasła
+- ✅ Wysyłanie zaproszeń
+- ✅ Resetowanie haseł (pojedyncze i grupowe)
+- ✅ Import z CSV
+- ✅ Zarządzanie grupami i płatnościami
 
-#### Ponowne wysyłanie zaproszeń
+#### **Akcje w Tabeli Użytkowników:**
+- **Edytuj** - Standardowa edycja użytkownika
+- **Wyślij zaproszenie** - Dla użytkowników bez hasła (niebieska ikona koperty)
+- **Resetuj hasło** - Dla użytkowników z hasłem (pomarańczowa ikona klucza)
 
-**Akcja pojedyncza:**
-1. Przejdź do listy użytkowników w panelu admin (`/admin/users`)
-2. Znajdź użytkownika bez hasła (widoczny przycisk "Wyślij zaproszenie")
-3. Kliknij przycisk "Wyślij zaproszenie" (ikona koperty)
-4. Potwierdź w modalu
-5. Użytkownik otrzyma nowy email z linkiem do ustawienia hasła
+#### **Akcje Grupowe:**
+- **Usuń** - Usuwanie użytkowników
+- **Wyślij zaproszenia** - Dla użytkowników bez hasła
+- **Resetuj hasła** - Dla użytkowników z hasłem
 
-**Akcja masowa:**
-1. Zaznacz wielu użytkowników na liście
-2. Wybierz akcję masową "Wyślij zaproszenia"
-3. Potwierdź w modalu
-4. System automatycznie:
-   - Wyśle zaproszenia tylko do użytkowników bez hasła
-   - Pominie użytkowników z już ustawionym hasłem
-   - Wyświetli podsumowanie operacji
+### 📧 **SYSTEM EMAIL**
 
-### 🚀 Następne Kroki
+#### **Konfiguracja Produkcji:**
+- **SMTP**: mail.hupsnet.pl
+- **Kolejka**: Skonfigurowana z cron job
+- **Szablon**: `resources/views/emails/user-invitation.blade.php`
 
-System jest gotowy do produkcji. Możliwe przyszłe usprawnienia:
+#### **Automatyzacja:**
+- **Cron Job**: `* * * * * cd /ścieżka/do/projektu && php artisan queue:work --timeout=60 --tries=3 --stop-when-empty`
+- **Logi**: `storage/logs/laravel.log` i `storage/logs/worker.log`
 
-1. **Powiadomienia SMS** - dodanie opcji SMS dla zaproszeń
-2. **Szablony emaili** - możliwość personalizacji szablonów
-3. **Statystyki zaproszeń** - śledzenie skuteczności zaproszeń
-4. **Automatyczne przypomnienia** - dla użytkowników, którzy nie ustawili hasła
-5. **Integracja z systemem płatności** - automatyczne generowanie płatności po aktywacji
+### 🧪 **TESTY**
 
-### 📞 Wsparcie
+#### **UserInvitationTest:**
+- ✅ Tworzenie użytkownika bez hasła
+- ✅ Dispatch event UserInvited
+- ✅ Wysyłanie emaila
+- ✅ Dostępność formularza ustawienia hasła
+- ✅ Ustawianie hasła
+- ✅ Blokada dostępu bez hasła
+- ✅ Przekierowanie z niekompletnym profilem
 
-System jest w pełni funkcjonalny i gotowy do użycia. Wszystkie funkcje zostały przetestowane i działają poprawnie.
+### 📁 **STRUKTURA PLIKÓW**
+
+#### **Nowe Pliki:**
+- `app/Events/UserInvited.php` - Event zaproszenia
+- `app/Listeners/SendUserInvitation.php` - Listener wysyłania
+- `app/Mail/UserInvitationMail.php` - Mailable
+- `resources/views/emails/user-invitation.blade.php` - Szablon emaila
+- `app/Http/Controllers/SetPasswordController.php` - Kontroler ustawiania hasła
+- `resources/views/auth/set-password.blade.php` - Formularz hasła
+- `app/Http/Middleware/EnsureProfileCompleted.php` - Middleware profilu
+- `konfiguracja_kolejki_produkcja.md` - Instrukcje konfiguracji
+
+#### **Zmodyfikowane Pliki:**
+- `app/Filament/Admin/Resources/UserResource.php` - Dodane akcje resetowania
+- `app/Filament/UserPanel/Pages/OnboardingWizard.php` - Dodane pole telefonu
+- `app/Providers/AppServiceProvider.php` - Rejestracja event/listener
+- `app/Providers/Filament/UserPanelProvider.php` - Konfiguracja menu użytkownika
+
+### 🎯 **NASTĘPNE KROKI**
+
+#### **Opcjonalne Usprawnienia:**
+- [ ] Dodanie powiadomień email o resetowaniu hasła
+- [ ] Historia resetowań haseł w logach
+- [ ] Automatyczne blokowanie kont po X nieudanych próbach
+- [ ] Integracja z systemem powiadomień SMS
+
+#### **Monitoring:**
+- [ ] Dashboard z statystykami zaproszeń
+- [ ] Alerty o nieudanych wysyłkach
+- [ ] Raporty aktywności użytkowników
+
+### ✅ **STATUS: GOTOWE DO PRODUKCJI**
+
+Wszystkie główne funkcjonalności zostały zaimplementowane i przetestowane. System jest gotowy do użycia na produkcji.
 
 ---
-
-**Status:** ✅ PRODUKCYJNY  
-**Ostatnia aktualizacja:** 2025-01-27  
-**Wersja:** 7.0 
+**Ostatnia aktualizacja:** 5 sierpnia 2025  
+**Wersja:** 7.0  
+**Status:** ✅ Kompletne 
