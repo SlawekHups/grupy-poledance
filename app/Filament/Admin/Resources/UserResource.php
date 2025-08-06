@@ -470,6 +470,45 @@ class UserResource extends Resource
                     ->modalHeading('Resetuj hasło użytkownika')
                     ->modalDescription(fn (User $record) => "Czy na pewno chcesz zresetować hasło dla użytkownika {$record->name}?\n\nCo się stanie:\n• Obecne hasło zostanie usunięte\n• Użytkownik nie będzie mógł się zalogować\n• Nowe zaproszenie zostanie wysłane na email: {$record->email}\n• Użytkownik będzie musiał ustawić nowe hasło")
                     ->modalSubmitActionLabel('Resetuj hasło i wyślij zaproszenie'),
+                Tables\Actions\Action::make('send_message')
+                    ->label('Wyślij wiadomość')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('success')
+                    ->size('sm')
+                    ->tooltip('Wyślij wiadomość email do użytkownika')
+                    ->visible(fn (User $record) => $record->is_active)
+                    ->form([
+                        Forms\Components\TextInput::make('subject')
+                            ->label('Temat')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\RichEditor::make('content')
+                            ->label('Treść wiadomości')
+                            ->required()
+                            ->toolbarButtons([
+                                'bold',
+                                'italic',
+                                'link',
+                                'bulletList',
+                                'orderedList',
+                            ])
+                            ->columnSpanFull(),
+                    ])
+                    ->action(function (User $record, array $data) {
+                        // Wyślij email
+                        \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                            new \App\Mail\UserMessageMail($record, $data['subject'], $data['content'])
+                        );
+                        
+                        Notification::make()
+                            ->title('Wiadomość wysłana')
+                            ->body("Wiadomość została wysłana do użytkownika {$record->name} na adres: {$record->email}")
+                            ->success()
+                            ->send();
+                    })
+                    ->modalHeading(fn (User $record) => "Wyślij wiadomość do {$record->name}")
+                    ->modalDescription(fn (User $record) => "Wiadomość zostanie wysłana na adres: {$record->email}")
+                    ->modalSubmitActionLabel('Wyślij wiadomość'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -567,6 +606,61 @@ class UserResource extends Resource
                         ->modalHeading('Resetuj hasła użytkowników')
                         ->modalDescription('Czy na pewno chcesz zresetować hasła dla wybranych użytkowników?\n\nCo się stanie:\n• Obecne hasła zostaną usunięte\n• Użytkownicy nie będą mogli się zalogować\n• Nowe zaproszenia zostaną wysłane na ich emaile\n• Użytkownicy będą musieli ustawić nowe hasła')
                         ->modalSubmitActionLabel('Resetuj hasła i wyślij zaproszenia'),
+                    Tables\Actions\BulkAction::make('send_messages')
+                        ->label('Wyślij wiadomości')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->tooltip('Wyślij wiadomość email do wybranych użytkowników')
+                        ->form([
+                            Forms\Components\TextInput::make('subject')
+                                ->label('Temat')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\RichEditor::make('content')
+                                ->label('Treść wiadomości')
+                                ->required()
+                                ->toolbarButtons([
+                                    'bold',
+                                    'italic',
+                                    'link',
+                                    'bulletList',
+                                    'orderedList',
+                                ])
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                            $sentCount = 0;
+                            $inactiveCount = 0;
+                            
+                            foreach ($records as $record) {
+                                if (!$record->is_active) {
+                                    $inactiveCount++;
+                                    continue;
+                                }
+                                
+                                // Wyślij email
+                                \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                                    new \App\Mail\UserMessageMail($record, $data['subject'], $data['content'])
+                                );
+                                
+                                $sentCount++;
+                            }
+                            
+                            $message = "Wysłano {$sentCount} wiadomości";
+                            if ($inactiveCount > 0) {
+                                $message .= " (pominięto {$inactiveCount} nieaktywnych użytkowników)";
+                            }
+                            
+                            Notification::make()
+                                ->title('Wiadomości wysłane')
+                                ->body($message)
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->modalHeading('Wyślij wiadomości do użytkowników')
+                        ->modalDescription('Wiadomość zostanie wysłana do wszystkich wybranych aktywnych użytkowników.')
+                        ->modalSubmitActionLabel('Wyślij wiadomości'),
                 ]),
             ]);
     }

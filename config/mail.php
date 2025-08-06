@@ -115,4 +115,21 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | IMAP Configuration for Incoming Mail Import
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for importing incoming emails from IMAP server
+    |
+    */
+
+    'imap' => [
+        'host' => env('MAIL_IMAP_HOST', env('MAIL_HOST')),
+        'port' => env('MAIL_IMAP_PORT', 993),
+        'username' => env('MAIL_IMAP_USERNAME', env('MAIL_USERNAME')),
+        'password' => env('MAIL_IMAP_PASSWORD', env('MAIL_PASSWORD')),
+        'encryption' => env('MAIL_IMAP_ENCRYPTION', 'ssl'),
+    ],
+
 ];
