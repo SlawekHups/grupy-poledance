@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\AddressRelationManagerResource\RelationManagers
 use App\Filament\Admin\Resources\UserResource\Pages;
 use App\Filament\Admin\Resources\UserResource\RelationManagers;
 use App\Models\User;
+use App\Models\Group;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -467,6 +468,86 @@ class UserResource extends Resource
                         ->modalHeading(fn (User $record) => "Wyślij wiadomość do {$record->name}")
                         ->modalDescription(fn (User $record) => "Wiadomość zostanie wysłana na adres: {$record->email}")
                         ->modalSubmitActionLabel('Wyślij wiadomość'),
+                    Tables\Actions\Action::make('send_payment_reminder')
+                        ->label('Wyślij przypomnienie o płatności')
+                        ->icon('heroicon-o-currency-dollar')
+                        ->color('warning')
+                        ->size('sm')
+                        ->tooltip('Wyślij przypomnienie o zaległych płatnościach')
+                        ->visible(fn (User $record) => $record->is_active)
+                        ->action(function (User $record) {
+                            try {
+                                // Sprawdź zaległości w płatnościach
+                                $unpaidPayments = \App\Models\Payment::where('user_id', $record->id)
+                                    ->where('paid', false)
+                                    ->where('month', '<=', now()->format('Y-m'))
+                                    ->orderBy('month', 'asc')
+                                    ->get();
+                                
+                                if ($unpaidPayments->isEmpty()) {
+                                    Notification::make()
+                                        ->title('Brak zaległości')
+                                        ->body("Użytkownik {$record->name} nie ma zaległych płatności")
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+                                
+                                // Przygotuj dane do przypomnienia
+                                $group = $record->group;
+                                $totalAmount = $unpaidPayments->sum('amount');
+                                $currentMonth = now()->format('Y-m');
+                                $currentMonthPayment = $unpaidPayments->where('month', $currentMonth)->first();
+                                
+                                if ($currentMonthPayment) {
+                                    $reminderType = 'bieżący';
+                                    $subject = "Przypomnienie o płatności za {$currentMonth} - Grupa {$group->name}";
+                                } else {
+                                    $reminderType = 'zaległy';
+                                    $subject = "PILNE: Zaległości w płatnościach - Grupa {$group->name}";
+                                }
+                                
+                                // Generuj treść przypomnienia
+                                $content = self::generateReminderContent($record, $group, $unpaidPayments, $totalAmount, $reminderType);
+                                
+                                // Wyślij email
+                                \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                                    new \App\Mail\PaymentReminderMail($record, $subject, $content)
+                                );
+                                
+                                Notification::make()
+                                    ->title('Przypomnienie wysłane')
+                                    ->body("Przypomnienie o płatnościach zostało wysłane do użytkownika {$record->name}")
+                                    ->success()
+                                    ->send();
+                                
+                                // Zaloguj wysłanie
+                                \Illuminate\Support\Facades\Log::info("Ręcznie wysłano przypomnienie o płatności", [
+                                    'user_id' => $record->id,
+                                    'user_email' => $record->email,
+                                    'group' => $group->name,
+                                    'unpaid_count' => $unpaidPayments->count(),
+                                    'total_amount' => $totalAmount
+                                ]);
+                                
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Błąd')
+                                    ->body("Błąd podczas wysyłania przypomnienia: " . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                                
+                                \Illuminate\Support\Facades\Log::error("Błąd ręcznego wysyłania przypomnienia o płatności", [
+                                    'user_id' => $record->id,
+                                    'error' => $e->getMessage()
+                                ]);
+                            }
+                        })
+                        ->modalHeading(fn (User $record) => "Wyślij przypomnienie o płatnościach")
+                        ->modalDescription(fn (User $record) => "System sprawdzi zaległości w płatnościach i wyśle odpowiednie przypomnienie na adres: {$record->email}")
+                        ->modalSubmitActionLabel('Wyślij przypomnienie')
+                        ->requiresConfirmation()
+                        ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać przypomnienie o płatnościach do użytkownika {$record->name}?\n\nSystem automatycznie:\n• Sprawdzi wszystkie zaległe płatności\n• Wygeneruje odpowiednią treść przypomnienia\n• Wyśle email na adres: {$record->email}"),
                     Tables\Actions\Action::make('reset_password')
                         ->label('Resetuj hasło')
                         ->icon('heroicon-o-key')
@@ -691,5 +772,77 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+    
+    /**
+     * Generuje treść przypomnienia o płatnościach
+     */
+    private static function generateReminderContent(User $user, Group $group, $unpaidPayments, $totalAmount, $reminderType): string
+    {
+        $currentMonth = now()->format('Y-m');
+        $currentMonthName = now()->translatedFormat('F Y');
+        
+        $content = "<h2>Cześć {$user->name}!</h2>";
+        
+        if ($reminderType === 'bieżący') {
+            $content .= "<p>Przypominamy o płatności za <strong>{$currentMonthName}</strong> w grupie <strong>{$group->name}</strong>.</p>";
+        } else {
+            $content .= "<p><strong>PILNE:</strong> Masz zaległości w płatnościach za następujące miesiące:</p>";
+            $monthsList = $unpaidPayments->map(function ($payment) {
+                $date = \Carbon\Carbon::createFromFormat('Y-m', $payment->month);
+                return $date->translatedFormat('F Y');
+            })->implode(', ');
+            $content .= "<ul><li>{$monthsList}</li></ul>";
+        }
+        
+        $content .= "<div class='payment-summary'>";
+        $content .= "<h3>Podsumowanie zaległości:</h3>";
+        $content .= "<ul>";
+        $content .= "<li>Liczba nieopłaconych miesięcy: <strong>{$unpaidPayments->count()}</strong></li>";
+        $content .= "<li>Łączna kwota do zapłaty: <strong>{$totalAmount} zł</strong></li>";
+        $content .= "</ul>";
+        $content .= "</div>";
+        
+        $content .= "<div class='payment-details'>";
+        $content .= "<h3>Szczegóły zaległości:</h3>";
+        $content .= "<table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>";
+        $content .= "<thead><tr style='background-color: #f3f4f6;'>";
+        $content .= "<th style='padding: 10px; border: 1px solid #d1d5db; text-align: left;'>Miesiąc</th>";
+        $content .= "<th style='padding: 10px; border: 1px solid #d1d5db; text-align: right;'>Kwota</th>";
+        $content .= "</tr></thead><tbody>";
+        
+        foreach ($unpaidPayments as $payment) {
+            $monthName = \Carbon\Carbon::createFromFormat('Y-m', $payment->month)->translatedFormat('F Y');
+            $content .= "<tr>";
+            $content .= "<td style='padding: 10px; border: 1px solid #d1d5db;'>{$monthName}</td>";
+            $content .= "<td style='padding: 10px; border: 1px solid #d1d5db; text-align: right;'>{$payment->amount} zł</td>";
+            $content .= "</tr>";
+        }
+        
+        $content .= "</tbody></table>";
+        $content .= "</div>";
+        
+        $content .= "<div class='action-required'>";
+        $content .= "<h3>Co dalej?</h3>";
+        $content .= "<p>Prosimy o uregulowanie zaległości w najbliższym możliwym terminie.</p>";
+        
+        if ($reminderType === 'zaległy') {
+            $content .= "<p><strong>Uwaga:</strong> Długotrwałe zaległości mogą skutkować zawieszeniem uczestnictwa w zajęciach.</p>";
+        }
+        
+        $content .= "</div>";
+        
+        $content .= "<div class='contact-info'>";
+        $content .= "<p>Jeśli masz pytania lub chcesz ustalić plan spłaty, skontaktuj się z nami:</p>";
+        $content .= "<ul>";
+        $content .= "<li>Email: " . config('app.payment_reminder_email') . "</li>";
+        $content .= "<li>Telefon: " . config('app.payment_reminder_phone') . "</li>";
+        $content .= "</ul>";
+        $content .= "</div>";
+        
+        $content .= "<p>Dziękujemy za zrozumienie!</p>";
+        $content .= "<p><em>Zespół " . config('app.payment_reminder_company_name') . "</em></p>";
+        
+        return $content;
     }
 }

@@ -123,4 +123,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Reminder Contact Information
+    |--------------------------------------------------------------------------
+    |
+    | These values are used in payment reminder emails and notifications.
+    | Set them in your ".env" file.
+    |
+    */
+
+    'payment_reminder_email' => env('PAYMENT_REMINDER_EMAIL', 'biuro@ozonek.pl'),
+    'payment_reminder_phone' => env('PAYMENT_REMINDER_PHONE', '+48 534 598 534'),
+    'payment_reminder_company_name' => env('PAYMENT_REMINDER_COMPANY_NAME', 'Grupy Poledance'),
+    'payment_reminder_website' => env('PAYMENT_REMINDER_WEBSITE', 'ozonek.pl'),
+
 ];
