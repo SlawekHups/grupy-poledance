@@ -426,89 +426,100 @@ class UserResource extends Resource
                     ->color('warning')
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('resend_invitation')
-                    ->label('Wyślij zaproszenie')
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\Action::make('send_message')
+                        ->label('Wyślij wiadomość')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->size('sm')
+                        ->tooltip('Wyślij wiadomość email do użytkownika')
+                        ->visible(fn (User $record) => $record->is_active)
+                        ->form([
+                            Forms\Components\TextInput::make('subject')
+                                ->label('Temat')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\RichEditor::make('content')
+                                ->label('Treść wiadomości')
+                                ->required()
+                                ->toolbarButtons([
+                                    'bold',
+                                    'italic',
+                                    'link',
+                                    'bulletList',
+                                    'orderedList',
+                                ])
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function (User $record, array $data) {
+                            // Wyślij email
+                            \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                                new \App\Mail\UserMessageMail($record, $data['subject'], $data['content'])
+                            );
+                            
+                            Notification::make()
+                                ->title('Wiadomość wysłana')
+                                ->body("Wiadomość została wysłana do użytkownika {$record->name} na adres: {$record->email}")
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading(fn (User $record) => "Wyślij wiadomość do {$record->name}")
+                        ->modalDescription(fn (User $record) => "Wiadomość zostanie wysłana na adres: {$record->email}")
+                        ->modalSubmitActionLabel('Wyślij wiadomość'),
+                    Tables\Actions\Action::make('reset_password')
+                        ->label('Resetuj hasło')
+                        ->icon('heroicon-o-key')
+                        ->color('warning')
+                        ->size('sm')
+                        ->tooltip('Usuń hasło użytkownika i wyślij nowe zaproszenie (tylko dla aktywnych użytkowników)')
+                        ->visible(fn (User $record) => $record->password && $record->is_active)
+                        ->action(function (User $record) {
+                            // Usuń hasło użytkownika
+                            $record->update(['password' => null]);
+                            
+                            // Wyślij nowe zaproszenie
+                            \App\Events\UserInvited::dispatch($record);
+                            
+                            Notification::make()
+                                ->title('Hasło zresetowane')
+                                ->body("Hasło użytkownika {$record->name} zostało usunięte. Nowe zaproszenie zostało wysłane na adres: {$record->email}")
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Resetuj hasło użytkownika')
+                        ->modalDescription(fn (User $record) => "Czy na pewno chcesz zresetować hasło dla użytkownika {$record->name}?\n\nCo się stanie:\n• Obecne hasło zostanie usunięte\n• Użytkownik nie będzie mógł się zalogować\n• Nowe zaproszenie zostanie wysłane na email: {$record->email}\n• Użytkownik będzie musiał ustawić nowe hasło")
+                        ->modalSubmitActionLabel('Resetuj hasło i wyślij zaproszenie'),
+                ])
+                    ->button()
+                    ->label('Actions')
+                    ->icon('heroicon-o-cog-6-tooth'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('resend_invitation')
+                        ->label('Wyślij zaproszenie')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->size('sm')
+                        ->tooltip('Wyślij ponownie link do ustawienia hasła (tylko dla aktywnych użytkowników)')
+                        ->visible(fn (User $record) => !$record->password && $record->is_active)
+                        ->action(function (User $record) {
+                            \App\Events\UserInvited::dispatch($record);
+                            Notification::make()
+                                ->title('Zaproszenie wysłane')
+                                ->body("Link do ustawienia hasła został wysłany na adres: {$record->email}")
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Wyślij ponownie zaproszenie')
+                        ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
+                        ->modalSubmitActionLabel('Wyślij zaproszenie'),
+                ])
+                    ->button()
+                    ->label('Zaproszenia')
                     ->icon('heroicon-o-envelope')
-                    ->color('info')
-                    ->size('sm')
-                    ->tooltip('Wyślij ponownie link do ustawienia hasła (tylko dla aktywnych użytkowników)')
-                    ->visible(fn (User $record) => !$record->password && $record->is_active)
-                    ->action(function (User $record) {
-                        \App\Events\UserInvited::dispatch($record);
-                        Notification::make()
-                            ->title('Zaproszenie wysłane')
-                            ->body("Link do ustawienia hasła został wysłany na adres: {$record->email}")
-                            ->success()
-                            ->send();
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Wyślij ponownie zaproszenie')
-                    ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
-                    ->modalSubmitActionLabel('Wyślij zaproszenie'),
-                Tables\Actions\Action::make('reset_password')
-                    ->label('Resetuj hasło')
-                    ->icon('heroicon-o-key')
-                    ->color('warning')
-                    ->size('sm')
-                    ->tooltip('Usuń hasło użytkownika i wyślij nowe zaproszenie (tylko dla aktywnych użytkowników)')
-                    ->visible(fn (User $record) => $record->password && $record->is_active)
-                    ->action(function (User $record) {
-                        // Usuń hasło użytkownika
-                        $record->update(['password' => null]);
-                        
-                        // Wyślij nowe zaproszenie
-                        \App\Events\UserInvited::dispatch($record);
-                        
-                        Notification::make()
-                            ->title('Hasło zresetowane')
-                            ->body("Hasło użytkownika {$record->name} zostało usunięte. Nowe zaproszenie zostało wysłane na adres: {$record->email}")
-                            ->success()
-                            ->send();
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Resetuj hasło użytkownika')
-                    ->modalDescription(fn (User $record) => "Czy na pewno chcesz zresetować hasło dla użytkownika {$record->name}?\n\nCo się stanie:\n• Obecne hasło zostanie usunięte\n• Użytkownik nie będzie mógł się zalogować\n• Nowe zaproszenie zostanie wysłane na email: {$record->email}\n• Użytkownik będzie musiał ustawić nowe hasło")
-                    ->modalSubmitActionLabel('Resetuj hasło i wyślij zaproszenie'),
-                Tables\Actions\Action::make('send_message')
-                    ->label('Wyślij wiadomość')
-                    ->icon('heroicon-o-chat-bubble-left-right')
-                    ->color('success')
-                    ->size('sm')
-                    ->tooltip('Wyślij wiadomość email do użytkownika')
-                    ->visible(fn (User $record) => $record->is_active)
-                    ->form([
-                        Forms\Components\TextInput::make('subject')
-                            ->label('Temat')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\RichEditor::make('content')
-                            ->label('Treść wiadomości')
-                            ->required()
-                            ->toolbarButtons([
-                                'bold',
-                                'italic',
-                                'link',
-                                'bulletList',
-                                'orderedList',
-                            ])
-                            ->columnSpanFull(),
-                    ])
-                    ->action(function (User $record, array $data) {
-                        // Wyślij email
-                        \Illuminate\Support\Facades\Mail::to($record->email)->send(
-                            new \App\Mail\UserMessageMail($record, $data['subject'], $data['content'])
-                        );
-                        
-                        Notification::make()
-                            ->title('Wiadomość wysłana')
-                            ->body("Wiadomość została wysłana do użytkownika {$record->name} na adres: {$record->email}")
-                            ->success()
-                            ->send();
-                    })
-                    ->modalHeading(fn (User $record) => "Wyślij wiadomość do {$record->name}")
-                    ->modalDescription(fn (User $record) => "Wiadomość zostanie wysłana na adres: {$record->email}")
-                    ->modalSubmitActionLabel('Wyślij wiadomość'),
+                    ->color('info'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
