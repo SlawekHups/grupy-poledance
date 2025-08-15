@@ -1,0 +1,126 @@
+{
+  "refactor_info": {
+    "timestamp": "2025-08-06T21:00:00+02:00",
+    "project": "Grupy Poledance",
+    "description": "Refaktoryzacja plików Markdown - przeniesienie do katalogu docs/",
+    "status": "completed"
+  },
+  "moved_files": [
+    {
+      "from": "./instrukcja_uruchomienia.md",
+      "to": "./docs/instrukcja-uruchomienia.md",
+      "status": "moved"
+    },
+    {
+      "from": "./konfiguracja_import_maili.md",
+      "to": "./docs/konfiguracja-import-maili.md",
+      "status": "moved"
+    },
+    {
+      "from": "./konfiguracja_kolejki_produkcja.md",
+      "to": "./docs/konfiguracja-kolejki-produkcja.md",
+      "status": "moved"
+    },
+    {
+      "from": "./planowane_usprawnienia_obecnosci.md",
+      "to": "./docs/planowane-usprawnienia-obecnosci.md",
+      "status": "moved"
+    },
+    {
+      "from": "./planowane_usprawnienia_platnosci.md",
+      "to": "./docs/planowane-usprawnienia-platnosci.md",
+      "status": "moved"
+    },
+    {
+      "from": "./problemy_i_bledy.md",
+      "to": "./docs/problemy-i-bledy.md",
+      "status": "moved"
+    },
+    {
+      "from": "./projekt_status_2.md",
+      "to": "./docs/projekt_status_2.md",
+      "status": "moved"
+    },
+    {
+      "from": "./projekt_status_3.md",
+      "to": "./docs/projekt_status_3.md",
+      "status": "moved"
+    },
+    {
+      "from": "./projekt_status_4.md",
+      "to": "./docs/projekt_status_4.md",
+      "status": "moved"
+    },
+    {
+      "from": "./projekt_status_5.md",
+      "to": "./docs/projekt_status_5.md",
+      "status": "moved"
+    },
+    {
+      "from": "./projekt_status_6.md",
+      "to": "./docs/projekt_status_6.md",
+      "status": "moved"
+    },
+    {
+      "from": "./projekt_status_7.md",
+      "to": "./docs/projekt_status_7.md",
+      "status": "moved"
+    },
+    {
+      "from": "./system_wiadomosci_email.md",
+      "to": "./docs/system-wiadomosci-email.md",
+      "status": "moved"
+    },
+    {
+      "from": "./zadania_cron.md",
+      "to": "./docs/zadania-cron.md",
+      "status": "moved"
+    },
+    {
+      "from": "./zadania_system_zajec.md",
+      "to": "./docs/zadania-system-zajec.md",
+      "status": "moved"
+    }
+  ],
+  "file_notes_directory": {
+    "status": "already_in_place",
+    "files": [
+      "./docs/file-notes/attendance-resource.md",
+      "./docs/file-notes/attendance-stats.blade.md",
+      "./docs/file-notes/list-attendances.md",
+      "./docs/file-notes/profile-card.md",
+      "./docs/file-notes/terms-acceptance-integration.md"
+    ]
+  },
+  "naming_convention": {
+    "strategy": "underscore_to_hyphen",
+    "examples": [
+      "instrukcja_uruchomienia.md -> instrukcja-uruchomienia.md",
+      "konfiguracja_import_maili.md -> konfiguracja-import-maili.md",
+      "system_wiadomosci_email.md -> system-wiadomosci-email.md"
+    ]
+  },
+  "updated_links": [],
+  "warnings": [
+    "Wszystkie pliki zostały pomyślnie przeniesione",
+    "Brak konfliktów nazw plików",
+    "README.md pozostaje w katalogu głównym zgodnie z wymaganiami"
+  ],
+  "errors": [],
+  "final_structure": {
+    "root_files": [
+      "./README.md"
+    ],
+    "docs_directory": {
+      "total_files": 20,
+      "markdown_files": 15,
+      "file_notes": 5,
+      "report_files": 1
+    }
+  },
+  "recommendations": [
+    "Wszystkie linki w dokumentacji powinny być względne względem katalogu docs/",
+    "Nowe pliki .md powinny być umieszczane w docs/",
+    "README.md w katalogu głównym powinien zawierać linki do dokumentacji w docs/"
+  ]
+}
