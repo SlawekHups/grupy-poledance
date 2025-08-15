@@ -136,6 +136,16 @@ class ImportIncomingMails extends Command
      */
     private function cleanContent($content): string
     {
+        // Debug - sprawdź początkową treść
+        $initialLength = strlen($content);
+        if ($initialLength == 0) {
+            \Illuminate\Support\Facades\Log::warning('cleanContent: Treść ma długość 0 na początku', [
+                'content_type' => gettype($content),
+                'content_sample' => substr($content, 0, 100)
+            ]);
+            return 'Treść niedostępna';
+        }
+        
         // Usuń nagłówki MIME
         $content = preg_replace('/^.*?\r?\n\r?\n/s', '', $content);
         
@@ -169,6 +179,9 @@ class ImportIncomingMails extends Command
         // Dekoduj encje HTML
         $content = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         
+        // Wyciągnij tylko odpowiedź (bez cytowanej wiadomości)
+        $content = $this->extractReply($content);
+        
         // Usuń znaki kontrolne i niebezpieczne
         $content = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $content);
         
@@ -184,7 +197,60 @@ class ImportIncomingMails extends Command
             $content = substr($content, 0, 5000) . '... [treść została skrócona]';
         }
         
+        // Debug - sprawdź czy treść jest pusta
+        if (empty(trim($content))) {
+            \Illuminate\Support\Facades\Log::warning('cleanContent: Treść jest pusta po czyszczeniu', [
+                'original_length' => strlen($content),
+                'trimmed_length' => strlen(trim($content))
+            ]);
+        }
+        
         return $content ?: 'Treść niedostępna';
+    }
+    
+    /**
+     * Wyciągnij tylko odpowiedź (bez cytowanej wiadomości)
+     */
+    private function extractReply($body): string
+    {
+        $originalLength = strlen($body);
+        
+        // Wycinamy odpowiedź przed cytowanym mailem
+        $patterns = [
+            '/\nOn .* wrote:/s',
+            '/\nW dniu .* pisze:/s',
+            '/\n-----Original Message-----/s',
+            '/\nFrom: .*\n/s',
+            '/\n> .*\n/s',
+            '/\nOn .* at .* wrote:/s',
+            '/\nW dniu .* o .* pisze:/s',
+            '/\n----- Wiadomość oryginalna -----/s',
+            '/\n----- Original Message -----/s',
+            '/\nOd: .*\n/s',
+            '/\nSent: .*\n/s',
+            '/\nWysłano: .*\n/s',
+        ];
+        
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $body, $matches, PREG_OFFSET_CAPTURE)) {
+                $result = trim(substr($body, 0, $matches[0][1]));
+                
+                // Debug - sprawdź czy wynik nie jest pusty
+                if (empty($result)) {
+                    \Illuminate\Support\Facades\Log::warning('extractReply: Wynik jest pusty po wycięciu', [
+                        'pattern' => $pattern,
+                        'original_length' => $originalLength,
+                        'result_length' => strlen($result),
+                        'body_sample' => substr($body, 0, 200)
+                    ]);
+                    return trim($body); // Zwróć oryginalną treść jeśli wynik jest pusty
+                }
+                
+                return $result;
+            }
+        }
+        
+        return trim($body);
     }
     
     /**
