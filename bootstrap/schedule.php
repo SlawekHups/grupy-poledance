@@ -25,13 +25,13 @@ use Illuminate\Support\Facades\Schedule;
 // FINANSE - PŁATNOŚCI I PRZYPOMNIENIA
 // ============================================================================
 
-// Wysyłanie przypomnień o płatnościach - codziennie od poniedziałku do piątku o 9:00
+// Wysyłanie przypomnień o płatnościach - codziennie o 8:00 (przed zajęciami)
 Schedule::command('payments:send-reminders')
-    ->weekdays()
-    ->at('09:00')
+    ->daily()
+    ->at('08:00')
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Wysyłanie przypomnień o płatnościach do użytkowników z zaległościami')
+    ->description('Wysyłanie przypomnień o płatnościach do użytkowników z zaległościami (1x dziennie przed zajęciami)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Przypomnienia o płatnościach - Ukończone pomyślnie');
     })
@@ -53,13 +53,12 @@ Schedule::command('payments:generate')
         \Illuminate\Support\Facades\Log::error('Zadanie: Generowanie płatności - Błąd wykonania');
     });
 
-// Sprawdzanie brakujących płatności - codziennie o 7:00
+// Sprawdzanie brakujących płatności - co 2 godziny
 Schedule::command('payments:generate-missing')
-    ->daily()
-    ->at('07:00')
+    ->everyTwoHours()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Sprawdzanie i generowanie brakujących płatności dla użytkowników dodanych w trakcie miesiąca')
+    ->description('Sprawdzanie i generowanie brakujących płatności dla użytkowników dodanych w trakcie miesiąca (co 2h)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie brakujących płatności - Ukończone pomyślnie');
     })
@@ -67,17 +66,29 @@ Schedule::command('payments:generate-missing')
         \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie brakujących płatności - Błąd wykonania');
     });
 
+// Sprawdzanie i przypominanie o zaproszeniach - co 6 godzin
+Schedule::command('users:check-invitations')
+    ->everySixHours()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Sprawdzanie użytkowników bez hasła i wysyłanie przypomnień o zaproszeniach (co 6h)')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie zaproszeń - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie zaproszeń - Błąd wykonania');
+    });
+
 // ============================================================================
 // KOMUNIKACJA - MAILE I IMPORT
 // ============================================================================
 
-// Import maili przychodzących - codziennie o 8:00
-Schedule::command('mails:import-incoming --days=30')
-    ->daily()
-    ->at('08:00')
+// Import maili przychodzących - co 15 minut
+Schedule::command('mails:import-incoming --days=7')
+    ->everyFifteenMinutes()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Import maili przychodzących z serwera IMAP')
+    ->description('Import maili przychodzących z serwera IMAP (co 15 minut)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Import maili - Ukończone pomyślnie');
     })
@@ -89,12 +100,12 @@ Schedule::command('mails:import-incoming --days=30')
 // SYSTEM - KOLEJKA I CACHE
 // ============================================================================
 
-// Przetwarzanie kolejki - co 5 minut
-Schedule::command('queue:work --stop-when-empty --max-time=300')
-    ->everyFiveMinutes()
+// Przetwarzanie kolejki - co minutę (szybka odpowiedź)
+Schedule::command('queue:work --stop-when-empty --max-time=60')
+    ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Przetwarzanie zadań w kolejce')
+    ->description('Przetwarzanie zadań w kolejce (co minutę dla szybkiej odpowiedzi)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Przetwarzanie kolejki - Ukończone pomyślnie');
     })

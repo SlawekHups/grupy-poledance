@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\User;
 use App\Models\Payment;
 use App\Models\Group;
+use App\Models\PaymentReminderLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -82,6 +83,12 @@ class SendPaymentReminders extends Command
                     continue;
                 }
                 
+                // Sprawdź czy użytkownik już dostał przypomnienie dzisiaj
+                if (PaymentReminderLog::wasReminderSentToday($user->id)) {
+                    $this->line("  ⏳ {$user->name} - już dostał przypomnienie dzisiaj, pomijam");
+                    continue;
+                }
+                
                 $this->warn("  ⚠ {$user->name} - ma {$unpaidPayments->count()} nieopłaconych płatności");
                 
                 // Przygotuj treść przypomnienia
@@ -107,6 +114,16 @@ class SendPaymentReminders extends Command
                             'group' => $group->name,
                             'unpaid_count' => $unpaidPayments->count(),
                             'total_amount' => $unpaidPayments->sum('amount')
+                        ]);
+                        
+                        // Zapisz w logu przypomnień
+                        PaymentReminderLog::create([
+                            'user_id' => $user->id,
+                            'group_name' => $group->name,
+                            'sent_date' => now()->toDateString(),
+                            'reminder_type' => $reminderData['type'],
+                            'unpaid_count' => $unpaidPayments->count(),
+                            'total_amount' => $unpaidPayments->sum('amount'),
                         ]);
                         
                         $totalReminders++;
