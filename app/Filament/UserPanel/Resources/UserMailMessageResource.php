@@ -124,7 +124,7 @@ class UserMailMessageResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('reply')
                     ->label('Odpowiedz')
-                    ->icon('heroicon-o-reply')
+                    ->icon('heroicon-o-arrow-uturn-left')
                     ->color('info')
                     ->visible(fn (UserMailMessage $record) => $record->direction === 'in')
                     ->url(fn (UserMailMessage $record) => "mailto:{$record->email}?subject=Re: {$record->subject}")
