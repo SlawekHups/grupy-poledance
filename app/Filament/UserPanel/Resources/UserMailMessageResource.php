@@ -127,16 +127,31 @@ class UserMailMessageResource extends Resource
                     ->icon('heroicon-o-arrow-uturn-left')
                     ->color('info')
                     ->visible(fn (UserMailMessage $record) => $record->direction === 'in')
-                    ->url(fn (UserMailMessage $record) => "mailto:{$record->email}?subject=Re: {$record->subject}")
-                    ->openUrlInNewTab(),
+                    ->url(fn (UserMailMessage $record) => "mailto:" . config('mail.from.address') . "?subject=Re: {$record->subject}&body=Odpowiedź na wiadomość od: {$record->email}%0D%0A%0D%0A")
+                    ->openUrlInNewTab()
+                    ->tooltip('Odpowiedz administratorowi systemu'),
             ])
             ->defaultSort('sent_at', 'desc');
     }
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->forUser(Auth::id()); // Tylko maile zalogowanego użytkownika
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        
+        // Debug - loguj ID zalogowanego użytkownika
+        \Illuminate\Support\Facades\Log::info('UserPanel UserMailMessage - zalogowany użytkownik ID:', ['user_id' => $userId]);
+        
+        $query = parent::getEloquentQuery()
+            ->where('user_id', $userId); // Bezpośrednie filtrowanie po user_id
+        
+        // Debug - loguj zapytanie SQL
+        \Illuminate\Support\Facades\Log::info('UserPanel UserMailMessage - SQL query:', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'user_id' => $userId
+        ]);
+        
+        return $query;
     }
 
     public static function getRelations(): array

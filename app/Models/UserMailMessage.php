@@ -26,10 +26,10 @@ class UserMailMessage extends Model
     /**
      * Relacja do użytkownika
      */
-    // public function user(): BelongsTo
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Scope dla wiadomości przychodzących
