@@ -53,6 +53,20 @@ Schedule::command('payments:generate')
         \Illuminate\Support\Facades\Log::error('Zadanie: Generowanie płatności - Błąd wykonania');
     });
 
+// Sprawdzanie brakujących płatności - codziennie o 7:00
+Schedule::command('payments:generate-missing')
+    ->daily()
+    ->at('07:00')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Sprawdzanie i generowanie brakujących płatności dla użytkowników dodanych w trakcie miesiąca')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie brakujących płatności - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie brakujących płatności - Błąd wykonania');
+    });
+
 // ============================================================================
 // KOMUNIKACJA - MAILE I IMPORT
 // ============================================================================
@@ -163,7 +177,7 @@ Schedule::command('optimize:clear')
     });
 
 // ============================================================================
-// INFORMACJE O ZADANIACH (tylko w development)
+// INFORMACJE O ZADAŃ (tylko w development)
 // ============================================================================
 
 if (app()->environment('local', 'development')) {
