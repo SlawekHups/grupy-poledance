@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesAndUsersSeeder::class,
             GroupsSeeder::class,
+            UsersSeeder::class, // Dodaje użytkowników do grup
         ]);
         // User::factory(10)->create();
     }
