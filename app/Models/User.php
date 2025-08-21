@@ -57,7 +57,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            // 'password' => 'hashed', // Usunięte - powodowało problemy z linkami zaproszenia
             'is_active' => 'boolean',
             'joined_at' => 'date',
             'accepted_terms_at' => 'datetime',
@@ -96,5 +96,17 @@ class User extends Authenticatable
     public function isUser(): bool
     {
         return $this->role === 'user';
+    }
+
+    /**
+     * Mutator dla hasła - haszuje tylko jeśli nie jest null
+     */
+    public function setPasswordAttribute($value)
+    {
+        if ($value !== null) {
+            $this->attributes['password'] = \Illuminate\Support\Facades\Hash::make($value);
+        } else {
+            $this->attributes['password'] = null;
+        }
     }
 }
