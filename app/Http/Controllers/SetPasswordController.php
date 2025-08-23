@@ -29,10 +29,10 @@ class SetPasswordController extends Controller
             return redirect()->route('filament.user.auth.login')->withErrors(['email' => 'Nieprawidłowy adres email.']);
         }
 
-        // Sprawdź czy token jest ważny (48 godzin)
+        // Sprawdź czy token jest ważny (72 godziny - zgodnie z HandlePasswordResetRequest)
         $tokenRecord = DB::table('password_reset_tokens')
             ->where('email', $email)
-            ->where('created_at', '>=', now()->subHours(48))
+            ->where('created_at', '>=', now()->subHours(72))
             ->first();
 
         if (!$tokenRecord || !Hash::check($token, $tokenRecord->token)) {
@@ -68,10 +68,10 @@ class SetPasswordController extends Controller
             return back()->withErrors(['email' => 'Nieprawidłowy adres email.']);
         }
 
-        // Sprawdź czy token jest ważny
+        // Sprawdź czy token jest ważny (72 godziny - zgodnie z HandlePasswordResetRequest)
         $tokenRecord = DB::table('password_reset_tokens')
             ->where('email', $request->email)
-            ->where('created_at', '>=', now()->subHours(48))
+            ->where('created_at', '>=', now()->subHours(72))
             ->first();
 
         if (!$tokenRecord || !Hash::check($request->token, $tokenRecord->token)) {

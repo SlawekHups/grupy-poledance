@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Events\UserInvited;
+use App\Events\PasswordResetRequested;
 use App\Listeners\LogOutgoingMail;
 use App\Listeners\SendUserInvitation;
+use App\Listeners\HandlePasswordResetRequest;
 use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -24,15 +26,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Event::listen(
-            UserInvited::class,
-            [SendUserInvitation::class, 'handle']
-        );
-
-        // Logowanie wysyłanych maili
-        Event::listen(
-            MessageSent::class,
-            [LogOutgoingMail::class, 'handle']
-        );
+        // Laravel automatycznie rejestruje listenery przez autodiscovery
+        // Usunięto ręczną rejestrację, aby uniknąć duplikowania
     }
 }
