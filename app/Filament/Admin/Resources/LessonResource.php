@@ -171,11 +171,11 @@ class LessonResource extends Resource
                         Tables\Columns\TextColumn::make('description')
                             ->label('')
                             ->html()
-                            ->words(250)
+                            ->words(150)
                             ->wrap()
                             ->extraAttributes([
-                                'class' => 'prose max-w-none p-6',
-                                'style' => 'word-wrap: break-word; white-space: pre-wrap;'
+                                'class' => 'prose max-w-none p-4',
+                                'style' => 'word-wrap: break-word; white-space: pre-wrap; max-height: 250px; overflow: hidden;'
                             ]),
                     ])->extraAttributes(['class' => 'bg-white rounded-b-xl']),
                 ]),
