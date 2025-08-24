@@ -257,12 +257,62 @@ class UserResource extends Resource
             ->headerActions([
                 Action::make('export')
                     ->label('Eksportuj użytkowników')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->action('exportUsers')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->modalHeading('Eksportuj użytkowników')
+                    ->modalDescription('Wybierz typ eksportu')
+                    ->form([
+                        Forms\Components\Select::make('exportType')
+                            ->label('Typ eksportu')
+                            ->options([
+                                'active' => 'Tylko aktywni użytkownicy',
+                                'all' => 'Wszyscy użytkownicy',
+                            ])
+                            ->default('active')
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $exportType = $data['exportType'] ?? 'active';
+                        
+                        // Generuj CSV i zwróć jako download
+                        $filename = 'users_export_' . $exportType . '_' . now()->format('Ymd_His') . '.csv';
+                        
+                        // Eksportuj użytkowników w zależności od typu
+                        $query = \App\Models\User::where('role', 'user');
+                        
+                        if ($exportType === 'active') {
+                            $query->where('is_active', true);
+                        }
+                        
+                        $users = $query->select(['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active'])->get();
+
+                        $callback = function() use ($users) {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active']);
+                            foreach ($users as $user) {
+                                fputcsv($handle, [
+                                    $user->name,
+                                    $user->email,
+                                    $user->phone,
+                                    $user->group_id,
+                                    $user->amount,
+                                    $user->joined_at,
+                                    $user->is_active ? 1 : 0,
+                                ]);
+                            }
+                            fclose($handle);
+                        };
+
+                        $headers = [
+                            'Content-Type' => 'text/csv',
+                            'Content-Disposition' => "attachment; filename=\"$filename\"",
+                        ];
+
+                        return response()->stream($callback, 200, $headers);
+                    })
                     ->color('success'),
                 Action::make('import')
                     ->label('Importuj użytkowników')
-                    ->icon('heroicon-o-arrow-up-tray')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->modalHeading('Importuj użytkowników')
                     ->modalDescription('Wybierz plik CSV do importu')
                     ->form([
@@ -641,7 +691,56 @@ class UserResource extends Resource
                                 ->body("Użytkownik {$record->name} otrzyma nowe zaproszenie do ustawienia hasła.")
                                 ->success()
                                 ->send();
+                        }),
+
+                    Tables\Actions\Action::make('export_user')
+                        ->label('Eksportuj do CSV')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('info')
+                        ->size('sm')
+                        ->tooltip('Eksportuj dane użytkownika do pliku CSV')
+                        ->action(function (User $record) {
+                            // Generuj zawartość CSV
+                            $csvContent = "name,email,phone,group_id,amount,joined_at,is_active\n";
+                            $csvContent .= "\"{$record->name}\",\"{$record->email}\",\"{$record->phone}\",\"{$record->group_id}\",\"{$record->amount}\",\"{$record->joined_at}\",\"" . ($record->is_active ? 1 : 0) . "\"\n";
+                            
+                            // Zapisz do sesji
+                            $filename = 'user_' . $record->id . '_' . now()->format('Ymd_His') . '.csv';
+                            session(['export_csv' => $csvContent, 'export_filename' => $filename]);
+                            
+                            // Powiadomienie o sukcesie
+                            \Filament\Notifications\Notification::make()
+                                ->title('CSV gotowy')
+                                ->body('Kliknij ponownie aby pobrać plik')
+                                ->success()
+                                ->send();
                         })
+                        ->extraAttributes([
+                            'x-data' => '{}',
+                            'x-on:click' => '
+                                fetch("/download-csv")
+                                    .then(response => {
+                                        if (response.ok) {
+                                            return response.blob();
+                                        }
+                                        throw new Error("Błąd pobierania");
+                                    })
+                                    .then(blob => {
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement("a");
+                                        a.href = url;
+                                        a.download = "export.csv";
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                        document.body.removeChild(a);
+                                    })
+                                    .catch(error => {
+                                        console.error("Błąd:", error);
+                                        alert("Błąd podczas pobierania pliku");
+                                    });
+                            ',
+                        ]),
 
                 ])
                     ->button()
@@ -744,25 +843,28 @@ class UserResource extends Resource
                         ])
                         ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
                             $sentCount = 0;
-                            $inactiveCount = 0;
+                            $skippedCount = 0;
                             
                             foreach ($records as $record) {
                                 if (!$record->is_active) {
-                                    $inactiveCount++;
+                                    $skippedCount++;
                                     continue;
                                 }
                                 
-                                // Wyślij email
-                                \Illuminate\Support\Facades\Mail::to($record->email)->send(
-                                    new \App\Mail\UserMessageMail($record, $data['subject'], $data['content'])
-                                );
-                                
-                                $sentCount++;
+                                try {
+                                    \Illuminate\Support\Facades\Mail::to($record->email)->send(
+                                        new \App\Mail\UserMessageMail($record, $data['subject'], $data['content'])
+                                    );
+                                    $sentCount++;
+                                } catch (\Exception $e) {
+                                    $skippedCount++;
+                                    \Illuminate\Support\Facades\Log::error("Błąd wysyłania wiadomości do {$record->email}: " . $e->getMessage());
+                                }
                             }
                             
                             $message = "Wysłano {$sentCount} wiadomości";
-                            if ($inactiveCount > 0) {
-                                $message .= " (pominięto {$inactiveCount} nieaktywnych użytkowników)";
+                            if ($skippedCount > 0) {
+                                $message .= " (pominięto {$skippedCount} nieaktywnych użytkowników)";
                             }
                             
                             Notification::make()
@@ -792,7 +894,7 @@ class UserResource extends Resource
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'edit' => Pages\EditUser::route('/{record}'),
         ];
     }
     
@@ -866,5 +968,16 @@ class UserResource extends Resource
         $content .= "<p><em>Zespół " . config('app.payment_reminder_company_name') . "</em></p>";
         
         return $content;
+    }
+    
+    /**
+     * Generuje zawartość CSV dla eksportu użytkownika
+     */
+    private static function generateCsvContent(User $record): string
+    {
+        $csvContent = "name,email,phone,group_id,amount,joined_at,is_active\n";
+        $csvContent .= "\"{$record->name}\",\"{$record->email}\",\"{$record->phone}\",\"{$record->group_id}\",\"{$record->amount}\",\"{$record->joined_at}\",\"" . ($record->is_active ? 1 : 0) . "\"\n";
+        
+        return $csvContent;
     }
 }

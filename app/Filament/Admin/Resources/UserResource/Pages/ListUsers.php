@@ -109,7 +109,11 @@ class ListUsers extends ListRecords
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
 
-        $users = \App\Models\User::where('role', 'user')->select(['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active'])->get();
+        // Eksportuj tylko aktywnych użytkowników (domyślnie)
+        $users = \App\Models\User::where('role', 'user')
+            ->where('is_active', true)
+            ->select(['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active'])
+            ->get();
 
         $callback = function() use ($users) {
             $handle = fopen('php://output', 'w');
