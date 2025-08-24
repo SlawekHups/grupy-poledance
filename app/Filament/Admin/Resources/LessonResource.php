@@ -53,18 +53,21 @@ class LessonResource extends Resource
                     ->options(Group::query()->pluck('name', 'id'))
                     ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->hidden(fn ($livewire) => $livewire instanceof \App\Filament\Admin\Resources\LessonResource\Pages\ViewLesson),
 
                 Forms\Components\TextInput::make('title')
                     ->label('Tytuł')
                     ->required()
                     ->maxLength(255)
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->disabled(fn ($livewire) => $livewire instanceof \App\Filament\Admin\Resources\LessonResource\Pages\ViewLesson),
 
                 Forms\Components\DatePicker::make('date')
                     ->label('Data zajęć')
                     ->required()
-                    ->default(now()),
+                    ->default(now())
+                    ->hidden(fn ($livewire) => $livewire instanceof \App\Filament\Admin\Resources\LessonResource\Pages\ViewLesson),
 
                 Forms\Components\Select::make('status')
                     ->label('Status')
@@ -73,7 +76,8 @@ class LessonResource extends Resource
                         'published' => 'Opublikowane',
                     ])
                     ->default('draft')
-                    ->required(),
+                    ->required()
+                    ->hidden(fn ($livewire) => $livewire instanceof \App\Filament\Admin\Resources\LessonResource\Pages\ViewLesson),
 
                 Forms\Components\RichEditor::make('description')
                     ->label('Opis')
@@ -83,7 +87,8 @@ class LessonResource extends Resource
                         'bulletList',
                         'orderedList',
                     ])
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->disabled(fn ($livewire) => $livewire instanceof \App\Filament\Admin\Resources\LessonResource\Pages\ViewLesson),
             ]);
     }
 
@@ -210,6 +215,10 @@ class LessonResource extends Resource
                     }),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Podgląd')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('publish')
@@ -248,6 +257,7 @@ class LessonResource extends Resource
             'index' => Pages\ListLessons::route('/'),
             'create' => Pages\CreateLesson::route('/create'),
             'edit' => Pages\EditLesson::route('/{record}/edit'),
+            'view' => Pages\ViewLesson::route('/{record}'),
         ];
     }
 } 
