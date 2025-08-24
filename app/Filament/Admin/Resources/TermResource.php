@@ -4,9 +4,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\TermResource\Pages;
 use App\Models\Term;
-use Doctrine\DBAL\Schema\Table as SchemaTable;
 use Filament\Forms\Components\MarkdownEditor;
-use App\Models\Group;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -18,8 +16,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Infolists\Components\HtmlEntry;
-
 
 
 class TermResource extends Resource
@@ -54,9 +50,19 @@ class TermResource extends Resource
                 TextColumn::make('id')->searchable(),
                 TextColumn::make('name')->searchable(),
                 BooleanColumn::make('active')->label('Aktywny'),
-
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Podgląd')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->modalHeading(fn (Term $record): string => "Podgląd: {$record->name}")
+                    ->modalContent(fn (Term $record) => view('filament.modals.term-preview', [
+                        'term' => $record
+                    ]))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Zamknij')
+                    ->modalWidth('4xl'),
                 Tables\Actions\EditAction::make(),
             ]);
     }
