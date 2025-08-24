@@ -53,25 +53,25 @@ Schedule::command('payments:generate')
         \Illuminate\Support\Facades\Log::error('Zadanie: Generowanie płatności - Błąd wykonania');
     });
 
-// Sprawdzanie brakujących płatności - co 2 godziny
+// Sprawdzanie brakujących płatności - co 2 minuty
 Schedule::command('payments:generate-missing')
-    ->everyTwoHours()
+    ->everyTwoMinutes()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Sprawdzanie i generowanie brakujących płatności dla użytkowników dodanych w trakcie miesiąca (co 2h)')
+    ->description('Sprawdzanie i generowanie brakujących płatności (co 2 minuty)')
     ->onSuccess(function () {
-        \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie brakujących płatności - Ukończone pomyślnie');
+        \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie płatności - Ukończone pomyślnie');
     })
     ->onFailure(function () {
-        \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie brakujących płatności - Błąd wykonania');
+        \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie płatności - Błąd wykonania');
     });
 
-// Sprawdzanie i przypominanie o zaproszeniach - co 6 godzin
+// Sprawdzanie i przypominanie o zaproszeniach - co 1 minutę
 Schedule::command('users:check-invitations')
-    ->everySixHours()
+    ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Sprawdzanie użytkowników bez hasła i wysyłanie przypomnień o zaproszeniach (co 6h)')
+    ->description('Sprawdzanie użytkowników bez hasła i wygasłych linków zaproszeń (co 1 minutę)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie zaproszeń - Ukończone pomyślnie');
     })
@@ -97,12 +97,12 @@ Schedule::command('passwords:check-expired')
 // KOMUNIKACJA - MAILE I IMPORT
 // ============================================================================
 
-// Import maili przychodzących - co 15 minut
-Schedule::command('mails:import-incoming --days=7')
-    ->everyFifteenMinutes()
+// Import maili przychodzących - co 2 minuty
+Schedule::command('mails:import-incoming')
+    ->everyTwoMinutes()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Import maili przychodzących z serwera IMAP (co 15 minut)')
+    ->description('Import maili przychodzących z serwera IMAP (co 2 minuty)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Import maili - Ukończone pomyślnie');
     })
@@ -224,8 +224,13 @@ if (app()->environment('local', 'development')) {
 | - 08:00 - Import maili przychodzących
 | - 09:00 - Przypomnienia o płatnościach (pon-pt)
 |
-| ZADANIA CO 5 MINUT:
+| ZADANIA CO 1 MINUTĘ:
+| - Sprawdzanie zaproszeń i wygasłych linków
 | - Przetwarzanie kolejki
+|
+| ZADANIA CO 2 MINUTY:
+| - Sprawdzanie brakujących płatności
+| - Import maili przychodzących
 |
 | ZADANIA TYGODNIOWE:
 | - Sobota 04:00 - Czyszczenie backupów
