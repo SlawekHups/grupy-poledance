@@ -26,7 +26,7 @@ class UserInvitationMail extends Mailable
     {
         $this->user = $user;
         $this->token = $token;
-        $this->resetUrl = route('set-password', ['token' => $token, 'email' => $user->email]);
+        $this->resetUrl = route('set-password', ['token' => $this->token, 'email' => $this->user->email]);
     }
 
     /**

@@ -35,7 +35,7 @@ class SetPasswordController extends Controller
             ->where('created_at', '>=', now()->subHours(72))
             ->first();
 
-        if (!$tokenRecord || !Hash::check($token, $tokenRecord->token)) {
+        if (!$tokenRecord || $tokenRecord->raw_token !== $token) {
             return redirect()->route('filament.user.auth.login')->withErrors(['email' => 'Link wygasł lub jest nieprawidłowy.']);
         }
 
@@ -74,7 +74,7 @@ class SetPasswordController extends Controller
             ->where('created_at', '>=', now()->subHours(72))
             ->first();
 
-        if (!$tokenRecord || !Hash::check($request->token, $tokenRecord->token)) {
+        if (!$tokenRecord || $tokenRecord->raw_token !== $request->token) {
             return back()->withErrors(['email' => 'Link wygasł lub jest nieprawidłowy.']);
         }
 
@@ -84,10 +84,10 @@ class SetPasswordController extends Controller
         }
 
         // Ustaw hasło
-        $user->forceFill([
-            'password' => Hash::make($request->password),
+        $user->update([
+            'password' => $request->password, // Mutator automatycznie zahashuje
             'remember_token' => Str::random(60),
-        ])->save();
+        ]);
 
         // Usuń token po użyciu
         DB::table('password_reset_tokens')

@@ -31,7 +31,7 @@ class PasswordResetInvitationMail extends Mailable
 
     public function content(): Content
     {
-        $resetUrl = url("/set-password/{$this->token}?email=" . urlencode($this->user->email));
+        $resetUrl = route('set-password', ['token' => $this->token, 'email' => $this->user->email]);
         
         return new Content(
             view: 'emails.password-reset-invitation',

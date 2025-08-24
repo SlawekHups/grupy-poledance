@@ -31,18 +31,19 @@ class HandlePasswordResetRequest implements ShouldQueue
             // Usuń stare tokeny dla tego użytkownika
             $this->deleteOldTokens($user);
 
-            // Wygeneruj JEDEN surowy token dla obu maili
+            // Wygeneruj surowy token (64 znaki)
             $rawToken = Str::random(64);
             
             // Zapisz zahashowany token w tabeli password_reset_tokens
             DB::table('password_reset_tokens')->insert([
                 'email' => $user->email,
                 'token' => Hash::make($rawToken),
+                'raw_token' => $rawToken, // Dodaję surowy token
                 'created_at' => now(),
             ]);
             
-            // Użyj tego samego tokena w obu mailach
-            $token = $rawToken;
+            // W mailu używaj SUROWEGO tokenu (nie zahashowanego!)
+            $tokenForMail = $rawToken;
 
             // Oblicz datę wygaśnięcia (72 godziny)
             $expiresAt = Carbon::now()->addHours(72);
@@ -62,10 +63,8 @@ class HandlePasswordResetRequest implements ShouldQueue
             // Usuń hasło użytkownika
             $user->update(['password' => null]);
 
-            // Wyślij JEDEN email z zaproszeniem (nie dwa!)
-            Mail::to($user->email)->send(
-                new PasswordResetInvitationMail($user, $token, $expiresAt, $admin->name)
-            );
+            // Wyślij event UserInvited (używając tego samego flow co zaproszenie!)
+            \App\Events\UserInvited::dispatch($user, $admin);
             
             // NIE wysyłaj UserInvitationMail - to powoduje duplikowanie!
 
@@ -79,6 +78,7 @@ class HandlePasswordResetRequest implements ShouldQueue
                 'admin_email' => $admin->email,
                 'reset_type' => $event->resetType,
                 'token_expires_at' => $expiresAt,
+                'token_length' => strlen($rawToken),
             ]);
 
         } catch (\Exception $e) {

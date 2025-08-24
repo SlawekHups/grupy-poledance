@@ -48,9 +48,8 @@ class SendUserInvitation implements ShouldQueue
         
         if ($tokenRecord) {
             // Użyj istniejącego tokena (z resetu hasła)
-            // Ale musimy przekazać surowy token, nie hash!
-            // To wymaga modyfikacji architektury
-            $token = $tokenRecord->token;
+            // Używamy surowego tokenu, nie hasha!
+            $token = $tokenRecord->raw_token ?? $tokenRecord->token;
         } else {
             // Generuj nowy token tylko jeśli nie ma istniejącego
             $token = Password::createToken($user);
