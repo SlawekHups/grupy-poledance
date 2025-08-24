@@ -26,18 +26,24 @@ class SendPaymentReminders extends Command
         }
 
         $today = Carbon::now();
-        $currentDayOfWeek = $today->dayOfWeek; // 1 = poniedziałek, 2 = wtorek, itd.
+        $currentDayOfWeek = $today->dayOfWeek; // 0 = niedziela, 1 = poniedziałek, itd.
         
-        // Mapowanie dni tygodnia na polskie nazwy
+        // Carbon zwraca 0-6 (niedziela=0, poniedziałek=1), ale potrzebuję 1-7
         $dayNames = [
-            1 => 'Poniedziałek',
-            2 => 'Wtorek', 
-            3 => 'Środa',
-            4 => 'Czwartek',
-            5 => 'Piątek',
-            6 => 'Sobota',
-            7 => 'Niedziela'
+            0 => 'Niedziela',  // Carbon: 0
+            1 => 'Poniedziałek', // Carbon: 1
+            2 => 'Wtorek',     // Carbon: 2
+            3 => 'Środa',      // Carbon: 3
+            4 => 'Czwartek',   // Carbon: 4
+            5 => 'Piątek',     // Carbon: 5
+            6 => 'Sobota'      // Carbon: 6
         ];
+        
+        // Zabezpieczenie przed nieoczekiwanymi wartościami
+        if (!isset($dayNames[$currentDayOfWeek])) {
+            $this->error("Nieoczekiwana wartość dnia tygodnia: {$currentDayOfWeek}");
+            return 1;
+        }
         
         $currentDayName = $dayNames[$currentDayOfWeek];
         
@@ -250,6 +256,12 @@ class SendPaymentReminders extends Command
         $content .= "<h3>Co dalej?</h3>";
         $content .= "<p>Prosimy o uregulowanie zaległości w najbliższym możliwym terminie.</p>";
         
+        // Dodaj link do płatności jeśli istnieje
+        $paymentLink = $this->getPaymentLink($user);
+        if ($paymentLink) {
+            $content .= "<p><strong>Płatność online:</strong> <a href='{$paymentLink}' style='background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;'>Zapłać teraz</a></p>";
+        }
+        
         if ($reminderType === 'zaległy') {
             $content .= "<p><strong>Uwaga:</strong> Długotrwałe zaległości mogą skutkować zawieszeniem uczestnictwa w zajęciach.</p>";
         }
@@ -268,5 +280,31 @@ class SendPaymentReminders extends Command
         $content .= "<p><em>Zespół " . config('app.payment_reminder_company_name') . "</em></p>";
         
         return $content;
+    }
+
+    /**
+     * Generuje link do płatności dla użytkownika.
+     */
+    private function getPaymentLink(User $user): ?string
+    {
+        // Sprawdź czy użytkownik ma link do płatności w bieżącym miesiącu
+        $currentMonth = Carbon::now()->format('Y-m');
+        $payment = Payment::where('user_id', $user->id)
+            ->where('month', $currentMonth)
+            ->whereNotNull('payment_link')
+            ->first();
+
+        if ($payment && $payment->payment_link) {
+            return $payment->payment_link;
+        }
+
+        // Jeśli nie ma linku w bieżącym miesiącu, sprawdź w najnowszej nieopłaconej płatności
+        $unpaidPayment = Payment::where('user_id', $user->id)
+            ->where('paid', false)
+            ->whereNotNull('payment_link')
+            ->orderBy('month', 'desc')
+            ->first();
+
+        return $unpaidPayment ? $unpaidPayment->payment_link : null;
     }
 }

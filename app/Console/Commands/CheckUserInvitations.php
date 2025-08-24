@@ -49,7 +49,8 @@ class CheckUserInvitations extends Command
             $activeInvitation = $this->getActiveInvitation($user);
             
             if ($activeInvitation) {
-                $this->line("⏳ {$user->name} ({$user->email}) - aktywny link zaproszenia (wygaśnie: {$activeInvitation->expires_at})");
+                $expiresAt = Carbon::parse($activeInvitation->created_at)->addHours(72);
+                $this->line("⏳ {$user->name} ({$user->email}) - aktywny link zaproszenia (wygaśnie: {$expiresAt->format('d.m.Y H:i:s')})");
                 $activeCount++;
             } else {
                 // Link wygasł - nie wysyłaj automatycznie, tylko oznacz
