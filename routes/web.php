@@ -58,3 +58,33 @@ Route::get('/admin/export-user-csv/{user}', function (User $user) {
 
     return response()->stream($callback, 200, $headers);
 })->middleware(['web', 'auth'])->name('admin.export-user-csv');
+
+// Route eksportu danych użytkownika (CSV)
+Route::get('/panel/export-my-csv', function () {
+    $user = auth()->user();
+    abort_unless($user, 403);
+
+    $filename = 'my_data_' . now()->format('Ymd_His') . '.csv';
+
+    $callback = function() use ($user) {
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, ['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active']);
+        fputcsv($handle, [
+            $user->name,
+            $user->email,
+            $user->phone,
+            $user->group_id,
+            $user->amount,
+            $user->joined_at,
+            $user->is_active ? 1 : 0,
+        ]);
+        fclose($handle);
+    };
+
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"$filename\"",
+    ];
+
+    return response()->stream($callback, 200, $headers);
+})->middleware(['web', 'auth'])->name('user.export-my-csv');
