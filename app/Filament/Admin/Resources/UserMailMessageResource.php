@@ -9,6 +9,12 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\KeyValueEntry;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserMailMessageResource extends Resource
@@ -72,6 +78,66 @@ class UserMailMessageResource extends Resource
                 Forms\Components\TextInput::make('message_id')
                     ->label('ID Wiadomości')
                     ->disabled(),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Szczegóły wiadomości')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('direction')
+                            ->label('Kierunek')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'in' => 'success',
+                                'out' => 'warning',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'in' => 'Odebrana',
+                                'out' => 'Wysłana',
+                                default => 'Nieznany',
+                            }),
+                        TextEntry::make('email')
+                            ->label('Email')
+                            ->copyable(),
+                        TextEntry::make('subject')
+                            ->label('Temat')
+                            ->columnSpanFull(),
+                        TextEntry::make('sent_at')
+                            ->label('Data')
+                            ->dateTime('d.m.Y H:i'),
+                        KeyValueEntry::make('headers')
+                            ->label('Nagłówki')
+                            ->visible(fn ($record) => !empty($record->headers))
+                            ->columnSpanFull(),
+                    ]),
+                Section::make('Treść')
+                    ->columnSpanFull()
+                    ->schema([
+                        TextEntry::make('content')
+                            ->label('')
+                            ->html()
+                            ->formatStateUsing(function (?string $state) {
+                                if (!$state) {
+                                    return new HtmlString('<em>Brak treści</em>');
+                                }
+                                $decoded = html_entity_decode($state, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                $looksLikeHtml = Str::contains($decoded, ['</', '<br', '<p', '<div', '<span', '<ul', '<ol', '<li', '<strong', '<em', '<a ', '<table', '<style', '<img', '<h1', '<h2', '<h3']);
+                                if (!$looksLikeHtml) {
+                                    // Usuń bloki CSS w formie tekstu: selektor { ... }
+                                    $decoded = preg_replace('/[^\n\r\{\}]+\{[\s\S]*?\}/m', '', $decoded);
+                                    // Zredukuj nadmiarowe puste linie
+                                    $decoded = preg_replace('/\n{3,}/', "\n\n", $decoded);
+                                }
+                                $html = $looksLikeHtml ? $decoded : Str::markdown($decoded);
+                                return new HtmlString($html);
+                            })
+                            ->extraAttributes(['class' => 'prose max-w-none whitespace-pre-wrap break-words']),
+                    ]),
             ]);
     }
 

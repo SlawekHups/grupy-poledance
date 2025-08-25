@@ -95,34 +95,71 @@ class LogOutgoingMail
      */
     private function extractContent($message): string
     {
-        // Dla wiadomości tekstowych
+        // Preferuj HTML body – chcemy zachować formatowanie w podglądzie
+        if ($message->getHtmlBody()) {
+            $html = $message->getHtmlBody();
+
+            // Zbuduj DOM i usuń <style>/<script>
+            $dom = new \DOMDocument();
+            libxml_use_internal_errors(true);
+            $loaded = $dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            libxml_clear_errors();
+
+            if ($loaded) {
+                $xpath = new \DOMXPath($dom);
+
+                // Usuń wszystkie <style> i <script>
+                foreach ($xpath->query('//style|//script') as $node) {
+                    if ($node && $node->parentNode) {
+                        $node->parentNode->removeChild($node);
+                    }
+                }
+
+                // Spróbuj znaleźć główny kontener treści
+                $container = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " content ") or contains(concat(" ", normalize-space(@class), " "), " message-content ")]')->item(0);
+
+                // Fallback: body
+                if (!$container) {
+                    $container = $xpath->query('//body')->item(0);
+                }
+
+                // Jeśli mamy kontener, zwróć jego innerHTML
+                if ($container) {
+                    return trim($this->getInnerHtml($container));
+                }
+
+                // Ostatecznie – zwróć całe HTML bez stylów/skryptów
+                return trim($dom->saveHTML());
+            }
+
+            // Jeśli DOM nie załadował się – zwróć surowy HTML
+            return trim($html);
+        }
+
+        // Tekstowe body – zwróć jako tekst (podgląd przerobi na HTML Markdownem)
         if ($message->getTextBody()) {
             return $message->getTextBody();
         }
-        
-        // Dla wiadomości HTML - wyciągnij tylko treść z message-content
-        if ($message->getHtmlBody()) {
-            $html = $message->getHtmlBody();
-            
-            // Spróbuj wyciągnąć treść z div.message-content
-            if (preg_match('/<div[^>]*class="[^"]*message-content[^"]*"[^>]*>(.*?)<\/div>/s', $html, $matches)) {
-                $content = strip_tags($matches[1]);
-                // Usuń nadmiarowe białe znaki
-                $content = preg_replace('/\s+/', ' ', $content);
-                return trim($content);
-            }
-            
-            // Jeśli nie ma message-content, usuń wszystkie tagi HTML
-            return strip_tags($html);
-        }
-        
+
         // Dla zwykłego body
         $body = $message->getBody();
         if (is_string($body)) {
-            return strip_tags($body);
+            return $body;
         }
-        
+
         return 'Treść niedostępna';
+    }
+
+    /**
+     * Zwraca innerHTML danego węzła DOM.
+     */
+    private function getInnerHtml(\DOMNode $node): string
+    {
+        $innerHTML = '';
+        foreach ($node->childNodes as $child) {
+            $innerHTML .= $node->ownerDocument->saveHTML($child);
+        }
+        return $innerHTML;
     }
 
     /**

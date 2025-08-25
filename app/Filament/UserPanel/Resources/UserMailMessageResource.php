@@ -9,6 +9,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,6 +63,59 @@ class UserMailMessageResource extends Resource
                 Forms\Components\DateTimePicker::make('sent_at')
                     ->label('Data wysłania/odebrania')
                     ->disabled(),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('Szczegóły')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('direction')
+                            ->label('Kierunek')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'in' => 'success',
+                                'out' => 'warning',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'in' => 'Odebrana',
+                                'out' => 'Wysłana',
+                                default => 'Nieznany',
+                            }),
+                        TextEntry::make('email')
+                            ->label('Email'),
+                        TextEntry::make('subject')
+                            ->label('Temat')
+                            ->columnSpanFull(),
+                        TextEntry::make('sent_at')
+                            ->label('Data')
+                            ->dateTime('d.m.Y H:i'),
+                    ]),
+                Section::make('Treść wiadomości')
+                    ->columnSpanFull()
+                    ->schema([
+                        TextEntry::make('content')
+                            ->label('')
+                            ->html()
+                            ->formatStateUsing(function (?string $state) {
+                                if (!$state) {
+                                    return new HtmlString('<em>Brak treści</em>');
+                                }
+                                $decoded = html_entity_decode($state, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                $looksLikeHtml = Str::contains($decoded, ['</', '<br', '<p', '<div', '<span', '<ul', '<ol', '<li', '<strong', '<em', '<a ', '<table', '<style', '<img', '<h1', '<h2', '<h3']);
+                                if (!$looksLikeHtml) {
+                                    $decoded = preg_replace('/[^\n\r\{\}]+\{[\s\S]*?\}/m', '', $decoded);
+                                    $decoded = preg_replace('/\n{3,}/', "\n\n", $decoded);
+                                }
+                                $html = $looksLikeHtml ? $decoded : Str::markdown($decoded);
+                                return new HtmlString($html);
+                            })
+                            ->extraAttributes(['class' => 'prose max-w-none whitespace-pre-wrap break-words']),
+                    ]),
             ]);
     }
 
