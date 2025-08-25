@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class SendPaymentReminders extends Command
 {
-    protected $signature = 'payments:send-reminders {--dry-run : Tylko pokaż co zostanie wysłane, nie wysyłaj}';
+    protected $signature = 'payments:send-reminders {--dry-run : Tylko pokaż co zostanie wysłane, nie wysyłaj} {--email= : Opcjonalnie: adres email pojedynczego użytkownika}';
     protected $description = 'Wysyła przypomnienia o płatnościach do użytkowników z zaległościami';
 
     public function handle()
@@ -23,6 +23,53 @@ class SendPaymentReminders extends Command
         $dryRun = $this->option('dry-run');
         if ($dryRun) {
             $this->warn('TRYB TESTOWY - nie wysyłam emaili');
+        }
+
+        // Obsługa pojedynczego użytkownika niezależnie od dnia tygodnia
+        $singleEmail = $this->option('email');
+        if ($singleEmail) {
+            $user = \App\Models\User::where('email', $singleEmail)->first();
+            if (!$user) {
+                $this->error("Nie znaleziono użytkownika o adresie: {$singleEmail}");
+                return 1;
+            }
+
+            $this->info("Tryb pojedynczego użytkownika: {$user->name} ({$user->email})");
+
+            $unpaidPayments = $this->getUnpaidPayments($user);
+            if ($unpaidPayments->isEmpty()) {
+                $this->line('  ✓ Wszystkie płatności uregulowane');
+                return 0;
+            }
+
+            $group = \App\Models\Group::find($user->group_id) ?? new \App\Models\Group(['name' => 'Brak grupy']);
+            $reminderData = $this->prepareReminderData($user, $unpaidPayments, $group);
+
+            $paymentLink = $this->getPaymentLink($user);
+            $this->line('  Link do płatności: ' . ($paymentLink ?: '[brak]'));
+
+            if ($dryRun) {
+                $this->line("  [DRY RUN] Temat: {$reminderData['subject']}");
+                $this->line("  [DRY RUN] Treść (100): " . substr($reminderData['content'], 0, 100) . '...');
+                return 0;
+            }
+
+            try {
+                \Mail::to($user->email)->send(
+                    new \App\Mail\PaymentReminderMail($user, $reminderData['subject'], $reminderData['content'])
+                );
+                $this->info("  ✓ Wysłano przypomnienie do: {$user->email}");
+                \Log::info('Wysłano przypomnienie (single)', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'payment_link' => $paymentLink,
+                ]);
+            } catch (\Exception $e) {
+                $this->error('Błąd wysyłki: ' . $e->getMessage());
+                return 1;
+            }
+
+            return 0;
         }
 
         $today = Carbon::now();
@@ -101,6 +148,19 @@ class SendPaymentReminders extends Command
                 $reminderData = $this->prepareReminderData($user, $unpaidPayments, $group);
                 
                 if ($dryRun) {
+                    $paymentLink = $this->getPaymentLink($user);
+                    if ($paymentLink) {
+                        \Illuminate\Support\Facades\Log::info('PaymentReminder [DRY]: link do płatności', [
+                            'user_id' => $user->id,
+                            'user_email' => $user->email,
+                            'payment_link' => $paymentLink,
+                        ]);
+                    } else {
+                        \Illuminate\Support\Facades\Log::warning('PaymentReminder [DRY]: brak linku do płatności', [
+                            'user_id' => $user->id,
+                            'user_email' => $user->email,
+                        ]);
+                    }
                     $this->line("    [DRY RUN] Wysłano by przypomnienie do: {$user->email}");
                     $this->line("    [DRY RUN] Temat: {$reminderData['subject']}");
                     $this->line("    [DRY RUN] Treść: " . substr($reminderData['content'], 0, 100) . "...");
@@ -259,8 +319,19 @@ class SendPaymentReminders extends Command
         // Dodaj link do płatności jeśli istnieje
         $paymentLink = $this->getPaymentLink($user);
         if ($paymentLink) {
+            \Illuminate\Support\Facades\Log::info('PaymentReminder: znaleziono link do płatności', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'payment_link' => $paymentLink,
+            ]);
             $content .= "<p><strong>Płatność online:</strong> <a href='{$paymentLink}' style='background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;'>Zapłać teraz</a></p>";
+        } else {
+            \Illuminate\Support\Facades\Log::warning('PaymentReminder: brak linku do płatności', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+            ]);
         }
+        
         
         if ($reminderType === 'zaległy') {
             $content .= "<p><strong>Uwaga:</strong> Długotrwałe zaległości mogą skutkować zawieszeniem uczestnictwa w zajęciach.</p>";
