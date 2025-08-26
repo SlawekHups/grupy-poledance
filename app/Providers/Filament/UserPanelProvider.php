@@ -12,6 +12,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationGroup;
+use Filament\View\PanelsRenderHook;
 
 class UserPanelProvider extends PanelProvider
 {
@@ -37,6 +38,7 @@ class UserPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Panel użytkownika'),
                 NavigationGroup::make()->label('Informacje'),
             ])
+            ->renderHook(PanelsRenderHook::BODY_START, fn (): string => view('filament.user.mobile-top-nav'))
             ->userMenuItems([
                 'profile' => \Filament\Navigation\UserMenuItem::make()
                     ->label('Profil')
