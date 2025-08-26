@@ -13,7 +13,19 @@ class ListPayments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // brak akcji tworzenia
         ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\UserPanel\Widgets\PaymentsKpis::class,
+        ];
+    }
+
+    public function getHeaderWidgetsColumns(): int|array
+    {
+        return 1;
     }
 }

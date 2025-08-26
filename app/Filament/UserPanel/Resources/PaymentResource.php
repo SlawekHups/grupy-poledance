@@ -50,7 +50,9 @@ class PaymentResource extends Resource
                     ->weight('bold'),
                 TextColumn::make('amount')
                     ->label('Kwota')
-                    ->money('PLN'),
+                    ->money('PLN')
+                    ->weight('bold')
+                    ->color(fn($record) => $record->paid ? 'success' : 'danger'),
                 TextColumn::make('updated_at')
                     ->label('Data_zapłaty'),
                 TextColumn::make('payment_link')
