@@ -2,7 +2,7 @@
     <div class="space-y-6">
         <!-- Profil i Kontakt -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="rounded-xl border bg-white">
+            <a href="{{ route('filament.user.resources.users.edit', ['record' => auth()->id()]) }}" class="rounded-xl border bg-white block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0" aria-label="Edytuj profil">
                 <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
                     <x-filament::icon icon="heroicon-o-user" class="h-5 w-5" />
                     Profil
@@ -15,9 +15,9 @@
                         </x-filament::badge>
                     </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="rounded-xl border bg-white">
+            <a href="{{ route('filament.user.resources.users.edit', ['record' => auth()->id()]) }}" class="rounded-xl border bg-white block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0" aria-label="Edytuj kontakt">
                 <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
                     <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" />
                     Kontakt
@@ -26,29 +26,21 @@
                     <div class="flex items-center justify-between"><span>Email</span><span class="font-medium break-words">{{ auth()->user()->email }}</span></div>
                     <div class="flex items-center justify-between"><span>Telefon</span><span class="font-medium break-words">{{ auth()->user()->phone ?? '—' }}</span></div>
                 </div>
-            </div>
+            </a>
 
             <div class="rounded-xl border bg-white">
-                <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
-                    <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" />
-                    Adres
-                    <div class="ml-auto text-sm">
-                        @php
-                            $address = \App\Models\Address::where('user_id', auth()->id())->first();
-                            $addressUrl = $address
-                                ? route('filament.user.resources.addresses.edit', ['record' => $address->id])
-                                : route('filament.user.resources.addresses.create');
-                        @endphp
-                        <x-filament::button tag="a" href="{{ $addressUrl }}" icon="heroicon-o-pencil-square" size="sm" color="primary">
-                            Edytuj
-                        </x-filament::button>
+                <a href="{{ route('filament.user.resources.addresses.index') }}" class="block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors" aria-label="Przejdź do edycji adresów">
+                    <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
+                        <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" />
+                        Adres
                     </div>
-                </div>
-                <div class="p-4 space-y-1 text-gray-700">
-                    <div><span class="text-gray-500">Ulica: </span><span class="font-medium">{{ $address->street ?? '—' }}</span></div>
-                    <div><span class="text-gray-500">Kod / Miasto: </span><span class="font-medium">{{ $address?->postal_code ? ($address->postal_code.' '.$address->city) : ($address->city ?? '—') }}</span></div>
-                    <div><span class="text-gray-500">Typ: </span><span class="font-medium">{{ $address->type ?? '—' }}</span></div>
-                </div>
+                    @php($address = \App\Models\Address::where('user_id', auth()->id())->first())
+                    <div class="p-4 space-y-1 text-gray-700">
+                        <div><span class="text-gray-500">Ulica: </span><span class="font-medium">{{ $address->street ?? '—' }}</span></div>
+                        <div><span class="text-gray-500">Kod / Miasto: </span><span class="font-medium">{{ $address?->postal_code ? ($address->postal_code.' '.$address->city) : ($address->city ?? '—') }}</span></div>
+                        <div><span class="text-gray-500">Typ: </span><span class="font-medium">{{ $address->type ?? '—' }}</span></div>
+                    </div>
+                </a>
             </div>
         </div>
 
