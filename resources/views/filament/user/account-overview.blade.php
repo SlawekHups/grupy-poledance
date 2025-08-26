@@ -47,31 +47,43 @@
         <!-- Statystyki -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="rounded-xl border p-4 bg-white flex items-center gap-3">
-                <x-filament::icon icon="heroicon-o-exclamation-triangle" class="h-6 w-6 text-orange-600" />
-                <div class="flex-1">
-                    <div class="text-sm text-gray-500">Zaległości</div>
-                    <div class="mt-1 flex items-center gap-2">
-                        <div class="text-2xl font-semibold">{{ $this->unpaidCount }}</div>
-                        <x-filament::badge :color="$this->unpaidCount > 0 ? 'danger' : 'success'">
-                            {{ $this->unpaidCount > 0 ? 'Nieopłacone' : 'Brak' }}
-                        </x-filament::badge>
-                    </div>
-                </div>
-            </div>
-            <div class="rounded-xl border p-4 bg-white flex items-center gap-3">
-                <x-filament::icon icon="heroicon-o-banknotes" class="h-6 w-6 text-primary-600" />
-                <div>
-                    <div class="text-sm text-gray-500">Do zapłaty</div>
-                    <div class="text-2xl font-semibold mt-1">{{ number_format($this->totalDue, 2) }} zł</div>
-                </div>
-            </div>
-            <div class="rounded-xl border p-4 bg-white flex items-center gap-3">
                 <x-filament::icon icon="heroicon-o-users" class="h-6 w-6 text-gray-700" />
                 <div>
                     <div class="text-sm text-gray-500">Grupa</div>
                     <div class="text-2xl font-semibold mt-1">{{ $this->groupName ?? 'Brak' }}</div>
                 </div>
             </div>
+            <a href="{{ route('filament.user.resources.attendances.index', ['tableFilters' => ['present' => '1']]) }}" class="rounded-xl border bg-white block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors p-4">
+                @php($total = max(1, $this->presentCount + $this->absentCount))
+                @php($presentPct = round(($this->presentCount / $total) * 100))
+                <div class="flex items-center gap-3">
+                    <x-filament::icon icon="heroicon-o-check-circle" class="h-6 w-6" style="color: var(--fi-color-success, #16a34a)" />
+                    <div class="text-lg font-medium">Obecności</div>
+                    <div class="ml-auto flex items-baseline gap-2">
+                        <span class="text-3xl md:text-4xl font-extrabold" style="color: var(--fi-color-success, #16a34a)">{{ $this->presentCount }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded" style="background-color: rgba(34,197,94,0.15); color: var(--fi-color-success, #16a34a)">{{ $presentPct }}%</span>
+                    </div>
+                </div>
+                <div class="mt-2 h-2 rounded" style="background-color: rgba(34,197,94,0.15)">
+                    <div class="h-2 rounded" style="width: {{ $presentPct }}%; background-color: var(--fi-color-success, #16a34a)"></div>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">Zobacz listę zajęć, na których byłeś obecny.</div>
+            </a>
+            <a href="{{ route('filament.user.resources.attendances.index', ['tableFilters' => ['present' => '0']]) }}" class="rounded-xl border bg-white block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors p-4">
+                @php($absentPct = round(($this->absentCount / $total) * 100))
+                <div class="flex items-center gap-3">
+                    <x-filament::icon icon="heroicon-o-x-circle" class="h-6 w-6" style="color: var(--fi-color-danger, #dc2626)" />
+                    <div class="text-lg font-medium">Nieobecności</div>
+                    <div class="ml-auto flex items-baseline gap-2">
+                        <span class="text-3xl md:text-4xl font-extrabold" style="color: var(--fi-color-danger, #dc2626)">{{ $this->absentCount }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded" style="background-color: rgba(220,38,38,0.15); color: var(--fi-color-danger, #dc2626)">{{ $absentPct }}%</span>
+                    </div>
+                </div>
+                <div class="mt-2 h-2 rounded" style="background-color: rgba(220,38,38,0.15)">
+                    <div class="h-2 rounded" style="width: {{ $absentPct }}%; background-color: var(--fi-color-danger, #dc2626)"></div>
+                </div>
+                <div class="mt-2 text-sm text-gray-600">Zobacz listę zajęć, na których Cię nie było.</div>
+            </a>
         </div>
 
         <!-- Płatności -->

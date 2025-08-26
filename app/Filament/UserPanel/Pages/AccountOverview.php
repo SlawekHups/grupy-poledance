@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
 use App\Models\Group;
+use App\Models\Attendance;
 
 class AccountOverview extends Page
 {
@@ -23,6 +24,8 @@ class AccountOverview extends Page
     public ?string $paymentLink = null;
     public ?string $groupName = null;
     public $recentPayments = [];
+    public int $presentCount = 0;
+    public int $absentCount = 0;
 
     public function mount(): void
     {
@@ -51,6 +54,10 @@ class AccountOverview extends Page
                     'payment_link' => $p->payment_link,
                 ];
             })->toArray();
+
+        // Liczniki obecności
+        $this->presentCount = Attendance::where('user_id', $user->id)->where('present', true)->count();
+        $this->absentCount = Attendance::where('user_id', $user->id)->where('present', false)->count();
     }
 
     protected function getHeaderActions(): array
