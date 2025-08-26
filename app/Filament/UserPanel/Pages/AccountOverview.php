@@ -16,7 +16,7 @@ class AccountOverview extends Page
     protected static ?string $navigationLabel = 'Konto';
     protected static ?string $title = 'Konto użytkownika';
     protected static ?string $slug = 'account';
-    protected static ?string $navigationGroup = 'Moje konto';
+    protected static ?string $navigationGroup = null;
 
     protected static string $view = 'filament.user.account-overview';
 

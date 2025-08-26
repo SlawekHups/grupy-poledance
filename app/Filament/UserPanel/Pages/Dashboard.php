@@ -10,6 +10,7 @@ class Dashboard extends BaseDashboard
     protected static ?string $navigationLabel = 'Panel główny';
     protected static ?string $title = 'Panel użytkownika';
     protected static ?string $slug = 'dashboard';
+    protected static bool $shouldRegisterNavigation = false;
     // Usunięto getWidgets()
 
     public function mount()
