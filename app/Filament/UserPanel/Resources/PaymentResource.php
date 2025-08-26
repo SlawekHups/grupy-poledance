@@ -39,31 +39,44 @@ class PaymentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                TextColumn::make('rowNumber')
-                    ->label('Lp.')
-                    ->state(function ($record, $livewire, $rowLoop) {
-                        return $rowLoop->iteration;
-                    }),
-                TextColumn::make('month')
-                    ->label('Miesiąc')
-                    ->weight('bold'),
-                TextColumn::make('amount')
-                    ->label('Kwota')
-                    ->money('PLN')
-                    ->weight('bold')
-                    ->color(fn($record) => $record->paid ? 'success' : 'danger'),
-                TextColumn::make('updated_at')
-                    ->label('Data_zapłaty'),
-                TextColumn::make('payment_link')
-                    ->label('Płatność Online')
-                    ->url(fn($record) => $record->payment_link)
-                    ->openUrlInNewTab()
-                    ->limit(30)
-                    ->view('tables.columns.payment-link')
-                    ->extraAttributes(['class' => 'text-center']),
-                BooleanColumn::make('paid')
-                    ->label('Opłacone'),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('month')
+                                ->label('Miesiąc')
+                                ->weight('bold'),
+                            TextColumn::make('amount')
+                                ->label('Kwota')
+                                ->money('PLN')
+                                ->weight('bold')
+                                ->color(fn($record) => ($record && $record->paid) ? 'success' : 'danger')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('updated_at')
+                                ->label('Data_zapłaty')
+                                ->dateTime('Y-m-d H:i'),
+                            BooleanColumn::make('paid')
+                                ->label('Opłacone')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        TextColumn::make('payment_link')
+                            ->label('Płatność Online')
+                            ->url(fn($record) => ($record && $record->payment_link) ? $record->payment_link : null)
+                            ->openUrlInNewTab()
+                            ->limit(60)
+                            ->extraAttributes(['class' => 'text-blue-600 underline'])
+                            ->visible(fn($record) => ($record && $record->payment_link)),
+                    ])->space(2),
+                ])->extraAttributes(['class' => 'p-4']),
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('paid')
@@ -94,8 +107,6 @@ class PaymentResource extends Resource
     {
         return [
             'index' => Pages\ListPayments::route('/'),
-            // 'create' => Pages\CreatePayment::route('/create'),
-            // 'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
     public static function canCreate(): bool
