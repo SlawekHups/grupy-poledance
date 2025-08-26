@@ -157,5 +157,80 @@
                 {{-- przycisk zapłać teraz usunięty --}}
             </div>
         </div>
+
+        <!-- Wiadomości -->
+        <div class="rounded-xl border bg-white">
+            <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
+                <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" />
+                Wiadomości
+                <div class="ml-auto text-sm">
+                    <x-filament::button tag="a" href="{{ route('filament.user.resources.user-mail-messages.index') }}" icon="heroicon-o-envelope-open" color="warning" size="sm">
+                        Wszystkie wiadomości
+                    </x-filament::button>
+                </div>
+            </div>
+            <div class="p-4 text-gray-700 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{{ route('filament.user.resources.user-mail-messages.index') }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                        <div class="flex items-center gap-3">
+                            <x-filament::icon icon="heroicon-o-inbox" class="h-6 w-6" style="color: var(--fi-color-info, #3b82f6)" />
+                            <div class="text-sm text-gray-600">Liczba wiadomości</div>
+                            <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-info, #3b82f6)">{{ $this->messagesCount }}</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('filament.user.resources.user-mail-messages.index', ['tableFilters' => ['direction' => ['value' => 'in']]]) }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                        <div class="flex items-center gap-3">
+                            <x-filament::icon icon="heroicon-o-arrow-down-circle" class="h-6 w-6" style="color: var(--fi-color-success, #16a34a)" />
+                            <div class="text-sm text-gray-600">Odebrane</div>
+                            <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-success, #16a34a)">{{ $this->messagesInCount }}</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('filament.user.resources.user-mail-messages.index', ['tableFilters' => ['direction' => ['value' => 'out']]]) }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                        <div class="flex items-center gap-3">
+                            <x-filament::icon icon="heroicon-o-arrow-up-circle" class="h-6 w-6" style="color: var(--fi-color-warning, #f59e0b)" />
+                            <div class="text-sm text-gray-600">Wysłane</div>
+                            <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-warning, #f59e0b)">{{ $this->messagesOutCount }}</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div>
+                    <div class="text-sm font-medium text-gray-600 mb-2">Ostatnie wiadomości</div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12 md:w-16">Lp.</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temat</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell w-40">Data</th>
+                                    <th class="px-3 py-2 w-28"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse($this->recentMessages as $m)
+                                    <tr>
+                                        <td class="px-3 py-2 text-sm text-gray-500 w-12 md:w-16">{{ $loop->iteration }}</td>
+                                        <td class="px-3 py-2 text-sm text-gray-800 break-words">
+                                            <span class="font-semibold">{{ \Illuminate\Support\Str::limit($m['subject'] ?? '—', 60) }}</span>
+                                            <div class="mt-0.5 text-xs text-gray-500 md:hidden">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</div>
+                                        </td>
+                                        <td class="px-3 py-2 text-sm text-gray-500 hidden md:table-cell w-40">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</td>
+                                        <td class="px-3 py-2 text-right w-28">
+                                            <x-filament::button tag="a" href="{{ route('filament.user.resources.user-mail-messages.view', ['record' => $m['id']]) }}" size="xs" icon="heroicon-o-eye">
+                                                Podgląd
+                                            </x-filament::button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-3 py-4 text-sm text-gray-500">Brak wiadomości.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </x-filament-panels::page>
