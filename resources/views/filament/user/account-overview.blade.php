@@ -107,17 +107,29 @@
                 </div>
             </div>
             <div class="p-4 text-gray-700 space-y-4">
-                @if ($this->unpaidCount > 0)
-                    <div class="text-sm bg-red-50 border border-red-200 rounded-md p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                        <span class="text-red-700">Masz zaległe płatności. Łączna kwota:</span>
-                        <span class="font-extrabold text-2xl mt-1 md:mt-0 text-center md:text-right" style="color: var(--fi-color-danger, #dc2626)">{{ number_format($this->totalDue, 2) }} zł</span>
-                    </div>
-                @else
-                    <div class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md p-3">
-                        Brak zaległości. Dziękujemy!
-                    </div>
-                @endif
-
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{{ route('filament.user.resources.payments.index') }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                        <div class="flex items-center gap-3">
+                            <x-filament::icon icon="heroicon-o-receipt-percent" class="h-6 w-6" style="color: var(--fi-color-info, #3b82f6)" />
+                            <div class="text-sm text-gray-600">Liczba płatności</div>
+                            <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-info, #3b82f6)">{{ $this->paymentsCount }}</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('filament.user.resources.payments.index') }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                        <div class="flex items-center gap-3">
+                            <x-filament::icon icon="heroicon-o-banknotes" class="h-6 w-6" style="color: var(--fi-color-success, #16a34a)" />
+                            <div class="text-sm text-gray-600">Suma płatności</div>
+                            <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-success, #16a34a)">{{ number_format($this->paymentsSum, 2) }} zł</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('filament.user.resources.payments.index') }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                        <div class="flex items-center gap-3">
+                            <x-filament::icon icon="heroicon-o-exclamation-triangle" class="h-6 w-6" style="color: var(--fi-color-danger, #dc2626)" />
+                            <div class="text-sm text-gray-600">Suma zaległości</div>
+                            <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-danger, #dc2626)">{{ number_format($this->totalDue, 2) }} zł</div>
+                        </div>
+                    </a>
+                </div>
                 <div>
                     <div class="text-sm font-medium text-gray-600 mb-2">Ostatnie 3 miesiące</div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

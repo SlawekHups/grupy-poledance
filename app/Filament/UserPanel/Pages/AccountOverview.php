@@ -26,6 +26,8 @@ class AccountOverview extends Page
     public $recentPayments = [];
     public int $presentCount = 0;
     public int $absentCount = 0;
+    public int $paymentsCount = 0;
+    public float $paymentsSum = 0.0;
 
     public function mount(): void
     {
@@ -58,6 +60,11 @@ class AccountOverview extends Page
         // Liczniki obecności
         $this->presentCount = Attendance::where('user_id', $user->id)->where('present', true)->count();
         $this->absentCount = Attendance::where('user_id', $user->id)->where('present', false)->count();
+
+        // Płatności: liczba wszystkich i suma wszystkich
+        $paymentsQuery = Payment::where('user_id', $user->id);
+        $this->paymentsCount = (clone $paymentsQuery)->count();
+        $this->paymentsSum = (float) (clone $paymentsQuery)->sum('amount');
     }
 
     protected function getHeaderActions(): array
