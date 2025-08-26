@@ -64,9 +64,21 @@ class PaymentResource extends Resource
                 BooleanColumn::make('paid')
                     ->label('Opłacone'),
             ])
-
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('paid')
+                    ->label('Status płatności')
+                    ->options([
+                        '1' => 'Opłacone',
+                        '0' => 'Nieopłacone',
+                    ])
+                    ->placeholder('Wszystkie')
+                    ->query(function (Builder $query, array $data) {
+                        $value = $data['value'] ?? ($data['paid'] ?? ($data['is'] ?? null));
+                        if ($value === null || $value === '') {
+                            return;
+                        }
+                        $query->where('paid', $value === '1');
+                    }),
             ]);
     }
 

@@ -122,7 +122,7 @@
                             <div class="ml-auto text-2xl font-extrabold" style="color: var(--fi-color-success, #16a34a)">{{ number_format($this->paymentsSum, 2) }} zł</div>
                         </div>
                     </a>
-                    <a href="{{ route('filament.user.resources.payments.index') }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
+                    <a href="{{ route('filament.user.resources.payments.index', ['tableFilters' => ['paid' => ['value' => '0']]]) }}" class="rounded-xl border p-4 bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition-colors block">
                         <div class="flex items-center gap-3">
                             <x-filament::icon icon="heroicon-o-exclamation-triangle" class="h-6 w-6" style="color: var(--fi-color-danger, #dc2626)" />
                             <div class="text-sm text-gray-600">Suma zaległości</div>
