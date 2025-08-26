@@ -211,7 +211,7 @@
                                     <tr>
                                         <td class="px-3 py-2 text-sm text-gray-500 w-12 md:w-16">{{ $loop->iteration }}</td>
                                         <td class="px-3 py-2 text-sm text-gray-800 break-words">
-                                            <span class="font-semibold">{{ \Illuminate\Support\Str::limit($m['subject'] ?? '—', 60) }}</span>
+                                            <span class="font-semibold">{{ \Illuminate\Support\Str::limit($m['subject'] ?? '—', 80) }}</span>
                                             <div class="mt-0.5 text-xs text-gray-500 md:hidden">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</div>
                                         </td>
                                         <td class="px-3 py-2 text-sm text-gray-500 hidden md:table-cell w-40">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</td>
