@@ -124,26 +124,11 @@ class UserMailMessageResource extends Resource
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('direction')
-                    ->label('Kierunek')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'in' => 'success',
-                        'out' => 'warning',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'in' => 'Odebrana',
-                        'out' => 'Wysłana',
-                        default => 'Nieznany',
-                    }),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('subject')
                     ->label('Temat')
                     ->searchable()
-                    ->limit(50),
+                    ->limit(80)
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('sent_at')
                     ->label('Data')
                     ->dateTime('d.m.Y H:i')
@@ -193,20 +178,14 @@ class UserMailMessageResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $userId = \Illuminate\Support\Facades\Auth::id();
-        
-        // Debug - loguj ID zalogowanego użytkownika
         \Illuminate\Support\Facades\Log::info('UserPanel UserMailMessage - zalogowany użytkownik ID:', ['user_id' => $userId]);
-        
         $query = parent::getEloquentQuery()
-            ->where('user_id', $userId); // Bezpośrednie filtrowanie po user_id
-        
-        // Debug - loguj zapytanie SQL
+            ->where('user_id', $userId);
         \Illuminate\Support\Facades\Log::info('UserPanel UserMailMessage - SQL query:', [
             'sql' => $query->toSql(),
             'bindings' => $query->getBindings(),
             'user_id' => $userId
         ]);
-        
         return $query;
     }
 
