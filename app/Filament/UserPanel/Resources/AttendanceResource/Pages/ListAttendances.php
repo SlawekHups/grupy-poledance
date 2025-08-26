@@ -24,4 +24,9 @@ class ListAttendances extends ListRecords
             AttendanceStatsWidget::class,
         ];
     }
+
+    public function getHeaderWidgetsColumns(): int|array
+    {
+        return 1;
+    }
 }
