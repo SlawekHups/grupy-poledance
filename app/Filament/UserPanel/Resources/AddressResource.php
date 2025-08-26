@@ -40,22 +40,36 @@ class AddressResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordUrl(fn($record) => route('filament.user.resources.addresses.edit', ['record' => $record]))
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                TextColumn::make(name: 'type')->label('Nazwa'),
-                TextColumn::make('street')->label('Ulica'),
-                TextColumn::make('postal_code')->label('Kod'),
-                TextColumn::make('city')->label('Miasto'),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        TextColumn::make(name: 'type')
+                            ->label('Nazwa')
+                            ->weight('bold'),
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('street')->label('Ulica')->wrap(),
+                        ]),
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('postal_code')->label('Kod'),
+                            TextColumn::make('city')->label('Miasto')->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between']),
+                    ])->space(2),
+                ])->extraAttributes(['class' => 'p-4']),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // klik w kafelek prowadzi do edycji
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                // brak
             ]);
     }
 
