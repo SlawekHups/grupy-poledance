@@ -4,11 +4,11 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <a href="{{ route('filament.user.resources.users.edit', ['record' => auth()->id()]) }}" class="rounded-xl border bg-white block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0" aria-label="Edytuj profil">
                 <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
-                    <x-filament::icon icon="heroicon-o-user" class="h-5 w-5" />
-                    Profil
+                    <x-filament::icon icon="heroicon-o-user" class="h-5 w-5" style="color: var(--fi-color-warning-hover, #d97706)" />
+                    <span style="color: var(--fi-color-warning-hover, #d97706)">Profil</span>
                 </div>
                 <div class="p-4 space-y-2 text-gray-700">
-                    <div class="flex items-center justify-between"><span>Imię i nazwisko</span><span class="font-medium">{{ auth()->user()->name }}</span></div>
+                    <div class="text-2xl md:text-3xl font-extrabold text-gray-900">{{ auth()->user()->name }}</div>
                     <div class="flex items-center justify-between"><span>Status</span>
                         <x-filament::badge :color="auth()->user()->is_active ? 'success' : 'danger'">
                             {{ auth()->user()->is_active ? 'Aktywny' : 'Nieaktywny' }}
@@ -19,26 +19,35 @@
 
             <a href="{{ route('filament.user.resources.users.edit', ['record' => auth()->id()]) }}" class="rounded-xl border bg-white block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0" aria-label="Edytuj kontakt">
                 <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
-                    <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" />
-                    Kontakt
+                    <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" style="color: var(--fi-color-warning-hover, #d97706)" />
+                    <span style="color: var(--fi-color-warning-hover, #d97706)">Kontakt</span>
                 </div>
                 <div class="p-4 space-y-2 text-gray-700">
-                    <div class="flex items-center justify-between"><span>Email</span><span class="font-medium break-words">{{ auth()->user()->email }}</span></div>
-                    <div class="flex items-center justify-between"><span>Telefon</span><span class="font-medium break-words">{{ auth()->user()->phone ?? '—' }}</span></div>
+                    <div class="flex items-center justify-between"><span>Email</span><span class="font-semibold break-words">{{ auth()->user()->email }}</span></div>
+                    <div class="flex items-center justify-between"><span>Telefon</span><span class="font-semibold break-words">{{ auth()->user()->phone ?? '—' }}</span></div>
                 </div>
             </a>
 
             <div class="rounded-xl border bg-white">
                 <a href="{{ route('filament.user.resources.addresses.index') }}" class="block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors" aria-label="Przejdź do edycji adresów">
                     <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
-                        <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" />
-                        Adres
+                        <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" style="color: var(--fi-color-warning-hover, #d97706)" />
+                        <span style="color: var(--fi-color-warning-hover, #d97706)">Adres</span>
                     </div>
                     @php($address = \App\Models\Address::where('user_id', auth()->id())->first())
-                    <div class="p-4 space-y-1 text-gray-700">
-                        <div><span class="text-gray-500">Ulica: </span><span class="font-medium">{{ $address->street ?? '—' }}</span></div>
-                        <div><span class="text-gray-500">Kod / Miasto: </span><span class="font-medium">{{ $address?->postal_code ? ($address->postal_code.' '.$address->city) : ($address->city ?? '—') }}</span></div>
-                        <div><span class="text-gray-500">Typ: </span><span class="font-medium">{{ $address->type ?? '—' }}</span></div>
+                    <div class="p-4 space-y-2 text-gray-700">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Ulica</span>
+                            <span class="font-semibold break-words text-right">{{ $address->street ?? '—' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Kod / Miasto</span>
+                            <span class="font-semibold break-words text-right">{{ $address?->postal_code ? ($address->postal_code.' '.$address->city) : ($address->city ?? '—') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-500">Typ</span>
+                            <span class="font-semibold break-words text-right">{{ $address->type ?? '—' }}</span>
+                        </div>
                     </div>
                 </a>
             </div>
@@ -99,8 +108,9 @@
             </div>
             <div class="p-4 text-gray-700 space-y-4">
                 @if ($this->unpaidCount > 0)
-                    <div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3">
-                        Masz zaległe płatności. Łączna kwota: <strong>{{ number_format($this->totalDue, 2) }} zł</strong>.
+                    <div class="text-sm bg-red-50 border border-red-200 rounded-md p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <span class="text-red-700">Masz zaległe płatności. Łączna kwota:</span>
+                        <span class="font-extrabold text-2xl mt-1 md:mt-0 text-center md:text-right" style="color: var(--fi-color-danger, #dc2626)">{{ number_format($this->totalDue, 2) }} zł</span>
                     </div>
                 @else
                     <div class="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md p-3">
