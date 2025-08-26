@@ -21,8 +21,6 @@ class UserMailMessageResource extends Resource
 {
     protected static ?string $model = UserMailMessage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-envelope';
-
     protected static ?string $navigationGroup = 'Komunikacja';
 
     protected static ?string $navigationLabel = 'Moje Wiadomości';

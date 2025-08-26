@@ -11,6 +11,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Filament\Http\Middleware\Authenticate;
+use Filament\Navigation\NavigationGroup;
 
 class UserPanelProvider extends PanelProvider
 {
@@ -32,7 +33,10 @@ class UserPanelProvider extends PanelProvider
                 \App\Filament\UserPanel\Widgets\PaymentsStatsWidget::class,
                 \App\Filament\UserPanel\Widgets\ProfileCardWidget::class,
             ])
-            ->navigationGroups([])
+            ->navigationGroups([
+                NavigationGroup::make()->label('Panel użytkownika'),
+                NavigationGroup::make()->label('Komunikacja')->icon('heroicon-o-envelope'),
+            ])
             ->userMenuItems([
                 'profile' => \Filament\Navigation\UserMenuItem::make()
                     ->label('Profil')
