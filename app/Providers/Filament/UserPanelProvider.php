@@ -35,7 +35,6 @@ class UserPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()->label('Panel użytkownika'),
-                NavigationGroup::make()->label('Komunikacja')->icon('heroicon-o-envelope'),
             ])
             ->userMenuItems([
                 'profile' => \Filament\Navigation\UserMenuItem::make()

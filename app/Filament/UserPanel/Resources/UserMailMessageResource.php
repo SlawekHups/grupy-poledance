@@ -21,11 +21,11 @@ class UserMailMessageResource extends Resource
 {
     protected static ?string $model = UserMailMessage::class;
 
-    protected static ?string $navigationGroup = 'Komunikacja';
+    protected static ?string $navigationGroup = 'Informacje';
+    protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
     protected static ?string $navigationLabel = 'Moje Wiadomości';
-
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 999;
 
     public static function getNavigationBadge(): ?string
     {
