@@ -35,6 +35,7 @@ class UserPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()->label('Panel użytkownika'),
+                NavigationGroup::make()->label('Informacje'),
             ])
             ->userMenuItems([
                 'profile' => \Filament\Navigation\UserMenuItem::make()
