@@ -49,7 +49,7 @@ class UserInvitationMail extends Mailable
             with: [
                 'user' => $this->user,
                 'resetUrl' => $this->resetUrl,
-                'expiresAt' => now()->addHours(48)->format('d.m.Y H:i'),
+                'expiresAt' => now()->addHours(72)->format('d.m.Y H:i'),
             ],
         );
     }

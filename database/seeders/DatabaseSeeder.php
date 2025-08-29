@@ -13,10 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            RolesAndUsersSeeder::class,
-        ]);
-
+        // Uruchamiaj seeder ról/użytkowników tylko raz
         $this->call([
             RolesAndUsersSeeder::class,
             GroupsSeeder::class,

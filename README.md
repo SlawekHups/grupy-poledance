@@ -31,6 +31,8 @@
 - **Zarządzanie Wiadomościami Email** - kompleksowy system logowania i importu maili
 - **Automatyczne Generowanie Płatności** - miesięczne płatności dla grup
 - **System Obecności** - śledzenie frekwencji na zajęciach
+- **Ujednolicone akcje w tabelach** - `ActionGroup` z przyciskiem „Actions” i masowe akcje (płatności: oznacz opłacone/nieopłacone; obecności: oznacz obecny/nieobecny)
+- **Logi resetów haseł** - zasób do podglądu i operacji: ponowne wysłanie zaproszenia, ponowny reset, oznaczanie statusów
 
 ## 🚀 Funkcjonalności
 
@@ -41,10 +43,11 @@
   - Ponowne wysyłanie zaproszeń (pojedyncze i masowe)
   - Zarządzanie profilami i uprawnieniami
 - **Zarządzanie Grupami** - tworzenie, edycja, przypisywanie użytkowników
-- **Zarządzanie Płatnościami** - automatyczne generowanie, edycja kwot grup
-- **Zarządzanie Obecnościami** - śledzenie frekwencji, statystyki
+- **Zarządzanie Płatnościami** - automatyczne generowanie, edycja kwot grup, masowe oznaczanie opłacone/nieopłacone
+- **Zarządzanie Obecnościami** - śledzenie frekwencji, statystyki, masowe oznaczanie obecny/nieobecny
 - **Zarządzanie Regulaminami** - akceptacja regulaminów przez użytkowników
 - **System Wiadomości Email** - logowanie, import, zarządzanie
+- **Logi resetów haseł** - podgląd i operacje administracyjne na wpisach (ponowne zaproszenie, ponowny reset, zmiana statusów)
 
 ### Panel Użytkownika (`/panel`)
 - **Profil Użytkownika** - edycja danych, akceptacja regulaminów
@@ -94,6 +97,16 @@ php artisan db:seed
 
 # Kompilacja assetów
 npm run build
+```
+
+### Konta startowe (po seederach)
+- Panel admina: `admin@hups.pl` / `12hups34`
+- Konto testowe: `test@hups.pl` / `test123`
+
+Jeśli logowanie admina nie powiedzie się (np. po przywróceniu bazy), możesz jednorazowo ustawić hasło:
+
+```bash
+php artisan tinker --execute "App\\Models\\User::where('email','admin@hups.pl')->update(['password' => '12hups34'])"
 ```
 
 ### Konfiguracja
@@ -227,7 +240,7 @@ grupy-poledance/
 - **Walidacja danych wejściowych** - ochrona przed nieprawidłowymi danymi
 - **Szyfrowanie sesji** - bezpieczne przechowywanie sesji
 - **Ochrona CSRF** - tokeny zabezpieczające
-- **Bezpieczne linki zaproszeń** - podpisane cyfrowo, ważne 48h
+- **Bezpieczne linki zaproszeń** - podpisane cyfrowo, ważne 72h
 
 ## 📈 Wydajność
 
@@ -247,6 +260,8 @@ grupy-poledance/
 - Automatyczne generowanie płatności
 - System zaproszeń użytkowników
 - System wiadomości email
+- Podwójne wywołanie `RolesAndUsersSeeder` w `DatabaseSeeder`
+- Potencjalne podwójne haszowanie hasła admina w seederze (ujednolicone – hasło ustawiane plain, haszowane przez mutator)
 
 ### 🔄 W Trakcie
 - Dalsza optymalizacja wydajności dashboardu
@@ -275,6 +290,9 @@ php artisan route:list
 
 # Sprawdzenie konfiguracji
 php artisan config:show
+
+# Reset hasła admina (jednorazowo)
+php artisan tinker --execute "App\\Models\\User::where('email','admin@hups.pl')->update(['password' => '12hups34'])"
 ```
 
 ### Automatyzacja

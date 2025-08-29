@@ -96,3 +96,16 @@ Aplikacja do zarządzania grupami, użytkownikami, płatnościami, obecnościami
 ---
 
 Ten plik stanowi punkt wyjścia do dalszej rozbudowy. Aktualizuj go po każdej większej zmianie w projekcie! 
+
+## 16. Ostatnie zmiany (2025-08-29)
+- Ujednolicono wygląd akcji w tabelach (przycisk „Actions” z ikoną `heroicon-o-cog-6-tooth`).
+- Admin/GroupResource:
+  - Tabela: grupowanie akcji w `ActionGroup` + akcja „Zmień kwotę”.
+  - Zakładka Użytkownicy: `ActionGroup` z „Usuń z grupy”.
+  - Zakładka Płatności: `ActionGroup` z „Edytuj/Usuń/Przełącz opłacone”, akcje masowe: „Oznacz jako opłacone/nieopłacone”.
+  - Zakładka Obecności: `ActionGroup` z „Edytuj/Usuń/Przełącz obecność”, akcje masowe: „Oznacz jako obecny/nieobecny”.
+- Admin/AttendanceResource: `ActionGroup` z przełącznikiem obecności; akcje masowe: „Oznacz jako obecny/nieobecny”.
+- Admin/PaymentResource: `ActionGroup` z „Edytuj” i „Przełącz opłacone/nieopłacone”; akcje masowe: „Oznacz jako opłacone/nieopłacone”.
+- Admin/UserResource → Zakładka Płatności użytkownika: `ActionGroup` z „Edytuj/Usuń/Przełącz opłacone”; akcje masowe: „Oznacz jako opłacone/nieopłacone”.
+- Admin/PasswordResetLogResource (Logi resetów haseł): `ActionGroup` z akcjami „Wyślij ponownie zaproszenie”, „Resetuj ponownie hasło”, „Oznacz jako zakończony/wygasły”; akcje masowe: „Oznacz jako zakończone/wygasłe”.
+- Poprawki lintingu: rzutowanie na float przy `number_format(..., 2)` w miejscach powiązanych z kwotami.

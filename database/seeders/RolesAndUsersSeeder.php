@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 class RolesAndUsersSeeder extends Seeder
 {
@@ -15,7 +14,7 @@ class RolesAndUsersSeeder extends Seeder
             [
                 'name' => 'Administrator',
                 'email_verified_at' => now(),
-                'password' => Hash::make('12hups34'), // zmień później na bezpieczne
+                'password' => '12hups34', // plain; zostanie zhashowane przez mutator w modelu
                 'role' => 'admin',
             ]
         );
@@ -25,7 +24,7 @@ class RolesAndUsersSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'email_verified_at' => now(),
-                'password' => Hash::make('test123'),
+                'password' => 'test123', // plain; zostanie zhashowane przez mutator
                 'role' => 'user',
             ]
         );
