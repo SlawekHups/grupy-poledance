@@ -11,9 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->timestamp('rodo_accepted_at')->nullable()->after('accepted_terms_at');
-        });
+        if (!Schema::hasColumn('users', 'rodo_accepted_at')) {
+            Schema::table('users', function (Blueprint $table) {
+                // Bezpieczne określenie kolumny, po której wstawić nową
+                $afterColumn = 'email_verified_at';
+                if (Schema::hasColumn('users', 'terms_accepted_at')) {
+                    $afterColumn = 'terms_accepted_at';
+                } elseif (Schema::hasColumn('users', 'accepted_terms_at')) {
+                    $afterColumn = 'accepted_terms_at';
+                }
+
+                $table->timestamp('rodo_accepted_at')->nullable()->after($afterColumn);
+            });
+        }
     }
 
     /**
