@@ -893,6 +893,7 @@ class UserResource extends Resource
         $content .= "<thead><tr style='background-color: #f3f4f6;'>";
         $content .= "<th style='padding: 10px; border: 1px solid #d1d5db; text-align: left;'>Miesiąc</th>";
         $content .= "<th style='padding: 10px; border: 1px solid #d1d5db; text-align: right;'>Kwota</th>";
+        $content .= "<th style='padding: 10px; border: 1px solid #d1d5db; text-align: center;'>Płatność online</th>";
         $content .= "</tr></thead><tbody>";
         
         foreach ($unpaidPayments as $payment) {
@@ -900,6 +901,12 @@ class UserResource extends Resource
             $content .= "<tr>";
             $content .= "<td style='padding: 10px; border: 1px solid #d1d5db;'>{$monthName}</td>";
             $content .= "<td style='padding: 10px; border: 1px solid #d1d5db; text-align: right;'>{$payment->amount} zł</td>";
+            $linkCell = '-';
+            if (!empty($payment->payment_link)) {
+                $safeLink = e($payment->payment_link);
+                $linkCell = "<a href='{$safeLink}' target='_blank' style='color:#2563eb; text-decoration: underline;'>Zapłać online</a>";
+            }
+            $content .= "<td style='padding: 10px; border: 1px solid #d1d5db; text-align: center;'>{$linkCell}</td>";
             $content .= "</tr>";
         }
         
