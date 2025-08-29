@@ -151,6 +151,16 @@ class AttendanceResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('toggle_present')
+                        ->label(fn ($record) => $record->present ? 'Oznacz jako nieobecny' : 'Oznacz jako obecny')
+                        ->icon(fn ($record) => $record->present ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                        ->color(fn ($record) => $record->present ? 'warning' : 'success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Potwierdź zmianę obecności')
+                        ->modalDescription(fn ($record) => $record->present ? 'Czy na pewno oznaczyć jako nieobecny?' : 'Czy na pewno oznaczyć jako obecny?')
+                        ->action(function ($record) {
+                            $record->update(['present' => ! $record->present]);
+                        }),
                 ])
                     ->button()
                     ->label('Actions')
