@@ -185,12 +185,132 @@ class PasswordResetLogResource extends Resource
                     ),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\Action::make('resend_invitation')
+                        ->label('Wyślij ponownie zaproszenie')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Wyślij ponownie zaproszenie do ustawienia hasła')
+                        ->action(function (\App\Models\PasswordResetLog $record) {
+                            $user = $record->user;
+                            if (!$user) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd')
+                                    ->body('Nie znaleziono użytkownika dla tego logu')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            \App\Events\UserInvited::dispatch($user, \Illuminate\Support\Facades\Auth::user());
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zaproszenie wysłane ponownie')
+                                ->body('Wysłano ponownie zaproszenie do: ' . $user->email)
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('reset_password_again')
+                        ->label('Resetuj ponownie hasło')
+                        ->icon('heroicon-o-key')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Na pewno ponowić reset hasła?')
+                        ->modalDescription('Operacja ustawi hasło użytkownika na puste i wyśle nowe zaproszenie do ustawienia hasła.')
+                        ->modalSubmitActionLabel('Tak, resetuj ponownie')
+                        ->action(function (\App\Models\PasswordResetLog $record) {
+                            $user = $record->user;
+                            if (!$user) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd')
+                                    ->body('Nie znaleziono użytkownika dla tego logu')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+                            \App\Events\PasswordResetRequested::dispatch($user, \Illuminate\Support\Facades\Auth::user(), 'Ponowienie z logów', 'single');
+                            $record->update(['status' => 'pending']);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Ponowiono reset hasła')
+                                ->body('Użytkownik: ' . $user->email)
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('mark_completed')
+                        ->label('Oznacz jako zakończony')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->visible(fn (\App\Models\PasswordResetLog $record) => $record->status !== 'completed')
+                        ->action(function (\App\Models\PasswordResetLog $record) {
+                            $record->markAsCompleted();
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zmieniono status')
+                                ->body('Log oznaczono jako zakończony')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('mark_expired')
+                        ->label('Oznacz jako wygasły')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(fn (\App\Models\PasswordResetLog $record) => $record->status !== 'expired')
+                        ->action(function (\App\Models\PasswordResetLog $record) {
+                            $record->markAsExpired();
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zmieniono status')
+                                ->body('Log oznaczono jako wygasły')
+                                ->warning()
+                                ->send();
+                        }),
+                ])
+                    ->button()
+                    ->label('Actions')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_completed_bulk')
+                        ->label('Oznacz jako zakończone')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if ($record->status !== 'completed') {
+                                    $record->update(['status' => 'completed']);
+                                    $updated++;
+                                }
+                            }
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zaktualizowano statusy')
+                                ->body("Oznaczono jako zakończone: {$updated}")
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('mark_expired_bulk')
+                        ->label('Oznacz jako wygasłe')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if ($record->status !== 'expired') {
+                                    $record->update(['status' => 'expired']);
+                                    $updated++;
+                                }
+                            }
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zaktualizowano statusy')
+                                ->body("Oznaczono jako wygasłe: {$updated}")
+                                ->warning()
+                                ->send();
+                        }),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
