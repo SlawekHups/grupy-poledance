@@ -41,7 +41,7 @@ class PaymentsRelationManager extends RelationManager
                     ->suffix('zł')
                     ->default(function ($livewire) {
                         // Pobierz kwotę z modelu użytkownika
-                        return number_format($livewire->getOwnerRecord()->amount ?? 0, 2);
+                        return number_format((float) ($livewire->getOwnerRecord()->amount ?? 0), 2);
                     })
                     ->required()
                     ->step(0.01),
@@ -80,39 +80,97 @@ class PaymentsRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                // Dodaj przycisk "Oznacz jako opłacone/nieopłacone"
-                Action::make('togglePaid')
-                    ->label(fn($record) => $record->paid ? 'Oznacz jako nieopłacone' : 'Oznacz jako opłacone')
-                    ->icon(fn($record) => $record->paid ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
-                    ->color(fn($record) => $record->paid ? 'warning' : 'success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Potwierdź zmianę statusu płatności')
-                    ->modalDescription(
-                        fn($record) => $record->paid
-                            ? 'Czy na pewno oznaczyć tę płatność jako NIEOPŁACONĄ?'
-                            : 'Czy na pewno oznaczyć tę płatność jako OPŁACONĄ?'
-                    )
-                    ->action(function ($record) {
-                        $record->paid = !$record->paid;
-                        if ($record->paid) {
-                            $record->payment_link = null;
-                            $record->save();
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    // Dodaj przycisk "Oznacz jako opłacone/nieopłacone"
+                    Action::make('togglePaid')
+                        ->label(fn($record) => $record->paid ? 'Oznacz jako nieopłacone' : 'Oznacz jako opłacone')
+                        ->icon(fn($record) => $record->paid ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                        ->color(fn($record) => $record->paid ? 'warning' : 'success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Potwierdź zmianę statusu płatności')
+                        ->modalDescription(
+                            fn($record) => $record->paid
+                                ? 'Czy na pewno oznaczyć tę płatność jako NIEOPŁACONĄ?'
+                                : 'Czy na pewno oznaczyć tę płatność jako OPŁACONĄ?'
+                        )
+                        ->action(function ($record) {
+                            $record->paid = !$record->paid;
+                            if ($record->paid) {
+                                $record->payment_link = null;
+                                $record->save();
 
-                            // Wyślij notyfikację o usunięciu linku
-                            Notification::make()
-                                ->success()
-                                ->title('Link do płatności został usunięty')
-                                ->body('Oznaczyłeś płatność jako opłaconą. Link został automatycznie wyczyszczony.')
-                                ->send();
-                        } else {
-                            $record->save();
-                        }
-                    }),
+                                // Wyślij notyfikację o usunięciu linku
+                                Notification::make()
+                                    ->success()
+                                    ->title('Link do płatności został usunięty')
+                                    ->body('Oznaczyłeś płatność jako opłaconą. Link został automatycznie wyczyszczony.')
+                                    ->send();
+                            } else {
+                                $record->save();
+                            }
+                        }),
+                ])
+                    ->button()
+                    ->label('Actions')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_paid')
+                        ->label('Oznacz jako opłacone')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Oznaczyć wybrane płatności jako opłacone?')
+                        ->modalDescription('Wszystkie zaznaczone płatności zostaną oznaczone jako opłacone. Linki do płatności zostaną wyczyszczone.')
+                        ->modalSubmitActionLabel('Oznacz jako opłacone')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if (!$record->paid) {
+                                    $record->update([
+                                        'paid' => true,
+                                        'payment_link' => null,
+                                    ]);
+                                    $updated++;
+                                }
+                            }
+                            Notification::make()
+                                ->title('Zaktualizowano status płatności')
+                                ->body("Oznaczono jako opłacone: {$updated}")
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('mark_unpaid')
+                        ->label('Oznacz jako nieopłacone')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Oznaczyć wybrane płatności jako nieopłacone?')
+                        ->modalDescription('Wszystkie zaznaczone płatności zostaną oznaczone jako nieopłacone.')
+                        ->modalSubmitActionLabel('Oznacz jako nieopłacone')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if ($record->paid) {
+                                    $record->update([
+                                        'paid' => false,
+                                    ]);
+                                    $updated++;
+                                }
+                            }
+                            Notification::make()
+                                ->title('Zaktualizowano status płatności')
+                                ->body("Oznaczono jako nieopłacone: {$updated}")
+                                ->warning()
+                                ->send();
+                        }),
+                ]),
             ]);
     }
 }

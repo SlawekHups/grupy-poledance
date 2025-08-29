@@ -44,7 +44,7 @@ class UsersRelationManager extends RelationManager
                         if ($state) {
                             $user = User::find($state);
                             if ($user) {
-                                $set('amount', number_format($user->amount, 2));
+                                $set('amount', number_format((float) $user->amount, 2));
                             }
                         }
                     }),
@@ -176,20 +176,25 @@ class UsersRelationManager extends RelationManager
                     ->visible(fn (Group $group) => $group->status !== 'inactive' && $group->hasSpace()),
             ])
             ->actions([
-                Tables\Actions\Action::make('remove')
-                    ->label('Usuń z grupy')
-                    ->color('danger')
-                    ->icon('heroicon-o-trash')
-                    ->requiresConfirmation()
-                    ->action(function (User $record, Group $group): void {
-                        $record->update(['group_id' => null]);
-                        $group->updateStatusBasedOnCapacity();
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('remove')
+                        ->label('Usuń z grupy')
+                        ->color('danger')
+                        ->icon('heroicon-o-trash')
+                        ->requiresConfirmation()
+                        ->action(function (User $record, Group $group): void {
+                            $record->update(['group_id' => null]);
+                            $group->updateStatusBasedOnCapacity();
 
-                        Notification::make()
-                            ->title('Użytkownik został usunięty z grupy')
-                            ->success()
-                            ->send();
-                    }),
+                            Notification::make()
+                                ->title('Użytkownik został usunięty z grupy')
+                                ->success()
+                                ->send();
+                        }),
+                ])
+                    ->button()
+                    ->label('Actions')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('removeMultiple')

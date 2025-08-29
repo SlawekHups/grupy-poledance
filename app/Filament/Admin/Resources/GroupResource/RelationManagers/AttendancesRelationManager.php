@@ -163,12 +163,71 @@ class AttendancesRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\Action::make('toggle_present')
+                        ->label(fn ($record) => $record->present ? 'Oznacz jako nieobecny' : 'Oznacz jako obecny')
+                        ->icon(fn ($record) => $record->present ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                        ->color(fn ($record) => $record->present ? 'warning' : 'success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Potwierdź zmianę obecności')
+                        ->modalDescription(fn ($record) => $record->present ? 'Czy na pewno oznaczyć jako nieobecny?' : 'Czy na pewno oznaczyć jako obecny?')
+                        ->action(function ($record) {
+                            $record->update(['present' => ! $record->present]);
+                        }),
+                ])
+                    ->button()
+                    ->label('Actions')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_present')
+                        ->label('Oznacz jako obecny')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Oznaczyć zaznaczone wpisy jako obecne?')
+                        ->modalSubmitActionLabel('Oznacz jako obecny')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function ($records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if (!$record->present) {
+                                    $record->update(['present' => true]);
+                                    $updated++;
+                                }
+                            }
+                            Notification::make()
+                                ->title('Zaktualizowano obecności')
+                                ->body("Oznaczono jako obecnych: {$updated}")
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('mark_absent')
+                        ->label('Oznacz jako nieobecny')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Oznaczyć zaznaczone wpisy jako nieobecne?')
+                        ->modalSubmitActionLabel('Oznacz jako nieobecny')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function ($records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if ($record->present) {
+                                    $record->update(['present' => false]);
+                                    $updated++;
+                                }
+                            }
+                            Notification::make()
+                                ->title('Zaktualizowano obecności')
+                                ->body("Oznaczono jako nieobecnych: {$updated}")
+                                ->warning()
+                                ->send();
+                        }),
                 ]),
             ])
             ->defaultSort('date', 'desc');

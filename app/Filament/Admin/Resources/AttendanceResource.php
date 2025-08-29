@@ -159,6 +159,50 @@ class AttendanceResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('mark_present')
+                        ->label('Oznacz jako obecny')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Oznaczyć zaznaczone wpisy jako obecne?')
+                        ->modalSubmitActionLabel('Oznacz jako obecny')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function ($records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if (!$record->present) {
+                                    $record->update(['present' => true]);
+                                    $updated++;
+                                }
+                            }
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zaktualizowano obecności')
+                                ->body("Oznaczono jako obecnych: {$updated}")
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\BulkAction::make('mark_absent')
+                        ->label('Oznacz jako nieobecny')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Oznaczyć zaznaczone wpisy jako nieobecne?')
+                        ->modalSubmitActionLabel('Oznacz jako nieobecny')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function ($records) {
+                            $updated = 0;
+                            foreach ($records as $record) {
+                                if ($record->present) {
+                                    $record->update(['present' => false]);
+                                    $updated++;
+                                }
+                            }
+                            \Filament\Notifications\Notification::make()
+                                ->title('Zaktualizowano obecności')
+                                ->body("Oznaczono jako nieobecnych: {$updated}")
+                                ->warning()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
