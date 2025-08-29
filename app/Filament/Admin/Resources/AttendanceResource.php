@@ -148,8 +148,13 @@ class AttendanceResource extends Resource
                     ->falseLabel('Nieobecny'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
+                    ->button()
+                    ->label('Actions')
+                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
