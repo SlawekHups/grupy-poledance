@@ -35,7 +35,17 @@ class SetPasswordController extends Controller
             ->where('created_at', '>=', now()->subHours(72))
             ->first();
 
-        if (!$tokenRecord || $tokenRecord->raw_token !== $token) {
+        // Akceptuj zarówno surowy token, jak i dopasowanie do hasha (kompatybilność wsteczna)
+        $isValidToken = false;
+        if ($tokenRecord) {
+            if (!empty($tokenRecord->raw_token) && $tokenRecord->raw_token === $token) {
+                $isValidToken = true;
+            } elseif (!empty($tokenRecord->token) && \Illuminate\Support\Facades\Hash::check($token, $tokenRecord->token)) {
+                $isValidToken = true;
+            }
+        }
+
+        if (!$tokenRecord || !$isValidToken) {
             return redirect()->route('filament.user.auth.login')->withErrors(['email' => 'Link wygasł lub jest nieprawidłowy.']);
         }
 
@@ -74,7 +84,17 @@ class SetPasswordController extends Controller
             ->where('created_at', '>=', now()->subHours(72))
             ->first();
 
-        if (!$tokenRecord || $tokenRecord->raw_token !== $request->token) {
+        // Akceptuj zarówno surowy token, jak i dopasowanie do hasha (kompatybilność wsteczna)
+        $isValidToken = false;
+        if ($tokenRecord) {
+            if (!empty($tokenRecord->raw_token) && $tokenRecord->raw_token === $request->token) {
+                $isValidToken = true;
+            } elseif (!empty($tokenRecord->token) && \Illuminate\Support\Facades\Hash::check($request->token, $tokenRecord->token)) {
+                $isValidToken = true;
+            }
+        }
+
+        if (!$tokenRecord || !$isValidToken) {
             return back()->withErrors(['email' => 'Link wygasł lub jest nieprawidłowy.']);
         }
 
