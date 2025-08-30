@@ -4,16 +4,16 @@
             <x-filament::icon icon="heroicon-o-bars-3" class="h-5 w-5" />
             <span>Menu</span>
         </button>
-        <a href="{{ route('filament.user.pages.account') }}" class="text-sm font-medium text-gray-700">Konto</a>
+        <a href="{{ route('filament.user.pages.dashboard') }}" class="text-sm font-medium text-gray-700">Panel użytkownika</a>
     </div>
 
     <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
             <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Konto</div>
-                <a href="{{ route('filament.user.pages.account') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Panel użytkownika</div>
+                <a href="{{ route('filament.user.pages.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                     <x-filament::icon icon="heroicon-o-user-circle" class="h-5 w-5" />
-                    <span>Konto</span>
+                    <span>Panel użytkownika</span>
                 </a>
             </div>
             <div>

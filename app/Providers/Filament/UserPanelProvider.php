@@ -38,7 +38,7 @@ class UserPanelProvider extends PanelProvider
                 NavigationGroup::make()->label('Panel użytkownika'),
                 NavigationGroup::make()->label('Informacje'),
             ])
-            ->renderHook(PanelsRenderHook::BODY_START, fn (): string => view('filament.user.mobile-top-nav'))
+            ->renderHook(PanelsRenderHook::BODY_START, fn (): string => view('filament.user.mobile-top-nav')->render())
             ->userMenuItems([
                 'profile' => \Filament\Navigation\UserMenuItem::make()
                     ->label('Profil')

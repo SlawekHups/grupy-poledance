@@ -11,6 +11,7 @@
             Pobierz moje dane (CSV)
         </x-filament::button>
     </div>
+
     <div class="space-y-6">
         <!-- Konto użytkownika (kafelki) -->
         <div class="rounded-xl border bg-white">
@@ -175,8 +176,6 @@
                         @endforelse
                     </div>
                 </div>
-
-                {{-- przycisk zapłać teraz usunięty --}}
             </div>
         </div>
 

@@ -31,7 +31,7 @@ class Dashboard extends BaseDashboard
     public int $messagesOutCount = 0;
     public array $recentMessages = [];
 
-    protected static string $view = 'filament.user.account-overview';
+    protected static string $view = 'filament.user.dashboard';
 
     public function mount()
     {
