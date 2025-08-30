@@ -24,7 +24,7 @@ class UserPanelProvider extends PanelProvider
             ->authGuard('web')
             ->login()
             ->profile()
-            ->homeUrl(fn (): string => url('/panel/account'))
+            ->homeUrl(fn (): string => route('filament.user.pages.dashboard'))
             ->pages([])
             ->discoverResources(app_path('Filament/UserPanel/Resources'), 'App\\Filament\\UserPanel\\Resources')
             ->discoverPages(app_path('Filament/UserPanel/Pages'), 'App\\Filament\\UserPanel\\Pages')

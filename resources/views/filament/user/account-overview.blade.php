@@ -1,4 +1,16 @@
 <x-filament-panels::page>
+    <!-- Akcje: tylko desktop (hidden na mobile) -->
+    <div class="hidden md:flex justify-end gap-2 mb-4">
+        <x-filament::button tag="a" href="{{ route('filament.user.resources.users.edit', ['record' => auth()->id()]) }}" icon="heroicon-o-pencil-square" color="primary">
+            Edytuj profil
+        </x-filament::button>
+        <x-filament::button tag="a" href="{{ route('filament.user.auth.profile') }}" icon="heroicon-o-key">
+            Zmień hasło
+        </x-filament::button>
+        <x-filament::button tag="a" href="{{ route('user.export-my-csv') }}" icon="heroicon-o-arrow-down-tray" color="gray" target="_blank">
+            Pobierz moje dane (CSV)
+        </x-filament::button>
+    </div>
     <div class="space-y-6">
         <!-- Konto użytkownika (kafelki) -->
         <div class="rounded-xl border bg-white">
