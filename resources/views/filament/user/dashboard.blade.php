@@ -217,38 +217,31 @@
 
                 <div>
                     <div class="text-sm font-medium text-gray-600 mb-2">Ostatnie wiadomości</div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12 md:w-16">Lp.</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temat</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell w-40">Data</th>
-                                    <th class="px-3 py-2 w-28"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($this->recentMessages as $m)
-                                    <tr>
-                                        <td class="px-3 py-2 text-sm text-gray-500 w-12 md:w-16">{{ $loop->iteration }}</td>
-                                        <td class="px-3 py-2 text-sm text-gray-800 break-words">
-                                            <span class="font-semibold">{{ \Illuminate\Support\Str::limit($m['subject'] ?? '—', 80) }}</span>
-                                            <div class="mt-0.5 text-xs text-gray-500 md:hidden">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</div>
-                                        </td>
-                                        <td class="px-3 py-2 text-sm text-gray-500 hidden md:table-cell w-40">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</td>
-                                        <td class="px-3 py-2 text-right w-28">
-                                            <x-filament::button tag="a" href="{{ route('filament.user.resources.user-mail-messages.view', ['record' => $m['id']]) }}" size="xs" icon="heroicon-o-eye">
-                                                Podgląd
-                                            </x-filament::button>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="px-3 py-4 text-sm text-gray-500">Brak wiadomości.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        @forelse($this->recentMessages as $m)
+                            <div class="rounded-lg border bg-white p-4 flex flex-col gap-2">
+                                <div class="flex items-start gap-2">
+                                    <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5 text-gray-500" />
+                                    <div class="font-semibold">{{ \Illuminate\Support\Str::limit($m['subject'] ?? '—', 80) }}</div>
+                                    <div class="ml-auto text-xs text-gray-500">{{ optional($m['sent_at'])->format('Y-m-d H:i') }}</div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-600">
+                                    <div>
+                                        <x-filament::badge :color="$m['direction'] === 'in' ? 'success' : 'warning'">
+                                            {{ $m['direction'] === 'in' ? 'Odebrana' : 'Wysłana' }}
+                                        </x-filament::badge>
+                                    </div>
+                                    <div class="text-xs text-gray-500 truncate max-w-[60%]">{{ $m['email'] }}</div>
+                                </div>
+                                <div class="mt-1">
+                                    <x-filament::button tag="a" href="{{ route('filament.user.resources.user-mail-messages.view', ['record' => $m['id']]) }}" icon="heroicon-o-eye" color="warning" size="sm">
+                                        Podgląd
+                                    </x-filament::button>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-gray-500">Brak wiadomości.</div>
+                        @endforelse
                     </div>
                 </div>
             </div>
