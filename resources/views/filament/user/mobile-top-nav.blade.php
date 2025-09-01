@@ -1,13 +1,14 @@
 <div class="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur border-b" x-data="{ open: false }" @keydown.escape.window="open=false">
-    <div class="max-w-screen-xl mx-auto px-3 py-2 flex items-center justify-between">
+    <div class="px-3 py-2 flex items-center gap-3">
         <button @click="open = !open" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50">
             <x-filament::icon icon="heroicon-o-bars-3" class="h-5 w-5" />
             <span>Menu</span>
         </button>
         <a href="{{ route('filament.user.pages.dashboard') }}" class="text-sm font-medium text-gray-700">Panel użytkownika</a>
+        <x-filament-panels::user-menu class="ml-auto" />
     </div>
 
-    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b">
+    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
             <div>
                 <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Panel użytkownika</div>
@@ -62,10 +63,9 @@
 <style>
   [x-cloak] { display: none !important; }
   @media (max-width: 767px) {
-    .fi-sidebar { display: none !important; }
-    /* ukryj przycisk otwierania sidebara w topbarze */
-    .fi-topbar button[class*="sidebar"], .fi-topbar [data-sidebar-toggle], .fi-topbar .fi-icon-btn { display: none !important; }
-    /* jeśli sidebar ma overlay/panel */
-    .fi-sidebar-panel, .fi-sidebar-close-overlay { display: none !important; }
+    /* Ukryj desktopowy sidebar i jego overlay na mobile */
+    .fi-sidebar, .fi-sidebar-panel, .fi-sidebar-close-overlay { display: none !important; }
+    /* Ukryj przycisk otwierania sidebara oraz domyślne user-menu w topbarze */
+    .fi-topbar [data-sidebar-toggle], .fi-topbar button[class*="sidebar"], .fi-topbar .fi-user-menu { display: none !important; }
   }
 </style>
