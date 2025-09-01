@@ -68,13 +68,11 @@ class PaymentResource extends Resource
                                 ->alignRight(),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
-                        TextColumn::make('payment_link')
+                        Tables\Columns\ViewColumn::make('pay_button')
                             ->label('Płatność Online')
-                            ->url(fn($record) => ($record && $record->payment_link) ? $record->payment_link : null)
-                            ->openUrlInNewTab()
-                            ->limit(60)
-                            ->extraAttributes(['class' => 'text-blue-600 underline'])
-                            ->visible(fn($record) => ($record && $record->payment_link)),
+                            ->view('filament.user.widgets.pay-button')
+                            ->visible(fn($record) => ($record && $record->payment_link && !$record->paid))
+                            ->extraAttributes(['class' => 'mt-2']),
                     ])->space(2),
                 ])->extraAttributes(['class' => 'p-4']),
             ])
