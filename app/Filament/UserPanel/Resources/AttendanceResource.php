@@ -30,23 +30,35 @@ class AttendanceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                Tables\Columns\TextColumn::make('rowNumber')
-                    ->label('Lp.')
-                    ->state(function ($record, $livewire, $rowLoop) {
-                        return $rowLoop->iteration;
-                    }),
-                Tables\Columns\TextColumn::make('date')
-                    ->label('Data')
-                    ->date('d.m.Y')
-                    ->sortable(),
-                Tables\Columns\IconColumn::make('present')
-                    ->boolean()
-                    ->label('Obecny?'),
-                Tables\Columns\TextColumn::make('note')
-                    ->label('Notatka')
-                    ->limit(40)
-                    ->wrap(),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('date')
+                                ->label('Data')
+                                ->date('d.m.Y')
+                                ->weight('bold'),
+                            Tables\Columns\IconColumn::make('present')
+                                ->label('Obecny?')
+                                ->boolean()
+                                ->trueIcon('heroicon-o-check-circle')
+                                ->falseIcon('heroicon-o-x-circle')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('note')
+                                ->label('Notatka')
+                                ->limit(80)
+                                ->wrap(),
+                        ]),
+                    ])->space(2),
+                ])->extraAttributes(['class' => 'p-4']),
             ])
             ->defaultSort('date', 'desc')
             ->filters([
