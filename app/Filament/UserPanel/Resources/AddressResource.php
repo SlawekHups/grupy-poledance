@@ -59,6 +59,10 @@ class AddressResource extends Resource
                             TextColumn::make('postal_code')->label('Kod'),
                             TextColumn::make('city')->label('Miasto')->alignRight(),
                         ])->extraAttributes(['class' => 'justify-between']),
+                        Tables\Columns\ViewColumn::make('edit_button')
+                            ->label('Edycja')
+                            ->view('filament.user.widgets.edit-address-button')
+                            ->extraAttributes(['class' => 'mt-2']),
                     ])->space(2),
                 ])->extraAttributes(['class' => 'p-4']),
             ])

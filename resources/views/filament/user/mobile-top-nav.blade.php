@@ -5,7 +5,9 @@
             <span>Menu</span>
         </button>
         <a href="{{ route('filament.user.pages.dashboard') }}" class="text-sm font-medium text-gray-700">Panel użytkownika</a>
-        <x-filament-panels::user-menu class="ml-auto" />
+        @if (filament()->auth()->check())
+            <x-filament-panels::user-menu class="ml-auto" />
+        @endif
     </div>
 
     <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50">
