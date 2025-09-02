@@ -54,7 +54,7 @@ class GenerateMonthlyPayments extends Command
                     'amount' => $user->amount,
                     'month' => $month,
                     'paid' => false,
-                    'link' => null,
+                    'payment_link' => null,
                 ]);
 
                 $this->info("✅ Dodano płatność dla {$user->name} - {$month} ({$user->amount} zł)");

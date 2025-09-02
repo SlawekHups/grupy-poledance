@@ -55,11 +55,11 @@ class SendPaymentReminders extends Command
             }
 
             try {
-                \Mail::to($user->email)->send(
+                Mail::to($user->email)->send(
                     new \App\Mail\PaymentReminderMail($user, $reminderData['subject'], $reminderData['content'])
                 );
                 $this->info("  ✓ Wysłano przypomnienie do: {$user->email}");
-                \Log::info('Wysłano przypomnienie (single)', [
+                Log::info('Wysłano przypomnienie (single)', [
                     'user_id' => $user->id,
                     'email' => $user->email,
                     'payment_link' => $paymentLink,
@@ -98,6 +98,10 @@ class SendPaymentReminders extends Command
         
         // Znajdź grupy, które mają zajęcia dzisiaj
         $todayGroups = Group::where('name', 'like', "{$currentDayName}%")->get();
+        // Fallback: jeśli brak dopasowań na początku nazwy, spróbuj dowolnego wystąpienia nazwy dnia
+        if ($todayGroups->isEmpty()) {
+            $todayGroups = Group::where('name', 'like', "%{$currentDayName}%")->get();
+        }
         
         if ($todayGroups->isEmpty()) {
             $this->warn("Brak grup z zajęciami dzisiaj ({$currentDayName})");
@@ -150,13 +154,13 @@ class SendPaymentReminders extends Command
                 if ($dryRun) {
                     $paymentLink = $this->getPaymentLink($user);
                     if ($paymentLink) {
-                        \Illuminate\Support\Facades\Log::info('PaymentReminder [DRY]: link do płatności', [
+                        Log::info('PaymentReminder [DRY]: link do płatności', [
                             'user_id' => $user->id,
                             'user_email' => $user->email,
                             'payment_link' => $paymentLink,
                         ]);
                     } else {
-                        \Illuminate\Support\Facades\Log::warning('PaymentReminder [DRY]: brak linku do płatności', [
+                        Log::warning('PaymentReminder [DRY]: brak linku do płatności', [
                             'user_id' => $user->id,
                             'user_email' => $user->email,
                         ]);
