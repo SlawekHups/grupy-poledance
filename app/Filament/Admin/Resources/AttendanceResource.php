@@ -99,26 +99,44 @@ class AttendanceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                TextColumn::make('date')
-                    ->label('Data')
-                    ->sortable()
-                    ->date()
-                    ->date('d-m-Y')
-                    ->searchable(),
-                TextColumn::make('user.name')
-                    ->label('Użytkownik')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('group.name')
-                    ->label('Grupa')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('note')
-                    ->label('Notatka')
-                    ->searchable(),
-                BooleanColumn::make('present')
-                    ->label('Obecny?'),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('date')
+                                ->label('Data')
+                                ->date('d.m.Y')
+                                ->weight('bold')
+                                ->sortable(),
+                            TextColumn::make('present')
+                                ->label('Obecność')
+                                ->badge()
+                                ->formatStateUsing(fn ($state) => $state ? 'Obecny' : 'Nieobecny')
+                                ->color(fn ($state) => $state ? 'success' : 'warning')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
+
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('user.name')
+                                ->label('Użytkownik')
+                                ->searchable(),
+                            TextColumn::make('group.name')
+                                ->label('Grupa')
+                                ->alignRight()
+                                ->searchable(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        TextColumn::make('note')
+                            ->label('Notatka')
+                            ->wrap()
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                    ])->space(2),
+                ])->extraAttributes(['class' => 'p-4']),
             ])
             ->filters([
                 Tables\Filters\Filter::make('date')
