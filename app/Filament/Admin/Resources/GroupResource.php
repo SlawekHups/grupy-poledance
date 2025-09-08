@@ -71,54 +71,52 @@ class GroupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'lg' => 2,
+                'xl' => 3,
+            ])
+            ->recordUrl(fn ($record) => route('filament.admin.resources.groups.edit', ['record' => $record]))
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nazwa')
-                    ->searchable(),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('name')
+                                ->label('Nazwa')
+                                ->searchable()
+                                ->weight('bold')
+                                ->size('lg')
+                                ->extraAttributes(['class' => 'md:text-xl']),
+                            Tables\Columns\TextColumn::make('status')
+                                ->label('Status')
+                                ->badge()
+                                ->color(fn (string $state): string => match ($state) {
+                                    'active' => 'success',
+                                    'inactive' => 'danger',
+                                    'full' => 'warning',
+                                    default => 'gray',
+                                })
+                                ->formatStateUsing(fn (string $state): string => match ($state) {
+                                    'active' => 'Aktywna',
+                                    'inactive' => 'Nieaktywna',
+                                    'full' => 'Pełna',
+                                    default => $state,
+                                })
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
 
-                Tables\Columns\TextColumn::make('description')
-                    ->label('Opis')
-                    ->searchable()
-                    ->limit(30)
-                    ->tooltip(function (Model $record): ?string {
-                        return $record->description;
-                    }),
+                        Tables\Columns\ViewColumn::make('metrics')
+                            ->label('')
+                            ->view('filament.admin.groups.group-metrics'),
 
-                Tables\Columns\TextColumn::make('users_count')
-                    ->label('Liczba uczestników')
-                    ->counts('users')
-                    ->description(fn (Group $record) => "{$record->users()->count()}/{$record->max_size}")
-                    ->color(fn (Group $record) => 
-                        $record->users()->count() >= $record->max_size ? 'danger' : 
-                        ($record->users()->count() >= $record->max_size * 0.8 ? 'warning' : 'success')
-                    )
-                    ->alignCenter()
-                    ->size('lg'),
-
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'active' => 'success',
-                        'inactive' => 'danger',
-                        'full' => 'warning',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'active' => 'Aktywna',
-                        'inactive' => 'Nieaktywna',
-                        'full' => 'Pełna',
-                        default => $state,
-                    }),
-
-                Tables\Columns\TextColumn::make('lessons_count')
-                    ->label('Liczba zadań')
-                    ->counts('lessons')
-                    ->url(fn ($record) => route('filament.admin.resources.groups.edit', [
-                        'record' => $record,
-                        'activeRelationManager' => 1
-                    ]))
-                    ->color('primary'),
+                        Tables\Columns\TextColumn::make('description')
+                            ->label('Opis')
+                            ->limit(160)
+                            ->formatStateUsing(fn (?string $state) => $state ?: 'Brak opisu')
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                    ])->space(2),
+                ])->extraAttributes(['class' => 'p-4']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
