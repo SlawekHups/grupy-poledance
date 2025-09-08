@@ -40,6 +40,21 @@ Schedule::command('payments:send-reminders')
         \Illuminate\Support\Facades\Log::error('Zadanie: Przypomnienia o płatnościach - Błąd wykonania');
     });
 
+// Wysyłka dziennego digestu do administratora - codziennie o 09:00
+Schedule::command('payments:send-admin-digest')
+    ->daily()
+    ->at('09:00')
+    ->timezone('Europe/Warsaw')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Wysyła dzienne zestawienie zaległości płatniczych administratorowi (grupy z dzisiejszego dnia)')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Admin Payment Digest - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Admin Payment Digest - Błąd wykonania');
+    });
+
 // Generowanie miesięcznych płatności - pierwszego dnia każdego miesiąca o 6:00
 Schedule::command('payments:generate')
     ->monthly()

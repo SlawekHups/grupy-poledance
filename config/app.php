@@ -138,4 +138,7 @@ return [
     'payment_reminder_company_name' => env('PAYMENT_REMINDER_COMPANY_NAME', 'Grupy Poledance'),
     'payment_reminder_website' => env('PAYMENT_REMINDER_WEBSITE', 'ozonek.pl'),
 
+    // Admin digest recipients (comma-separated emails)
+    'admin_payment_digest_recipients' => env('ADMIN_PAYMENT_DIGEST_RECIPIENTS', ''),
+
 ];
