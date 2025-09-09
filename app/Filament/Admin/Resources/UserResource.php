@@ -240,8 +240,9 @@ class UserResource extends Resource
                             Tables\Columns\TagsColumn::make('groups.name')
                                 ->label('Grupy')
                                 ->separator(', ')
-                                ->limitList(3)
-                                ->expandableLimitedList(),
+                                ->limitList(2)
+                                ->expandableLimitedList()
+                                ->getStateUsing(fn($record) => $record->groups->pluck('name')->toArray()),
                             TextColumn::make('amount')
                                 ->label('Kwota')
                                 ->suffix(' zł')

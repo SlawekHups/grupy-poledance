@@ -95,19 +95,28 @@ class User extends Authenticatable
 
         // Synchronizacja w drugą stronę - gdy grupa jest dodana przez pivot table
         static::saved(function (self $user) {
-            // Jeśli użytkownik ma grupy w pivot table ale nie ma group_id, ustaw group_id na pierwszą grupę
-            if (empty($user->group_id) && $user->groups()->count() > 0) {
+            // Sprawdź czy group_id pasuje do pierwszej grupy w pivot table
+            if ($user->groups()->count() > 0) {
                 $firstGroup = $user->groups()->first();
-                if ($firstGroup) {
+                if ($firstGroup && $user->group_id !== $firstGroup->id) {
                     $user->updateQuietly(['group_id' => $firstGroup->id]);
                     Log::info('Synchronizacja group_id z pivot table', [
                         'user_id' => $user->id,
-                        'group_id' => $firstGroup->id,
+                        'old_group_id' => $user->group_id,
+                        'new_group_id' => $firstGroup->id,
                         'group_name' => $firstGroup->name
                     ]);
                 }
+            } elseif ($user->groups()->count() === 0 && !empty($user->group_id)) {
+                // Jeśli użytkownik nie ma grup, usuń group_id
+                $user->updateQuietly(['group_id' => null]);
+                Log::info('Usunięto group_id - użytkownik bez grup', [
+                    'user_id' => $user->id,
+                    'old_group_id' => $user->group_id
+                ]);
             }
         });
+
 
         static::updating(function (self $user) {
             if ($user->isDirty(['name','email','phone','amount','terms_accepted_at'])) {

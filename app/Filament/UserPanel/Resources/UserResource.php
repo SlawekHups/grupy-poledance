@@ -31,6 +31,7 @@ class UserResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->with('groups')
             ->where('id', Auth::id());
     }
     public static function form(Form $form): Form
@@ -89,12 +90,14 @@ class UserResource extends Resource
                         }
                         return $state; // fallback
                     }),
-                // 👇 Pole grupy - tylko do odczytu
-                TextInput::make('group.name')
-                    ->label('Grupa')
+                // 👇 Pole grup - tylko do odczytu
+                TextInput::make('groups_display')
+                    ->label('Grupy')
                     ->disabled()
                     ->dehydrated(false)
-                    ->default(fn($record) => $record?->group?->name ?? 'Brak przypisania'),
+                    ->default(fn($record) => $record?->groups?->pluck('name')->implode(', ') ?? 'Brak przypisania')
+                    ->helperText('Przypisane grupy (tylko do odczytu)')
+                    ->columnSpanFull(),
                 
                 // 👇 Pole hasła z logiką bcrypt 
                 TextInput::make('password')
@@ -115,7 +118,12 @@ class UserResource extends Resource
                     ->label('Imię i nazwisko'),
                 TextColumn::make('email'),
                 TextColumn::make('phone')->label('Telefon'),
-                TextColumn::make('group.name')->label('Grupa'),
+                TextColumn::make('groups')
+                    ->label('Grupy')
+                    ->getStateUsing(fn($record) => $record->groups->pluck('name')->implode(', '))
+                    ->wrap()
+                    ->searchable(false)
+                    ->sortable(false),
                 BooleanColumn::make('is_active')->label('Aktywny'),
             ])
             ->filters([

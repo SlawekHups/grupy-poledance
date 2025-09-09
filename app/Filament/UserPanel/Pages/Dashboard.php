@@ -35,7 +35,11 @@ class Dashboard extends BaseDashboard
 
     public function mount()
     {
-        $user = auth()->user();
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('filament.user.auth.login');
+        }
+        
         if (
             $user->addresses()->count() === 0 ||
             is_null($user->rodo_accepted_at) ||
@@ -51,7 +55,7 @@ class Dashboard extends BaseDashboard
         $this->unpaidCount = $unpaid->count();
         $this->totalDue = (float) $unpaid->sum('amount');
         $this->paymentLink = $this->getPaymentLink($user->id);
-        $this->groupName = optional($user->group)->name;
+        $this->groupName = $user->groups->pluck('name')->implode(', ');
 
         // Ostatnie 3 płatności
         $this->recentPayments = Payment::where('user_id', $user->id)

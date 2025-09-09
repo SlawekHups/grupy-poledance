@@ -16,7 +16,7 @@ class ProfileCardWidget extends Widget
         $user = Auth::user();
         return [
             'user' => $user,
-            'group' => $user?->group?->name,
+            'group' => $user?->groups?->pluck('name')->implode(', ') ?? 'Brak przypisania',
         ];
     }
 }
