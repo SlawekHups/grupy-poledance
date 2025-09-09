@@ -18,16 +18,26 @@ class PaymentStats extends BaseWidget
         $unpaidTotal = Payment::where('paid', false)
             ->sum('amount');
 
-        // Suma wpłat w bieżącym miesiącu
-        $monthlyTotal = Payment::where('paid', true)
+        // Suma wpłat w bieżącym miesiącu (po updated_at)
+        $monthlyTotalUpdated = Payment::where('paid', true)
             ->whereYear('updated_at', $currentYear)
             ->whereMonth('updated_at', $currentMonth)
             ->sum('amount');
 
-        // Ilość wpłat w bieżącym miesiącu
-        $monthlyCount = Payment::where('paid', true)
+        // Suma wpłat w bieżącym miesiącu (po polu month)
+        $monthlyTotalByMonth = Payment::where('paid', true)
+            ->where('month', now()->format('Y-m'))
+            ->sum('amount');
+
+        // Ilość wpłat w bieżącym miesiącu (po updated_at)
+        $monthlyCountUpdated = Payment::where('paid', true)
             ->whereYear('updated_at', $currentYear)
             ->whereMonth('updated_at', $currentMonth)
+            ->count();
+
+        // Ilość wpłat w bieżącym miesiącu (po polu month)
+        $monthlyCountByMonth = Payment::where('paid', true)
+            ->where('month', now()->format('Y-m'))
             ->count();
 
         return [
@@ -42,11 +52,11 @@ class PaymentStats extends BaseWidget
                     ])
                 ),
 
-            Stat::make('Suma wpłat w tym miesiącu', number_format($monthlyTotal, 2) . ' zł')
-                ->description('Opłacone w ' . now()->format('m/Y'))
+            Stat::make('Suma wpłat (aktualizacje)', number_format($monthlyTotalUpdated, 2) . ' zł')
+                ->description('Opłacone wg daty aktualizacji ' . now()->format('m/Y'))
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success')
-                ->chart([2, 4, 6, 8, 5, $monthlyTotal/100])
+                ->chart([2, 4, 6, 8, 5, $monthlyTotalUpdated/100])
                 ->url(
                     route('filament.admin.resources.payments.index', [
                         'tableFilters[paid][value]' => '1',
@@ -55,16 +65,40 @@ class PaymentStats extends BaseWidget
                     ])
                 ),
 
-            Stat::make('Ilość wpłat w tym miesiącu', $monthlyCount)
-                ->description('Liczba opłaconych płatności')
+            Stat::make('Ilość wpłat (aktualizacje)', $monthlyCountUpdated)
+                ->description('Liczba opłaconych wg daty aktualizacji')
                 ->descriptionIcon('heroicon-m-calculator')
                 ->color('info')
-                ->chart([1, 3, 6, 8, 4, $monthlyCount])
+                ->chart([1, 3, 6, 8, 4, $monthlyCountUpdated])
                 ->url(
                     route('filament.admin.resources.payments.index', [
                         'tableFilters[paid][value]' => '1',
                         'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
                         'tableFilters[updated_at][until]' => now()->endOfMonth()->format('Y-m-d'),
+                    ])
+                ),
+
+            Stat::make('Suma wpłat (miesiąc)', number_format($monthlyTotalByMonth, 2) . ' zł')
+                ->description('Opłacone wg pola month ' . now()->format('m/Y'))
+                ->descriptionIcon('heroicon-m-banknotes')
+                ->color('primary')
+                ->chart([2, 5, 3, 6, 7, $monthlyTotalByMonth/100])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[month][value]' => now()->format('Y-m'),
+                    ])
+                ),
+
+            Stat::make('Ilość wpłat (miesiąc)', $monthlyCountByMonth)
+                ->description('Liczba opłaconych wg pola month')
+                ->descriptionIcon('heroicon-m-calculator')
+                ->color('primary')
+                ->chart([1, 2, 4, 6, 8, $monthlyCountByMonth])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[month][value]' => now()->format('Y-m'),
                     ])
                 ),
         ];

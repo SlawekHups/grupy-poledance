@@ -196,6 +196,34 @@ class PaymentResource extends Resource
                             fn (Builder $query): Builder => $query->where('paid', (bool) $data['value']),
                         );
                     }),
+                Tables\Filters\SelectFilter::make('month')
+                    ->label('Miesiąc (pole month)')
+                    ->options(function () {
+                        $options = [];
+                        for ($i = -12; $i <= 12; $i++) {
+                            $date = now()->addMonths($i)->startOfMonth();
+                            $options[$date->format('Y-m')] = mb_strtoupper($date->translatedFormat('F Y'), 'UTF-8');
+                        }
+                        return $options;
+                    })
+                    ->placeholder('Wybierz miesiąc')
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            ($data['value'] ?? null),
+                            fn (Builder $q, string $value): Builder => $q->where('month', $value),
+                        );
+                    }),
+                Tables\Filters\Filter::make('updated_at')
+                    ->label('Data aktualizacji')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')->label('Od'),
+                        Forms\Components\DatePicker::make('to')->label('Do'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['from'] ?? null, fn (Builder $q, $date): Builder => $q->whereDate('updated_at', '>=', $date))
+                            ->when($data['to'] ?? null, fn (Builder $q, $date): Builder => $q->whereDate('updated_at', '<=', $date));
+                    }),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
