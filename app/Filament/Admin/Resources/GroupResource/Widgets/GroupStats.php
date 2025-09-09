@@ -12,6 +12,17 @@ class GroupStats extends StatsOverviewWidget
 {
     protected function getCards(): array
     {
+        // Podsumowania grup
+        $fullGroups = Group::query()
+            ->where('status', 'full')
+            ->count();
+
+        $withSpaceGroups = Group::query()
+            ->where('status', 'active')
+            ->get()
+            ->filter(fn ($g) => $g->hasSpace())
+            ->count();
+
         return [
             Card::make('Łączna liczba użytkowników', User::where('role', 'user')->count())
                 ->icon('heroicon-o-users')
@@ -31,6 +42,18 @@ class GroupStats extends StatsOverviewWidget
                 ->icon('heroicon-o-user-group')
                 ->color('warning')
                 ->description('Liczba użytkowników w tej grupie'),
+
+            // Grupy pełne
+            Card::make('Grupy pełne', $fullGroups)
+                ->icon('heroicon-o-rectangle-stack')
+                ->color('danger')
+                ->description('Grupy o zapełnionym limicie'),
+
+            // Grupy z wolnymi miejscami
+            Card::make('Grupy z miejscem', $withSpaceGroups)
+                ->icon('heroicon-o-check-circle')
+                ->color('success')
+                ->description('Grupy aktywne z wolnymi miejscami'),
 
         ];
     }

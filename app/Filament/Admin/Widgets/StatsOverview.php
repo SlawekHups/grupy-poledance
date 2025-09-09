@@ -61,21 +61,40 @@ class StatsOverview extends BaseWidget
                 ->extraAttributes(['class' => 'cursor-pointer']),
         ];
 
-        // 👥 Liczba użytkowników w każdej grupie (pivot: members)
+        // 👥 Liczba użytkowników w każdej grupie (pivot: members) + kolory wg zajętości i tooltipy
         foreach (Group::all() as $group) {
             $userCount = $group->members()->where('users.role', 'user')->count();
-            $color = 'success';
-            if ($userCount === 0) {
-                $color = 'danger';
-            } elseif ($userCount >= 1 && $userCount <= 6) {
-                $color = 'purple';
+            $capacity = (int) ($group->max_size ?? 0);
+            $color = 'primary';
+            $description = 'Liczba przypisanych użytkowników';
+            $title = "Status: {$group->status}\nBrak ustawionego limitu miejsc";
+
+            if ($capacity > 0) {
+                $fillPct = (int) round(($userCount / max($capacity, 1)) * 100);
+                if ($userCount === 0) {
+                    $color = 'gray';
+                } elseif ($userCount >= $capacity) {
+                    $color = 'danger';
+                } elseif ($fillPct >= 80) {
+                    $color = 'warning';
+                } elseif ($fillPct >= 50) {
+                    $color = 'success';
+                } else {
+                    $color = 'secondary';
+                }
+                $description = "Zajętość: {$userCount}/{$capacity} ({$fillPct}%)";
+                $title = "Limit miejsc: {$capacity}\nStatus: {$group->status}\nWolne miejsca: " . max(0, $capacity - $userCount);
+            } else {
+                // Brak ustawionego limitu – prosta kolorystyka
+                $color = $userCount === 0 ? 'gray' : 'primary';
             }
+
             $cards[] = Card::make("Grupa: {$group->name}", $userCount)
                 ->icon('heroicon-o-user-group')
                 ->color($color)
-                ->description('Liczba przypisanych użytkowników')
+                ->description($description)
                 ->url(route('filament.admin.resources.groups.edit', ['record' => $group->id]))
-                ->extraAttributes(['class' => 'cursor-pointer']);
+                ->extraAttributes(['class' => 'cursor-pointer', 'title' => $title]);
         }
 
         return $cards;
