@@ -222,6 +222,7 @@ class UserResource extends Resource
                                 ->formatStateUsing(fn (bool $state): string => $state ? 'Aktywny' : 'Nieaktywny')
                                 ->color(fn (bool $state): string => $state ? 'success' : 'danger')
                                 ->alignRight(),
+                            // Regulamin przeniesiony na dół kafelka
                         ])->extraAttributes(['class' => 'justify-between items-start']),
 
                         Tables\Columns\Layout\Stack::make([
@@ -248,10 +249,24 @@ class UserResource extends Resource
                                 ->alignRight()
                                 ->searchable(),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        // Opis regulaminu na samym dole (ikonka + tekst, kolor zgodny ze statusem)
+                        TextColumn::make('terms_status')
+                            ->label('')
+                            ->state(fn ($record): string => $record->terms_accepted_at ? 'Regulamin: zaakceptowany' : 'Regulamin: brak akceptacji')
+                            ->icon(fn ($record): string => $record->terms_accepted_at ? 'heroicon-o-document-check' : 'heroicon-o-exclamation-triangle')
+                            ->color(fn ($record): string => $record->terms_accepted_at ? 'success' : 'danger')
+                            ->tooltip(fn ($record): ?string => $record->terms_accepted_at ? 'Data akceptacji: ' . \Carbon\Carbon::parse($record->terms_accepted_at)->format('d.m.Y H:i') : 'Regulamin nie został zaakceptowany')
+                            ->extraAttributes(['class' => 'mt-2 font-medium']),
                     ])->space(2),
                 ])->extraAttributes(function ($record) {
                     $classes = ['p-4', 'border-l-4'];
-                    $classes[] = $record->is_active ? 'border-l-green-400' : 'border-l-red-400';
+                    // Priorytet: jeśli brak akceptacji regulaminu – czerwony pasek
+                    if (empty($record->terms_accepted_at)) {
+                        $classes[] = 'border-l-red-500';
+                    } else {
+                        $classes[] = $record->is_active ? 'border-l-green-400' : 'border-l-red-400';
+                    }
                     return ['class' => implode(' ', $classes)];
                 }),
             ])
