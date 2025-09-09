@@ -17,6 +17,14 @@ class ListAttendances extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('info')
+                ->label('Opis obecności')
+                ->icon('heroicon-o-information-circle')
+                ->color('info')
+                ->modalHeading('Opis systemu obecności i przycisków')
+                ->modalContent(view('filament.admin.pages.attendance-info'))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Zamknij'),
             Actions\CreateAction::make(),
             Actions\Action::make('addExternalUserAttendance')
                 ->label('Dodaj obecność spoza grupy (odrabianie)')
