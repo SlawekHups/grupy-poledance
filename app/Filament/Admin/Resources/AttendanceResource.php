@@ -67,12 +67,13 @@ class AttendanceResource extends Resource
                             ->options(function (callable $get) {
                                 $groupId = $get('group_id');
                                 if (!$groupId) return [];
-                                
-                                return \App\Models\User::query()
-                                    ->where('group_id', $groupId)
-                                    ->whereNot('role', 'admin')
-                                    ->orderBy('name')
-                                    ->pluck('name', 'id');
+                                // Pobierz przez pivot members()
+                                $group = \App\Models\Group::find($groupId);
+                                if (!$group) return [];
+                                return $group->members()
+                                    ->select('users.id', 'users.name')
+                                    ->orderBy('users.name')
+                                    ->pluck('users.name', 'users.id');
                             })
                             ->searchable()
                             ->preload()
