@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -88,6 +90,16 @@ class User extends Authenticatable
             // Jeśli zmieniono legacy group_id – przypnij do pivotu
             if ($user->wasChanged('group_id') && !empty($user->group_id)) {
                 $user->groups()->syncWithoutDetaching([$user->group_id]);
+            }
+        });
+
+        static::updating(function (self $user) {
+            if ($user->isDirty(['name','email','phone','amount','terms_accepted_at'])) {
+                Log::info('Aktualizacja profilu użytkownika', [
+                    'user_id' => $user->id,
+                    'by' => Auth::id(),
+                    'changed' => $user->getDirty(),
+                ]);
             }
         });
     }

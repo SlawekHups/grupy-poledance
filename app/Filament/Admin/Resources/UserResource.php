@@ -742,6 +742,7 @@ class UserResource extends Resource
                         ->openUrlInNewTab(),
 
                 ])
+                    ->visible(fn (User $record) => $record->role !== 'admin')
                     ->button()
                     ->label('Actions')
                     ->icon('heroicon-o-cog-6-tooth'),
@@ -766,6 +767,7 @@ class UserResource extends Resource
                         ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
                         ->modalSubmitActionLabel('Wyślij zaproszenie'),
                 ])
+                    ->visible(fn (User $record) => $record->role !== 'admin')
                     ->button()
                     ->label('Zaproszenia')
                     ->icon('heroicon-o-envelope')
@@ -878,6 +880,12 @@ class UserResource extends Resource
                         ->modalSubmitActionLabel('Wyślij wiadomości'),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('role', '!=', 'admin');
     }
 
     public static function getRelations(): array

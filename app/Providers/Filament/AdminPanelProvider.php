@@ -36,11 +36,23 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                \App\Filament\Admin\Pages\AdminSettings::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->profile()
+            ->userMenuItems([
+                'profile' => \Filament\Navigation\UserMenuItem::make()
+                    ->label('Ustawienia konta')
+                    ->url(fn (): string => route('filament.admin.auth.profile'))
+                    ->icon('heroicon-o-cog-6-tooth'),
+                'admin-settings' => \Filament\Navigation\UserMenuItem::make()
+                    ->label('Ustawienia administratora')
+                    ->url(fn (): string => route('filament.admin.pages.admin-settings'))
+                    ->icon('heroicon-o-shield-check'),
             ])
             ->middleware([
                 EncryptCookies::class,
