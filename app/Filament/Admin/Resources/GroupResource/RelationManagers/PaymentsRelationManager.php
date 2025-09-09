@@ -23,11 +23,13 @@ class PaymentsRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\Select::make('user_id')
-                    ->relationship(
-                        'user', 
-                        'name',
-                        fn (Builder $query) => $query->where('group_id', $this->getOwnerRecord()->id)
-                    )
+                    ->label('Użytkownik')
+                    ->options(function () {
+                        return $this->getOwnerRecord()->members()
+                            ->select('users.id', 'users.name')
+                            ->orderBy('users.name')
+                            ->pluck('users.name', 'users.id');
+                    })
                     ->label('Użytkownik')
                     ->required()
                     ->searchable()
