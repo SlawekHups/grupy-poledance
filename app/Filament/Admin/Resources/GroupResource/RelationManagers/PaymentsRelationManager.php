@@ -24,16 +24,34 @@ class PaymentsRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Select::make('user_id')
                     ->label('Użytkownik')
-                    ->options(function () {
-                        return $this->getOwnerRecord()->members()
-                            ->select('users.id', 'users.name')
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search) {
+                        $group = $this->getOwnerRecord();
+                        if (!$group) return [];
+                        $users = $group->members()
+                            ->where(function ($q) use ($search) {
+                                $q->where('users.name', 'like', "%{$search}%")
+                                  ->orWhere('users.email', 'like', "%{$search}%")
+                                  ->orWhere('users.phone', 'like', "%{$search}%");
+                            })
+                            ->select('users.id', 'users.name', 'users.phone')
                             ->orderBy('users.name')
-                            ->pluck('users.name', 'users.id');
+                            ->limit(50)
+                            ->get()
+                            ->mapWithKeys(function ($u) {
+                                $label = $u->name . (!empty($u->phone) ? ' (' . $u->phone . ')' : '');
+                                return [$u->id => $label];
+                            })
+                            ->toArray();
+                        return $users ?? [];
+                    })
+                    ->getOptionLabelUsing(function ($value) {
+                        $u = \App\Models\User::find($value);
+                        if (!$u) return $value;
+                        return $u->name . (!empty($u->phone) ? ' (' . $u->phone . ')' : '');
                     })
                     ->label('Użytkownik')
                     ->required()
-                    ->searchable()
-                    ->preload()
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
                         if ($state) {
@@ -88,6 +106,14 @@ class PaymentsRelationManager extends RelationManager
                     ->rows(3),
             ])
             ->columns(3);
+    }
+
+    protected function getTableQuery(): Builder
+    {
+        // Pokaż płatności użytkowników należących do tej grupy (pivot members)
+        $owner = $this->getOwnerRecord();
+        return \App\Models\Payment::query()
+            ->whereIn('user_id', $owner->members()->select('users.id'));
     }
 
     public function table(Table $table): Table
@@ -156,6 +182,7 @@ class PaymentsRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Dodaj płatność')
+                    ->using(fn (array $data) => \App\Models\Payment::create($data))
                     ->mutateFormDataUsing(function (array $data) {
                         $user = \App\Models\User::find($data['user_id']);
                         if ($user) {
