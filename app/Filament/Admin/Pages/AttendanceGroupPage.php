@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Pages;
 
 use Filament\Pages\Page;
 use App\Models\User;
+use App\Models\Group;
 use App\Models\Attendance;
 use Filament\Notifications\Notification;
 
@@ -33,15 +34,26 @@ class AttendanceGroupPage extends Page
 
     public function loadUsers()
     {
-        // Pobierz użytkowników w wybranej grupie
-        $this->users = User::where('group_id', $this->group_id)
-            ->orderBy('name')->get()->map(function ($user) {
-                return [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
-                ];
-            })->toArray();
+        if (empty($this->group_id)) {
+            $this->users = [];
+            $this->attendances = [];
+            return;
+        }
+
+        $group = Group::find($this->group_id);
+        if (!$group) {
+            $this->users = [];
+            $this->attendances = [];
+            return;
+        }
+
+        // Pobierz użytkowników przypiętych do grupy przez pivot members()
+        $this->users = $group->members()
+            ->select('users.id', 'users.name', 'users.email')
+            ->orderBy('users.name')
+            ->get()
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email])
+            ->toArray();
 
         // Pobierz obecności dla wybranej grupy i daty
         $attendances = Attendance::where('group_id', $this->group_id)

@@ -37,9 +37,10 @@ class AttendancesRelationManager extends RelationManager
                         Forms\Components\Select::make('user_id')
                             ->label('Użytkownik')
                             ->options(function () {
-                                return $this->getOwnerRecord()->users()
-                                    ->orderBy('name')
-                                    ->pluck('name', 'id');
+                                return $this->getOwnerRecord()->members()
+                                    ->select('users.id', 'users.name')
+                                    ->orderBy('users.name')
+                                    ->pluck('users.name', 'users.id');
                             })
                             ->searchable()
                             ->preload()
@@ -116,7 +117,12 @@ class AttendancesRelationManager extends RelationManager
                     ->falseLabel('Nieobecny'),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data) {
+                        // Upewnij się, że group_id jest ustawione dla relacji
+                        $data['group_id'] = $this->getOwnerRecord()->id;
+                        return $data;
+                    }),
                 Tables\Actions\Action::make('addGroupAttendance')
                     ->label('Dodaj obecności grupowe')
                     ->icon('heroicon-o-user-group')
@@ -135,9 +141,10 @@ class AttendancesRelationManager extends RelationManager
                                 Forms\Components\CheckboxList::make('users')
                                     ->label('Użytkownicy')
                                     ->options(function ($record) {
-                                        return $this->getOwnerRecord()->users()
-                                            ->orderBy('name')
-                                            ->pluck('name', 'id');
+                                        return $this->getOwnerRecord()->members()
+                                            ->select('users.id', 'users.name')
+                                            ->orderBy('users.name')
+                                            ->pluck('users.name', 'users.id');
                                     })
                                     ->searchable()
                                     ->bulkToggleable()
