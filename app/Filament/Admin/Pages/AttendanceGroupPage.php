@@ -12,6 +12,7 @@ class AttendanceGroupPage extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Obecność grupy';
+    protected static ?string $title = 'Obecność grupy';
     protected static string $view = 'filament.admin.pages.attendance-group-page';
 
     public $group_id = '';

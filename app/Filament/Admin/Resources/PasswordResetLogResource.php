@@ -23,6 +23,8 @@ class PasswordResetLogResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-key';
     protected static ?string $navigationGroup = 'Użytkownicy i Grupy';
     protected static ?string $navigationLabel = 'Logi resetów haseł';
+    protected static ?string $modelLabel = 'Log resetu hasła';
+    protected static ?string $pluralModelLabel = 'Logi resetów haseł';
     protected static ?int $navigationSort = 5;
 
     public static function getNavigationBadge(): ?string

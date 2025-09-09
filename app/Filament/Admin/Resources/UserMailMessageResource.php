@@ -25,7 +25,9 @@ class UserMailMessageResource extends Resource
 
     protected static ?string $navigationGroup = 'Komunikacja';
 
-    protected static ?string $navigationLabel = 'Wiadomości Email';
+    protected static ?string $navigationLabel = 'Wiadomości e‑mail';
+    protected static ?string $modelLabel = 'Wiadomość e‑mail';
+    protected static ?string $pluralModelLabel = 'Wiadomości e‑mail';
 
     protected static ?int $navigationSort = 3;
 
