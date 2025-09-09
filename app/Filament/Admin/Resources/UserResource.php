@@ -928,6 +928,20 @@ class UserResource extends Resource
             'edit' => Pages\EditUser::route('/{record}'),
         ];
     }
+    public static function getTabs(): array
+    {
+        $notAcceptedCount = User::query()
+            ->where('role', '!=', 'admin')
+            ->whereNull('terms_accepted_at')
+            ->count();
+
+        return [
+            '👥 Wszyscy' => User::query()->where('role', '!=', 'admin'),
+            '⚠️ Brak akceptacji regulaminu (' . $notAcceptedCount . ')' => User::query()
+                ->where('role', '!=', 'admin')
+                ->whereNull('terms_accepted_at'),
+        ];
+    }
     
     /**
      * Generuje treść przypomnienia o płatnościach

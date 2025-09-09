@@ -6,12 +6,12 @@ use App\Events\UserInvited;
 use App\Filament\Admin\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Components\Tab;
 use App\Filament\Admin\Resources\UserResource\Widgets\UserStats;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\User;
 use Livewire\WithFileUploads;
 use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\Log;
 
 class ListUsers extends ListRecords
 {
@@ -94,6 +94,27 @@ class ListUsers extends ListRecords
         ];
     }
 
+    public function getTabs(): array
+    {
+        $notAcceptedCount = User::query()
+            ->where('role', '!=', 'admin')
+            ->whereNull('terms_accepted_at')
+            ->count();
+
+        \Illuminate\Support\Facades\Log::info('ListUsers getTabs rendered', ['notAccepted' => $notAcceptedCount]);
+
+        return [
+            '👥 Wszyscy' => Tab::make()
+                ->modifyQueryUsing(fn ($query) => $query->where('role', '!=', 'admin')),
+
+            '⚠️ Brak akceptacji regulaminu (' . $notAcceptedCount . ')' => Tab::make()
+                ->modifyQueryUsing(fn ($query) => $query
+                    ->where('role', '!=', 'admin')
+                    ->whereNull('terms_accepted_at')
+                ),
+        ];
+    }
+
     protected function getHeaderWidgets(): array
     {
         return [
@@ -147,8 +168,8 @@ class ListUsers extends ListRecords
         }
         
         // Debug - sprawdź co jest w danych
-        Log::info('Import data:', $data);
-        Log::info('All properties:', get_object_vars($this));
+        \Illuminate\Support\Facades\Log::info('Import data:', $data);
+        \Illuminate\Support\Facades\Log::info('All properties:', get_object_vars($this));
         
         if (!isset($data['file'])) {
             Notification::make()
