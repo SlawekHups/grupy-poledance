@@ -117,11 +117,76 @@ class AttendancesRelationManager extends RelationManager
                     ->falseLabel('Nieobecny'),
             ])
             ->headerActions([
+                Tables\Actions\Action::make('infoOdrabianie')
+                    ->label('Info')
+                    ->icon('heroicon-o-information-circle')
+                    ->color('info')
+                    ->tooltip('Jak dodać obecność spoza grupy (odrabianie)')
+                    ->requiresConfirmation()
+                    ->modalHeading('Informacja: Odrabianie zajęć')
+                    ->modalDescription('Opcja „Dodaj obecność spoza grupy (odrabianie)” służy do oznaczenia obecności uczestnika, który przyszedł do tej grupy wyjątkowo (np. odrabianie). Nie zmienia to przypisań do grup i nie wpływa na listę członków. Wpis tworzony jest na wybraną datę, z notatką „Odrabianie”.')
+                    ->modalSubmitActionLabel('OK')
+                    ->action(fn () => null),
                 Tables\Actions\CreateAction::make()
                     ->mutateFormDataUsing(function (array $data) {
                         // Upewnij się, że group_id jest ustawione dla relacji
                         $data['group_id'] = $this->getOwnerRecord()->id;
                         return $data;
+                    }),
+                Tables\Actions\Action::make('addExternalUserAttendance')
+                    ->label('Dodaj obecność spoza grupy (odrabianie)')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('danger')
+                    ->form([
+                        Forms\Components\Select::make('user_id')
+                            ->label('Użytkownik')
+                            ->searchable()
+                            ->getSearchResultsUsing(function (string $search) {
+                                return \App\Models\User::query()
+                                    ->where('is_active', true)
+                                    ->whereNot('role', 'admin')
+                                    ->where(function ($q) use ($search) {
+                                        $q->where('name', 'like', "%{$search}%")
+                                          ->orWhere('email', 'like', "%{$search}%");
+                                    })
+                                    ->limit(50)
+                                    ->pluck('name', 'id');
+                            })
+                            ->getOptionLabelUsing(fn ($value) => \App\Models\User::find($value)?->name ?? $value)
+                            ->required(),
+
+                        Forms\Components\DatePicker::make('date')
+                            ->label('Data zajęć')
+                            ->default(now())
+                            ->required(),
+
+                        Forms\Components\Toggle::make('present')
+                            ->label('Obecny?')
+                            ->default(true),
+
+                        Forms\Components\TextInput::make('note')
+                            ->label('Notatka')
+                            ->placeholder('Odrabianie')
+                            ->default('Odrabianie')
+                            ->nullable(),
+                    ])
+                    ->action(function (array $data): void {
+                        \App\Models\Attendance::updateOrCreate(
+                            [
+                                'user_id' => $data['user_id'],
+                                'date' => $data['date'],
+                            ],
+                            [
+                                'group_id' => $this->getOwnerRecord()->id,
+                                'present' => (bool)($data['present'] ?? true),
+                                'note' => $data['note'] ?? null,
+                            ]
+                        );
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Dodano obecność (spoza grupy)')
+                            ->success()
+                            ->send();
                     }),
                 Tables\Actions\Action::make('addGroupAttendance')
                     ->label('Dodaj obecności grupowe')
