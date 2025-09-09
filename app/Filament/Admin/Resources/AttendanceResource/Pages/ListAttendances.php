@@ -96,9 +96,9 @@ class ListAttendances extends ListRecords
     public function getHeaderWidgetsColumns(): int | array
     {
         return [
-            'default' => 3,
-            'sm' => 3,
-            'md' => 3,
+            'default' => 1,
+            'sm' => 1,
+            'md' => 1,
             'lg' => 3,
             'xl' => 3,
             '2xl' => 3,
