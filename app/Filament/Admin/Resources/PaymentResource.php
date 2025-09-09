@@ -118,44 +118,70 @@ class PaymentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'lg' => 2,
+                'xl' => 3,
+            ])
+            ->recordUrl(fn ($record) => route('filament.admin.resources.payments.edit', ['record' => $record]))
+            ->recordClasses(function ($record) {
+                $classes = ['rounded-xl border bg-white shadow-sm hover:shadow-md transition'];
+                // Kolor obramowania/tła wg statusu płatności
+                if ($record->paid) {
+                    $classes[] = 'hover:bg-green-50';
+                    $classes[] = 'border-green-200';
+                } else {
+                    $classes[] = 'hover:bg-red-50';
+                    $classes[] = 'border-red-200';
+                }
+                return implode(' ', $classes);
+            })
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Użytkownik')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('user.name')
+                                ->label('Użytkownik')
+                                ->searchable()
+                                ->sortable()
+                                ->weight('bold')
+                                ->size('lg')
+                                ->extraAttributes(['class' => 'md:text-xl']),
+                            Tables\Columns\TextColumn::make('paid')
+                                ->label('Status')
+                                ->badge()
+                                ->formatStateUsing(fn (bool $state): string => $state ? 'Opłacone' : 'Nieopłacone')
+                                ->color(fn (bool $state): string => $state ? 'success' : 'warning')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
 
-                Tables\Columns\TextColumn::make('month')
-                    ->label('Miesiąc')
-                    ->formatStateUsing(fn (string $state): string => mb_strtoupper(Carbon::createFromFormat('Y-m', $state)->translatedFormat('F Y')))
-                    ->sortable(),
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('month')
+                                ->label('Miesiąc')
+                                ->formatStateUsing(fn (string $state): string => mb_strtoupper(Carbon::createFromFormat('Y-m', $state)->translatedFormat('F Y')))
+                                ->sortable(),
+                            Tables\Columns\TextColumn::make('amount')
+                                ->label('Kwota')
+                                ->money('pln')
+                                ->alignRight()
+                                ->sortable(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
 
-                Tables\Columns\TextColumn::make('amount')
-                    ->label('Kwota')
-                    ->money('pln')
-                    ->sortable(),
-
-                Tables\Columns\IconColumn::make('paid')
-                    ->label('Status')
-                    ->boolean()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('payment_link')
-                    ->label('Link')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('notes')
-                    ->label('Notatki')
-                    ->limit(50)
-                    ->tooltip(function (Model $record): ?string {
-                        return $record->notes;
-                    })
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Data utworzenia')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                        Tables\Columns\TextColumn::make('notes')
+                            ->label('Notatki')
+                            ->wrap()
+                            ->limit(160)
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                    ])->space(2),
+                ])->extraAttributes(function ($record) {
+                    $classes = ['p-4', 'border-l-4'];
+                    if ($record->paid) {
+                        $classes[] = 'border-l-green-400';
+                    } else {
+                        $classes[] = 'border-l-red-400';
+                    }
+                    return ['class' => implode(' ', $classes)];
+                }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('paid')
