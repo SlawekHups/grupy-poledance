@@ -109,6 +109,19 @@ Schedule::command('passwords:check-expired')
         \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie wygasłych tokenów - Błąd wykonania');
     });
 
+// Aktualizacja statusów grup - co 5 minut
+Schedule::command('groups:update-statuses')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Aktualizacja statusów grup na podstawie liczby członków (co 5 minut)')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Aktualizacja statusów grup - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Aktualizacja statusów grup - Błąd wykonania');
+    });
+
 // ============================================================================
 // KOMUNIKACJA - MAILE I IMPORT
 // ============================================================================

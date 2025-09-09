@@ -14,8 +14,15 @@ class ListGroups extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('info')
+                ->label('Opis grup')
+                ->icon('heroicon-o-information-circle')
+                ->color('info')
+                ->modalHeading('Opis systemu grup i widżetów')
+                ->modalContent(view('filament.admin.pages.groups-info'))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Zamknij'),
             Actions\CreateAction::make(),
-
         ];
     }
     protected function getHeaderWidgets(): array
