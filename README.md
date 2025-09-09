@@ -154,12 +154,7 @@ REDIS_PORT=6379
 - [Konfiguracja Kolejki Produkcja](docs/konfiguracja-kolejki-produkcja.md) - zarządzanie kolejkami
 
 ### 🎯 Status Projektu
-- [Status Projektu 2](docs/projekt_status_2.md) - wczesne etapy rozwoju
-- [Status Projektu 3](docs/projekt_status_3.md) - implementacja podstawowych funkcji
-- [Status Projektu 4](docs/projekt_status_4.md) - system płatności i grup
-- [Status Projektu 5](docs/projekt_status_5.md) - system obecności
-- [Status Projektu 6](docs/projekt_status_6.md) - system zaproszeń użytkowników
-- [Status Projektu 7](docs/projekt_status_7.md) - system wiadomości email
+- [Aktualny Status Projektu](docs/projekt_status.md)
 
 ### 🔧 Usprawnienia i Problemy
 - [Planowane Usprawnienia Obecności](docs/planowane-usprawnienia-obecnosci.md)
