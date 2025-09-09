@@ -40,6 +40,12 @@ class PaymentStats extends BaseWidget
             ->where('month', now()->format('Y-m'))
             ->count();
 
+        // Suma wpłat za cały bieżący rok
+        $yearlyTotal = Payment::where('paid', true)
+            ->whereYear('updated_at', $currentYear)
+            ->sum('amount');
+
+
         return [
             // 1) Zaległości
             Stat::make('Zaległości', number_format($unpaidTotal, 2) . ' zł')
@@ -69,7 +75,7 @@ class PaymentStats extends BaseWidget
             Stat::make('Ilość wpłat (miesiąc)', $monthlyCountByMonth)
                 ->description('Liczba opłaconych wg pola month')
                 ->descriptionIcon('heroicon-m-calculator')
-                ->color('warning')
+                ->color('info')
                 ->chart([1, 2, 4, 6, 8, $monthlyCountByMonth])
                 ->url(
                     route('filament.admin.resources.payments.index', [
@@ -102,6 +108,20 @@ class PaymentStats extends BaseWidget
                         'tableFilters[paid][value]' => '1',
                         'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
                         'tableFilters[updated_at][until]' => now()->endOfMonth()->format('Y-m-d'),
+                    ])
+                ),
+
+            // 4) Statystyki roczne
+            Stat::make('Suma wpłat (rok)', number_format($yearlyTotal, 2) . ' zł')
+                ->description('Opłacone w całym ' . $currentYear . ' roku')
+                ->descriptionIcon('heroicon-m-calendar')
+                ->color('primary')
+                ->chart([5, 8, 12, 15, 18, $yearlyTotal/1000])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[updated_at][from]' => now()->startOfYear()->format('Y-m-d'),
+                        'tableFilters[updated_at][until]' => now()->endOfYear()->format('Y-m-d'),
                     ])
                 ),
         ];

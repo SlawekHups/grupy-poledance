@@ -111,6 +111,15 @@ class PaymentResource extends Resource
                     ->placeholder('Dodatkowe informacje o płatności')
                     ->columnSpanFull()
                     ->rows(3),
+
+                Forms\Components\DateTimePicker::make('updated_at')
+                    ->label('Data zapłaty')
+                    ->displayFormat('d.m.Y H:i')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn ($record) => $record && $record->paid)
+                    ->helperText('Data ostatniej aktualizacji płatności')
+                    ->columnSpanFull(),
             ])
             ->columns(3);
     }
