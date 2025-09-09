@@ -142,6 +142,45 @@ class UsersRelationManager extends RelationManager
                     ),
             ])
             ->headerActions([
+                Tables\Actions\Action::make('exportCsv')
+                    ->label('Pobierz listę CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function () {
+                        /** @var Group $group */
+                        $group = $this->getOwnerRecord();
+                        $filename = 'group_' . $group->id . '_users_' . now()->format('Ymd_His') . '.csv';
+                        $members = $group->members()->orderBy('name')->get(['name','email','phone','is_active','amount']);
+
+                        $callback = function () use ($members) {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['name','email','phone','is_active','amount']);
+                            foreach ($members as $u) {
+                                fputcsv($handle, [
+                                    $u->name,
+                                    $u->email,
+                                    $u->phone,
+                                    $u->is_active ? 1 : 0,
+                                    $u->amount,
+                                ]);
+                            }
+                            fclose($handle);
+                        };
+
+                        return response()->streamDownload($callback, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
+                Tables\Actions\Action::make('printList')
+                    ->label('Drukuj listę')
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->url(function () {
+                        /** @var Group $group */
+                        $group = $this->getOwnerRecord();
+                        return route('admin.groups.print-users', ['group' => $group->id]);
+                    })
+                    ->openUrlInNewTab(),
                 Tables\Actions\Action::make('addUser')
                     ->label('Dodaj użytkownika')
                     ->form([

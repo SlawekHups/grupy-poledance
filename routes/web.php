@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SetPasswordController;
 use App\Models\User;
 
@@ -61,8 +62,8 @@ Route::get('/admin/export-user-csv/{user}', function (User $user) {
 
 // Route eksportu danych użytkownika (CSV)
 Route::get('/panel/export-my-csv', function () {
-    $user = auth()->user();
-    abort_unless($user, 403);
+    $user = Auth::user();
+    abort_unless((bool) $user, 403);
 
     $filename = 'my_data_' . now()->format('Ymd_His') . '.csv';
 
@@ -88,3 +89,10 @@ Route::get('/panel/export-my-csv', function () {
 
     return response()->stream($callback, 200, $headers);
 })->middleware(['web', 'auth'])->name('user.export-my-csv');
+
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/admin/groups/{group}/print-users', function (\App\Models\Group $group) {
+        $members = $group->members()->orderBy('name')->get();
+        return view('filament.admin.groups.print-users', compact('group', 'members'));
+    })->name('admin.groups.print-users');
+});
