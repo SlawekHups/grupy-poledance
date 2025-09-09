@@ -102,7 +102,8 @@ class AttendanceResource extends Resource
         return $table
             ->contentGrid([
                 'md' => 1,
-                'xl' => 1,
+                'lg' => 2,
+                'xl' => 3,
             ])
             ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
