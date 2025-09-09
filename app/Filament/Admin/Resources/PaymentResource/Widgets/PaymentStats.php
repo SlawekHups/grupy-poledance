@@ -41,6 +41,7 @@ class PaymentStats extends BaseWidget
             ->count();
 
         return [
+            // 1) Zaległości
             Stat::make('Zaległości', number_format($unpaidTotal, 2) . ' zł')
                 ->description('Suma niezapłaconych płatności')
                 ->descriptionIcon('heroicon-m-exclamation-circle')
@@ -52,6 +53,32 @@ class PaymentStats extends BaseWidget
                     ])
                 ),
 
+            // 2) Po polu month (wyróżnione kolorem warning)
+            Stat::make('Suma wpłat (miesiąc)', number_format($monthlyTotalByMonth, 2) . ' zł')
+                ->description('Opłacone wg pola month ' . now()->format('m/Y'))
+                ->descriptionIcon('heroicon-m-banknotes')
+                ->color('warning')
+                ->chart([2, 5, 3, 6, 7, $monthlyTotalByMonth/100])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[month][value]' => now()->format('Y-m'),
+                    ])
+                ),
+
+            Stat::make('Ilość wpłat (miesiąc)', $monthlyCountByMonth)
+                ->description('Liczba opłaconych wg pola month')
+                ->descriptionIcon('heroicon-m-calculator')
+                ->color('warning')
+                ->chart([1, 2, 4, 6, 8, $monthlyCountByMonth])
+                ->url(
+                    route('filament.admin.resources.payments.index', [
+                        'tableFilters[paid][value]' => '1',
+                        'tableFilters[month][value]' => now()->format('Y-m'),
+                    ])
+                ),
+
+            // 3) Po dacie aktualizacji (updated_at)
             Stat::make('Suma wpłat (aktualizacje)', number_format($monthlyTotalUpdated, 2) . ' zł')
                 ->description('Opłacone wg daty aktualizacji ' . now()->format('m/Y'))
                 ->descriptionIcon('heroicon-m-banknotes')
@@ -75,30 +102,6 @@ class PaymentStats extends BaseWidget
                         'tableFilters[paid][value]' => '1',
                         'tableFilters[updated_at][from]' => now()->startOfMonth()->format('Y-m-d'),
                         'tableFilters[updated_at][until]' => now()->endOfMonth()->format('Y-m-d'),
-                    ])
-                ),
-
-            Stat::make('Suma wpłat (miesiąc)', number_format($monthlyTotalByMonth, 2) . ' zł')
-                ->description('Opłacone wg pola month ' . now()->format('m/Y'))
-                ->descriptionIcon('heroicon-m-banknotes')
-                ->color('primary')
-                ->chart([2, 5, 3, 6, 7, $monthlyTotalByMonth/100])
-                ->url(
-                    route('filament.admin.resources.payments.index', [
-                        'tableFilters[paid][value]' => '1',
-                        'tableFilters[month][value]' => now()->format('Y-m'),
-                    ])
-                ),
-
-            Stat::make('Ilość wpłat (miesiąc)', $monthlyCountByMonth)
-                ->description('Liczba opłaconych wg pola month')
-                ->descriptionIcon('heroicon-m-calculator')
-                ->color('primary')
-                ->chart([1, 2, 4, 6, 8, $monthlyCountByMonth])
-                ->url(
-                    route('filament.admin.resources.payments.index', [
-                        'tableFilters[paid][value]' => '1',
-                        'tableFilters[month][value]' => now()->format('Y-m'),
                     ])
                 ),
         ];

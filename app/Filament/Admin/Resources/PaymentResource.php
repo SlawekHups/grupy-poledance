@@ -167,6 +167,18 @@ class PaymentResource extends Resource
                                 ->sortable(),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('payment_date_label')
+                                ->label('Data zapłaty')
+                                ->icon('heroicon-o-calendar')
+                                ->state(fn ($record): string => $record->paid && $record->updated_at ? \Carbon\Carbon::parse($record->updated_at)->format('d.m.Y') : '—')
+                                ->color(fn ($record): string => $record->paid ? 'success' : 'danger'),
+                            Tables\Columns\TextColumn::make('')
+                                ->label('')
+                                ->state('')
+                                ->extraAttributes(['class' => 'hidden md:block']),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
                         Tables\Columns\TextColumn::make('notes')
                             ->label('Notatki')
                             ->wrap()
