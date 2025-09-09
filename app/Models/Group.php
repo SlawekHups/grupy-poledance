@@ -23,6 +23,10 @@ class Group extends Model
     {
         return $this->hasMany(User::class);
     }
+    public function members()
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
+    }
 
     public function attendances(): HasMany
     {
@@ -48,7 +52,7 @@ class Group extends Model
 
     public function updateStatusBasedOnCapacity(): void
     {
-        $currentCount = $this->users()->count();
+        $currentCount = $this->members()->count();
         
         if ($currentCount >= $this->max_size && $this->status === 'active') {
             $this->update(['status' => 'full']);
@@ -59,7 +63,7 @@ class Group extends Model
 
     public function hasSpace(): bool
     {
-        return $this->users()->count() < $this->max_size;
+        return $this->members()->count() < $this->max_size;
     }
 
     protected static function booted()

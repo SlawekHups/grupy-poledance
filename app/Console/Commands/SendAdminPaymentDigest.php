@@ -59,6 +59,13 @@ class SendAdminPaymentDigest extends Command
                 ->where('is_active', true)
                 ->whereNot('role', 'admin')
                 ->get();
+            // Użyj pivotu, jeśli brak wyników legacy
+            if ($users->isEmpty()) {
+                $users = $group->members()
+                    ->where('is_active', true)
+                    ->whereNot('role', 'admin')
+                    ->get();
+            }
 
             $groupUsers = [];
             foreach ($users as $user) {

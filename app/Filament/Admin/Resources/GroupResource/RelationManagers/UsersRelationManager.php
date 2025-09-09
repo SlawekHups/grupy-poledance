@@ -19,7 +19,7 @@ use App\Models\Group;
 
 class UsersRelationManager extends RelationManager
 {
-    protected static string $relationship = 'users';
+    protected static string $relationship = 'members';
 
     protected static ?string $title = 'Użytkownicy w grupie';
 
@@ -29,13 +29,17 @@ class UsersRelationManager extends RelationManager
             ->schema([
                 Forms\Components\Select::make('user_id')
                     ->label('Użytkownik')
-                    ->options(
-                        User::query()
-                            ->whereNull('group_id')
+                    ->options(function () {
+                        $group = $this->getOwnerRecord();
+                        return User::query()
                             ->whereNot('role', 'admin')
+                            ->where('is_active', true)
+                            ->whereDoesntHave('groups', function ($q) use ($group) {
+                                $q->where('groups.id', $group->id);
+                            })
                             ->orderBy('name')
-                            ->pluck('name', 'id')
-                    )
+                            ->pluck('name', 'id');
+                    })
                     ->required()
                     ->searchable()
                     ->preload()
@@ -164,7 +168,8 @@ class UsersRelationManager extends RelationManager
                         }
 
                         $user = User::find($data['user_id']);
-                        $user->update(['group_id' => $group->id]);
+                        // Przypnij przez pivot
+                        $group->members()->syncWithoutDetaching([$user->id]);
                         
                         $group->updateStatusBasedOnCapacity();
 
@@ -177,19 +182,13 @@ class UsersRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('remove')
+                    Tables\Actions\DetachAction::make()
                         ->label('Usuń z grupy')
                         ->color('danger')
                         ->icon('heroicon-o-trash')
-                        ->requiresConfirmation()
-                        ->action(function (User $record, Group $group): void {
-                            $record->update(['group_id' => null]);
+                        ->successNotificationTitle('Użytkownik został usunięty z grupy')
+                        ->after(function (Group $group) {
                             $group->updateStatusBasedOnCapacity();
-
-                            Notification::make()
-                                ->title('Użytkownik został usunięty z grupy')
-                                ->success()
-                                ->send();
                         }),
                 ])
                     ->button()
@@ -197,23 +196,14 @@ class UsersRelationManager extends RelationManager
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkAction::make('removeMultiple')
+                Tables\Actions\DetachBulkAction::make()
                     ->label('Usuń zaznaczonych z grupy')
                     ->color('danger')
                     ->icon('heroicon-o-trash')
-                    ->requiresConfirmation()
-                    ->action(function (Collection $records, Group $group): void {
-                        $records->each(function ($user) {
-                            $user->update(['group_id' => null]);
-                        });
-                        
+                    ->after(function (Group $group) {
                         $group->updateStatusBasedOnCapacity();
-
-                        Notification::make()
-                            ->title('Użytkownicy zostali usunięci z grupy')
-                            ->success()
-                            ->send();
-                    }),
+                    })
+                    ->successNotificationTitle('Użytkownicy zostali usunięci z grupy'),
                 Tables\Actions\BulkAction::make('updatePaymentAmount')
                     ->label('Zmień kwotę dla grupy')
                     ->icon('heroicon-o-banknotes')

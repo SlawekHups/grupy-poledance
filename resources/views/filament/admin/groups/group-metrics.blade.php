@@ -1,7 +1,7 @@
 @php($record = isset($getRecord) ? $getRecord() : null)
 @if ($record)
     <?php
-        $count = $record->users()->count();
+        $count = $record->members()->count();
         $max = (int) ($record->max_size ?? 0);
         $free = max($max - $count, 0);
         $occupancyColor = $count >= $max

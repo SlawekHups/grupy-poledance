@@ -69,12 +69,20 @@ class CreateUser extends CreateRecord
                                 DatePicker::make('joined_at')
                                     ->label('Data zapisu')
                                     ->default(now()),
+                                // Legacy field hidden
                                 Select::make('group_id')
-                                    ->label('Grupa')
+                                    ->label('Grupa (legacy)')
                                     ->relationship('group', 'name')
+                                    ->hidden()
+                                    ->dehydrated(false),
+
+                                // New multi-select groups
+                                Select::make('groups')
+                                    ->label('Grupy')
+                                    ->relationship('groups', 'name')
+                                    ->multiple()
                                     ->searchable()
                                     ->preload()
-                                    ->default(1)
                                     ->createOptionForm([
                                         TextInput::make('name')
                                             ->label('Nazwa grupy')

@@ -116,11 +116,20 @@ class UserResource extends Resource
                     }),
                 DatePicker::make('joined_at')->label('Data zapisu'),
 
+                // Deprecated single select (kept hidden for backward compatibility)
                 Select::make('group_id')
-                    ->label('Grupa')
+                    ->label('Grupa (legacy)')
                     ->relationship('group', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->hidden()
+                    ->dehydrated(false),
+
+                // New multi-select groups
+                Select::make('groups')
+                    ->label('Grupy')
+                    ->relationship('groups', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable(),
 
                 TextInput::make('amount')
                     ->label('Kwota miesięczna (zł)')
@@ -200,9 +209,11 @@ class UserResource extends Resource
                 TextColumn::make('phone')
                     ->label('Telefon')
                     ->searchable(),
-                TextColumn::make('group.name')
-                    ->label('Grupa')
-                    ->searchable(),
+                Tables\Columns\TagsColumn::make('groups.name')
+                    ->label('Grupy')
+                    ->separator(', ')
+                    ->limitList(3)
+                    ->expandableLimitedList(),
                 TextColumn::make('amount')
                     ->label('Kwota (PLN)')
                     ->suffix(' zł')
@@ -224,9 +235,10 @@ class UserResource extends Resource
                         'admin' => 'Administrator',
                     ])
                     ->label('Rola'),
-                Tables\Filters\SelectFilter::make('group_id')
-                    ->relationship('group', 'name')
-                    ->label('Grupa')
+                Tables\Filters\SelectFilter::make('groups')
+                    ->relationship('groups', 'name')
+                    ->label('Grupy')
+                    ->multiple()
                     ->searchable()
                     ->preload(),
                 Tables\Filters\TernaryFilter::make('is_active')

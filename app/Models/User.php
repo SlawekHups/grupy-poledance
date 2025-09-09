@@ -70,6 +70,27 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Group::class);
     }
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class)->withTimestamps();
+    }
+
+    protected static function booted()
+    {
+        static::created(function (self $user) {
+            // Jeśli przy tworzeniu ustawiono legacy group_id – przypnij do pivotu
+            if (!empty($user->group_id)) {
+                $user->groups()->syncWithoutDetaching([$user->group_id]);
+            }
+        });
+
+        static::updated(function (self $user) {
+            // Jeśli zmieniono legacy group_id – przypnij do pivotu
+            if ($user->wasChanged('group_id') && !empty($user->group_id)) {
+                $user->groups()->syncWithoutDetaching([$user->group_id]);
+            }
+        });
+    }
     public function addresses()
     {
         return $this->hasMany(Address::class);

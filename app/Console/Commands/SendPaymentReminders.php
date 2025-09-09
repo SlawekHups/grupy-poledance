@@ -116,8 +116,8 @@ class SendPaymentReminders extends Command
         foreach ($todayGroups as $group) {
             $this->info("\nPrzetwarzam grupę: {$group->name}");
             
-            // Pobierz użytkowników z tej grupy
-            $users = User::where('group_id', $group->id)
+            // Użyj relacji pivot members()
+            $users = $group->members()
                 ->where('is_active', true)
                 ->whereNot('role', 'admin')
                 ->get();
