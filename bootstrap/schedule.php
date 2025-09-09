@@ -95,13 +95,12 @@ Schedule::command('users:check-invitations')
         \Illuminate\Support\Facades\Log::error('Zadanie: Sprawdzanie zaproszeń - Błąd wykonania');
     });
 
-// Sprawdzanie wygasłych tokenów resetowania haseł - codziennie o 9:00
+// Sprawdzanie wygasłych tokenów resetowania haseł - co godzinę
 Schedule::command('passwords:check-expired')
-    ->daily()
-    ->at('09:00')
+    ->hourly()
     ->withoutOverlapping()
     ->runInBackground()
-    ->description('Sprawdzanie i oznaczanie wygasłych tokenów resetowania haseł (codziennie o 9:00)')
+    ->description('Sprawdzanie i oznaczanie wygasłych tokenów resetowania haseł (co godzinę)')
     ->onSuccess(function () {
         \Illuminate\Support\Facades\Log::info('Zadanie: Sprawdzanie wygasłych tokenów - Ukończone pomyślnie');
     })

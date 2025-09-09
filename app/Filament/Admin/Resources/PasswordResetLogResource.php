@@ -58,29 +58,9 @@ class PasswordResetLogResource extends Resource
                     ->required()
                     ->disabled(),
                 
-                Forms\Components\Select::make('admin_id')
-                    ->relationship('admin', 'name')
-                    ->label('Administrator')
-                    ->required()
-                    ->searchable(),
-                
-                Forms\Components\TextInput::make('admin_email')
-                    ->label('Email administratora')
-                    ->email()
-                    ->required()
-                    ->disabled(),
-                
                 Forms\Components\Textarea::make('reason')
                     ->label('Powód resetowania')
                     ->rows(3),
-                
-                Forms\Components\Select::make('reset_type')
-                    ->label('Typ resetowania')
-                    ->options([
-                        'single' => 'Pojedynczy',
-                        'bulk' => 'Masowy',
-                    ])
-                    ->required(),
                 
                 Forms\Components\DateTimePicker::make('token_expires_at')
                     ->label('Data wygaśnięcia tokenu')
@@ -116,22 +96,10 @@ class PasswordResetLogResource extends Resource
                     ->label('Email użytkownika')
                     ->searchable(),
                 
-                TextColumn::make('admin.name')
-                    ->label('Administrator')
-                    ->searchable()
-                    ->sortable(),
-                
                 TextColumn::make('reason')
                     ->label('Powód')
                     ->limit(50)
                     ->searchable(),
-                
-                BadgeColumn::make('reset_type')
-                    ->label('Typ')
-                    ->colors([
-                        'primary' => 'single',
-                        'warning' => 'bulk',
-                    ]),
                 
                 TextColumn::make('token_expires_at')
                     ->label('Wygasa')
@@ -164,12 +132,6 @@ class PasswordResetLogResource extends Resource
                         'expired' => 'Wygasły',
                     ]),
                 
-                SelectFilter::make('reset_type')
-                    ->label('Typ resetowania')
-                    ->options([
-                        'single' => 'Pojedynczy',
-                        'bulk' => 'Masowy',
-                    ]),
                 
                 Filter::make('expired_soon')
                     ->label('Wygasa w ciągu 24h')
