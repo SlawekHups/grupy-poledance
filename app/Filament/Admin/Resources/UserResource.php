@@ -149,6 +149,13 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'lg' => 2,
+                'xl' => 3,
+            ])
+            ->recordUrl(fn ($record) => route('filament.admin.resources.users.edit', ['record' => $record]))
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->bulkActions([
                 Tables\Actions\BulkAction::make('reset_passwords')
                     ->label('Resetuj hasła')
@@ -199,34 +206,54 @@ class UserResource extends Resource
                     ->deselectRecordsAfterCompletion(),
             ])
             ->columns([
-                TextColumn::make('id')
-                    ->searchable(),
-                TextColumn::make('name')
-                    ->label('Imię i nazwisko')
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->searchable(),
-                TextColumn::make('phone')
-                    ->label('Telefon')
-                    ->searchable(),
-                Tables\Columns\TagsColumn::make('groups.name')
-                    ->label('Grupy')
-                    ->separator(', ')
-                    ->limitList(3)
-                    ->expandableLimitedList(),
-                TextColumn::make('amount')
-                    ->label('Kwota (PLN)')
-                    ->suffix(' zł')
-                    ->searchable(),
-                BooleanColumn::make('is_active')
-                    ->label('Aktywny'),
-                Tables\Columns\BooleanColumn::make('terms_accepted_at')
-                    ->label('Regulamin')
-                    ->trueIcon('heroicon-o-document-check')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger')
-                    ->state(fn($record) => !is_null($record->terms_accepted_at)),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            TextColumn::make('name')
+                                ->label('Imię i nazwisko')
+                                ->searchable()
+                                ->weight('bold')
+                                ->size('lg')
+                                ->extraAttributes(['class' => 'md:text-xl']),
+                            TextColumn::make('is_active')
+                                ->label('Status')
+                                ->badge()
+                                ->icon(fn (bool $state): string => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                                ->formatStateUsing(fn (bool $state): string => $state ? 'Aktywny' : 'Nieaktywny')
+                                ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
+
+                        Tables\Columns\Layout\Stack::make([
+                            TextColumn::make('email')
+                                ->label('E-mail')
+                                ->icon('heroicon-o-envelope')
+                                ->searchable(),
+                            TextColumn::make('phone')
+                                ->label('Telefon')
+                                ->icon('heroicon-o-phone')
+                                ->searchable(),
+                        ]),
+
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TagsColumn::make('groups.name')
+                                ->label('Grupy')
+                                ->separator(', ')
+                                ->limitList(3)
+                                ->expandableLimitedList(),
+                            TextColumn::make('amount')
+                                ->label('Kwota')
+                                ->suffix(' zł')
+                                ->icon('heroicon-o-banknotes')
+                                ->alignRight()
+                                ->searchable(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+                    ])->space(2),
+                ])->extraAttributes(function ($record) {
+                    $classes = ['p-4', 'border-l-4'];
+                    $classes[] = $record->is_active ? 'border-l-green-400' : 'border-l-red-400';
+                    return ['class' => implode(' ', $classes)];
+                }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
