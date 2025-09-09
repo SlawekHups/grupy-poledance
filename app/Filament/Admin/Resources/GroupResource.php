@@ -190,8 +190,8 @@ class GroupResource extends Resource
                             $amount = (float) $data['amount'];
                             $scope = $data['scope'];
                             
-                            // Pobierz wszystkich użytkowników w grupie
-                            $users = $record->users()->where('is_active', true)->get();
+                            // Pobierz wszystkich użytkowników w grupie (pivot members)
+                            $users = $record->members()->where('users.is_active', true)->get();
                             
                             \Illuminate\Support\Facades\Log::info('Found users in group', [
                                 'group_id' => $record->id,
@@ -313,7 +313,7 @@ class GroupResource extends Resource
                         $totalUpdatedPayments = 0;
                         
                         foreach ($records as $group) {
-                            $users = $group->users()->where('is_active', true)->get();
+                            $users = $group->members()->where('users.is_active', true)->get();
                             $updatedUsers = 0;
                             $updatedPayments = 0;
                             
