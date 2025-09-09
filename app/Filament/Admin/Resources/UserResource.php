@@ -283,6 +283,15 @@ class UserResource extends Resource
                     ->multiple()
                     ->searchable()
                     ->preload(),
+                Tables\Filters\Filter::make('terms_not_accepted')
+                    ->label(fn (): string => 'Brak akceptacji regulaminu (' . \App\Models\User::where('role', '!=', 'admin')->whereNull('terms_accepted_at')->count() . ')')
+                    ->toggle()
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['value'] ?? false,
+                            fn (Builder $q): Builder => $q->whereNull('terms_accepted_at'),
+                        );
+                    }),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Status')
                     ->placeholder('Wszystkie')
