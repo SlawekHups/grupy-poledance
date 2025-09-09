@@ -292,15 +292,20 @@ class UserResource extends Resource
                             fn (Builder $q): Builder => $q->whereNull('terms_accepted_at'),
                         );
                     }),
-                Tables\Filters\Filter::make('no_groups')
-                    ->label(fn (): string => 'Bez grupy (' . \App\Models\User::where('role', '!=', 'admin')->whereDoesntHave('groups')->count() . ')')
-                    ->toggle()
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['value'] ?? false,
-                            fn (Builder $q): Builder => $q->whereDoesntHave('groups'),
-                        );
-                    }),
+                Tables\Filters\TernaryFilter::make('no_groups')
+                    ->label('Bez grupy')
+                    ->placeholder('Wszystkie')
+                    ->trueLabel('Bez grupy')
+                    ->falseLabel('Z grupą')
+                    ->queries(
+                        true: fn (Builder $query) => $query->where(function($q) {
+                            $q->whereDoesntHave('groups')
+                              ->orWhereHas('groups', function($q) { $q->where('name', 'Bez grupy'); });
+                        }),
+                        false: fn (Builder $query) => $query->whereHas('groups', function($q) { 
+                            $q->where('name', '!=', 'Bez grupy'); 
+                        }),
+                    ),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Status')
                     ->placeholder('Wszystkie')

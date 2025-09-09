@@ -35,13 +35,15 @@ class GroupStats extends StatsOverviewWidget
                 ->description('Wszystkie zarejestrowane grupy')
                 ->url(route('filament.admin.resources.groups.index')),
 
-            // Użytkownicy bez przypisanej grupy (brak wpisu w pivot group_user)
+            // Użytkownicy bez przypisanej grupy (bez grup + w grupie "Bez grupy")
             Card::make('Bez grupy', User::where('role', 'user')
                 ->whereDoesntHave('groups')
+                ->count() + User::where('role', 'user')
+                ->whereHas('groups', function($q) { $q->where('name', 'Bez grupy'); })
                 ->count())
                 ->icon('heroicon-o-user-group')
                 ->color('warning')
-                ->description('Użytkownicy nieprzypisani do grup')
+                ->description('Użytkownicy bez grup lub w grupie "Bez grupy"')
                 ->url(route('filament.admin.resources.users.index', ['tableFilters[no_groups][value]' => '1'])),
 
             // Grupy pełne
