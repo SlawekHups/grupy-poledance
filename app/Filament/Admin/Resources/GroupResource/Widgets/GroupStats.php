@@ -13,7 +13,7 @@ class GroupStats extends StatsOverviewWidget
     protected function getCards(): array
     {
         return [
-            Card::make('Łączna liczba użytkowników', User::count())
+            Card::make('Łączna liczba użytkowników', User::where('role', 'user')->count())
                 ->icon('heroicon-o-users')
                 ->color('success')
                 ->description('Podsumowanie przypisanych do grup'),
@@ -24,7 +24,10 @@ class GroupStats extends StatsOverviewWidget
                 ->color('warning')
                 ->description('Wszystkie zarejestrowane grupy'),
 
-            Card::make('Bez Grupa', \App\Models\User::where('group_id', 1)->count())
+            // Użytkownicy bez przypisanej grupy (brak wpisu w pivot group_user)
+            Card::make('Bez grupy', \App\Models\User::where('role', 'user')
+                ->whereDoesntHave('groups')
+                ->count())
                 ->icon('heroicon-o-user-group')
                 ->color('warning')
                 ->description('Liczba użytkowników w tej grupie'),

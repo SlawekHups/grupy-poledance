@@ -61,9 +61,9 @@ class StatsOverview extends BaseWidget
                 ->extraAttributes(['class' => 'cursor-pointer']),
         ];
 
-        // 👥 Liczba użytkowników w każdej grupie
+        // 👥 Liczba użytkowników w każdej grupie (pivot: members)
         foreach (Group::all() as $group) {
-            $userCount = $group->users()->where('role', 'user')->count();
+            $userCount = $group->members()->where('users.role', 'user')->count();
             $color = 'success';
             if ($userCount === 0) {
                 $color = 'danger';
