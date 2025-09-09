@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\GroupResource\RelationManagers;
 use App\Models\Group;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,6 +30,22 @@ class GroupResource extends Resource
     {
         return $form
             ->schema([
+                // Lokalny przełącznik trybu edycji utrzymywany w stanie Livewire
+                Forms\Components\Hidden::make('_editMode')
+                    ->default(false)
+                    ->afterStateHydrated(function (Get $get, callable $set) {
+                        // Ustaw tylko przy pierwszym załadowaniu, aby utrzymać wartość w kolejnych żądaniach Livewire
+                        if ($get('_editMode') === null || $get('_editMode') === false) {
+                            if (request()->boolean('edit', false)) {
+                                $set('_editMode', true);
+                            }
+                        }
+                    })
+                    ->dehydrated(false),
+
+                Forms\Components\View::make('filament.admin.groups.group-summary')
+                    ->visible(fn (Get $get) => ! (bool) $get('_editMode'))
+                    ->columnSpanFull(),
                 Forms\Components\Card::make()
                     ->schema([
                         Forms\Components\TextInput::make('name')
@@ -36,7 +53,8 @@ class GroupResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->placeholder('Nazwa grupy')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
 
                         Forms\Components\TextInput::make('description')
                             ->label('Opis')
@@ -44,7 +62,8 @@ class GroupResource extends Resource
                             ->placeholder('Krótki opis grupy')
                             ->helperText(fn ($state) => strlen($state) . '/30 znaków')
                             ->live()
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
 
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -55,16 +74,19 @@ class GroupResource extends Resource
                                         'inactive' => 'Nieaktywna',
                                         'full' => 'Pełna',
                                     ])
-                                    ->default('active'),
+                                    ->default('active')
+                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
 
                                 Forms\Components\TextInput::make('max_size')
                                     ->label('Maksymalna liczba uczestników')
                                     ->numeric()
                                     ->minValue(1)
-                                    ->default(7),
+                                    ->default(7)
+                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
                             ]),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->visible(fn (Get $get) => (bool) $get('_editMode')),
             ]);
     }
 
