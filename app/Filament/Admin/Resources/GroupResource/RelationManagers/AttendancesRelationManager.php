@@ -38,9 +38,9 @@ class AttendancesRelationManager extends RelationManager
                             ->label('Użytkownik')
                             ->options(function () {
                                 return $this->getOwnerRecord()->members()
-                                    ->select('users.id', 'users.name')
+                                    ->select('users.id as user_id', 'users.name')
                                     ->orderBy('users.name')
-                                    ->pluck('users.name', 'users.id');
+                                    ->pluck('users.name', 'users.id as user_id');
                             })
                             ->searchable()
                             ->preload()
@@ -207,9 +207,9 @@ class AttendancesRelationManager extends RelationManager
                                     ->label('Użytkownicy')
                                     ->options(function ($record) {
                                         return $this->getOwnerRecord()->members()
-                                            ->select('users.id', 'users.name')
+                                            ->select('users.id as user_id', 'users.name')
                                             ->orderBy('users.name')
-                                            ->pluck('users.name', 'users.id');
+                                            ->pluck('users.name', 'users.id as user_id');
                                     })
                                     ->searchable()
                                     ->bulkToggleable()

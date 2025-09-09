@@ -34,13 +34,13 @@ class PaymentsRelationManager extends RelationManager
                                   ->orWhere('users.email', 'like', "%{$search}%")
                                   ->orWhere('users.phone', 'like', "%{$search}%");
                             })
-                            ->select('users.id', 'users.name', 'users.phone')
+                            ->select('users.id as user_id', 'users.name', 'users.phone')
                             ->orderBy('users.name')
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($u) {
                                 $label = $u->name . (!empty($u->phone) ? ' (' . $u->phone . ')' : '');
-                                return [$u->id => $label];
+                                return [$u->user_id => $label];
                             })
                             ->toArray();
                         return $users ?? [];

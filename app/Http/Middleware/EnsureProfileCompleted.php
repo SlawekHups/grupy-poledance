@@ -51,7 +51,7 @@ class EnsureProfileCompleted
             
             // Jeśli brakuje pól i nie jesteśmy już na stronie uzupełniania profilu
             if (!empty($missingFields) && !$request->routeIs('filament.user.pages.dashboard') && !$request->routeIs('filament.user.pages.onboarding') && !$request->routeIs('filament.user.auth.profile') && !$request->routeIs('filament.user.auth.logout')) {
-                return redirect()->route('filament.user.pages.dashboard')
+                return redirect()->route('filament.user.pages.onboarding')
                     ->with('warning', 'Proszę uzupełnić swój profil: ' . implode(', ', $missingFields));
             }
         }

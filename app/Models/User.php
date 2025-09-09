@@ -93,6 +93,22 @@ class User extends Authenticatable
             }
         });
 
+        // Synchronizacja w drugą stronę - gdy grupa jest dodana przez pivot table
+        static::saved(function (self $user) {
+            // Jeśli użytkownik ma grupy w pivot table ale nie ma group_id, ustaw group_id na pierwszą grupę
+            if (empty($user->group_id) && $user->groups()->count() > 0) {
+                $firstGroup = $user->groups()->first();
+                if ($firstGroup) {
+                    $user->updateQuietly(['group_id' => $firstGroup->id]);
+                    Log::info('Synchronizacja group_id z pivot table', [
+                        'user_id' => $user->id,
+                        'group_id' => $firstGroup->id,
+                        'group_name' => $firstGroup->name
+                    ]);
+                }
+            }
+        });
+
         static::updating(function (self $user) {
             if ($user->isDirty(['name','email','phone','amount','terms_accepted_at'])) {
                 Log::info('Aktualizacja profilu użytkownika', [

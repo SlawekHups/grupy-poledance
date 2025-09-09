@@ -71,9 +71,9 @@ class AttendanceResource extends Resource
                                 $group = \App\Models\Group::find($groupId);
                                 if (!$group) return [];
                                 return $group->members()
-                                    ->select('users.id', 'users.name')
+                                    ->select('users.id as user_id', 'users.name')
                                     ->orderBy('users.name')
-                                    ->pluck('users.name', 'users.id');
+                                    ->pluck('users.name', 'users.id as user_id');
                             })
                             ->searchable()
                             ->preload()

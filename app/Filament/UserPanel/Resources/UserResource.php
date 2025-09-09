@@ -89,6 +89,13 @@ class UserResource extends Resource
                         }
                         return $state; // fallback
                     }),
+                // 👇 Pole grupy - tylko do odczytu
+                TextInput::make('group.name')
+                    ->label('Grupa')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->default(fn($record) => $record?->group?->name ?? 'Brak przypisania'),
+                
                 // 👇 Pole hasła z logiką bcrypt 
                 TextInput::make('password')
                     ->password()
@@ -142,5 +149,15 @@ class UserResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        return true;
+    }
+
+    public static function canUpdate($record): bool
+    {
+        return $record->id === \Illuminate\Support\Facades\Auth::id();
     }
 }
