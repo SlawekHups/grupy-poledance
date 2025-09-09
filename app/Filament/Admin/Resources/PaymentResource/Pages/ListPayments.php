@@ -14,6 +14,14 @@ class ListPayments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('info')
+                ->label('Opis widżetów')
+                ->icon('heroicon-o-information-circle')
+                ->color('info')
+                ->modalHeading('Opis widżetów statystyk płatności')
+                ->modalContent(view('filament.admin.pages.payment-stats-info'))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Zamknij'),
             Actions\CreateAction::make(),
         ];
     }

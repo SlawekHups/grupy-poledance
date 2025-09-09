@@ -115,7 +115,7 @@ class PaymentStats extends BaseWidget
             Stat::make('Suma wpłat (rok)', number_format($yearlyTotal, 2) . ' zł')
                 ->description('Opłacone w całym ' . $currentYear . ' roku')
                 ->descriptionIcon('heroicon-m-calendar')
-                ->color('primary')
+                ->color('gray')
                 ->chart([5, 8, 12, 15, 18, $yearlyTotal/1000])
                 ->url(
                     route('filament.admin.resources.payments.index', [
