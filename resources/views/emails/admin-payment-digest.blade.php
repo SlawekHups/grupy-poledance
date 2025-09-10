@@ -73,6 +73,7 @@
         </div>
         <div class="footer">
             <p>Wiadomość automatyczna z systemu {{ config('app.payment_reminder_company_name') }}.</p>
+            <p>📧 Email: {{ config('app.payment_reminder_email') }} | ☎️ Telefon: {{ config('app.payment_reminder_phone') }} | 🌐 Strona: {{ config('app.payment_reminder_website') }}</p>
         </div>
     </div>
 </body>

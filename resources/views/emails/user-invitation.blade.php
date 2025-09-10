@@ -130,6 +130,10 @@
         <div class="footer">
             <p>Jeśli nie spodziewałeś się tego emaila, możesz go zignorować.</p>
             <p>Link jest bezpieczny i ważny tylko dla Ciebie.</p>
+            <p>Masz pytania? Skontaktuj się z nami:</p>
+            <p>📧 Email: {{ config('app.payment_reminder_email') }}</p>
+            <p>☎️ Telefon: {{ config('app.payment_reminder_phone') }}</p>
+            <p>🌐 Strona: {{ config('app.payment_reminder_website') }}</p>
         </div>
     </div>
 </body>

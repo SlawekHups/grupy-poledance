@@ -128,10 +128,13 @@
         </div>
         
         <div class="footer">
-            <p>📧 Wiadomość od Grupy Poledance</p>
-            <p>To jest wiadomość systemowa z aplikacji Grupy Poledance.</p>
-            <p>Jeśli masz pytania, skontaktuj się z administratorem systemu.</p>
-            <p><small>Wiadomość wysłana automatycznie przez system Grupy Poledance.</small></p>
+            <p>📧 Wiadomość od {{ config('app.payment_reminder_company_name') }}</p>
+            <p>To jest wiadomość systemowa z aplikacji {{ config('app.payment_reminder_company_name') }}.</p>
+            <p>Jeśli masz pytania, skontaktuj się z nami:</p>
+            <p>📧 Email: {{ config('app.payment_reminder_email') }}</p>
+            <p>☎️ Telefon: {{ config('app.payment_reminder_phone') }}</p>
+            <p>🌐 Strona: {{ config('app.payment_reminder_website') }}</p>
+            <p><small>Wiadomość wysłana automatycznie przez system {{ config('app.payment_reminder_company_name') }}.</small></p>
         </div>
     </div>
 </body>

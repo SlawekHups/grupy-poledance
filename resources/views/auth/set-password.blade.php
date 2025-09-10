@@ -148,6 +148,17 @@
                             <li>• Przeglądać płatności i obecności</li>
                         </ul>
                     </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="text-center text-sm text-gray-500">
+                            <p>Masz pytania? Skontaktuj się z nami:</p>
+                            <div class="mt-2 space-y-1">
+                                <p>📧 <a href="mailto:{{ config('app.payment_reminder_email') }}" class="text-blue-600 hover:text-blue-500">{{ config('app.payment_reminder_email') }}</a></p>
+                                <p>☎️ {{ config('app.payment_reminder_phone') }}</p>
+                                <p>🌐 <a href="https://{{ config('app.payment_reminder_website') }}" class="text-blue-600 hover:text-blue-500" target="_blank">{{ config('app.payment_reminder_website') }}</a></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

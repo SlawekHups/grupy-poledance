@@ -87,13 +87,16 @@
             </div>
             
             <div style="margin-top: 30px; color: #6b7280; font-size: 14px;">
-                <p>To jest wiadomość systemowa z aplikacji Grupy Poledance.</p>
-                <p>Jeśli masz pytania, skontaktuj się z administratorem systemu.</p>
+                <p>To jest wiadomość systemowa z aplikacji {{ config('app.payment_reminder_company_name') }}.</p>
+                <p>Jeśli masz pytania, skontaktuj się z nami:</p>
+                <p>📧 Email: {{ config('app.payment_reminder_email') }}</p>
+                <p>☎️ Telefon: {{ config('app.payment_reminder_phone') }}</p>
+                <p>🌐 Strona: {{ config('app.payment_reminder_website') }}</p>
             </div>
         </div>
         
         <div class="footer">
-            <p>Wiadomość wysłana automatycznie przez system Grupy Poledance.</p>
+            <p>Wiadomość wysłana automatycznie przez system {{ config('app.payment_reminder_company_name') }}.</p>
             <p>Nie odpowiadaj na ten email - użyj kontaktu w aplikacji.</p>
         </div>
     </div>
