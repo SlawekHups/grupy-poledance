@@ -48,6 +48,11 @@
 <script>
 function copyLink(token) {
     const input = document.getElementById('link-input-' + token);
+    if (!input) {
+        console.error('Input element not found for token:', token);
+        return;
+    }
+    
     input.select();
     input.setSelectionRange(0, 99999); // Dla urządzeń mobilnych
     
@@ -66,10 +71,18 @@ function copyLink(token) {
                 button.classList.remove('bg-green-600');
                 button.classList.add('bg-blue-600', 'hover:bg-blue-700');
             }, 2000);
+        } else {
+            console.error('Copy command failed');
+            alert('Nie udało się skopiować linku. Skopiuj go ręcznie.');
         }
     } catch (err) {
         console.error('Błąd kopiowania:', err);
         alert('Nie udało się skopiować linku. Skopiuj go ręcznie.');
     }
 }
+
+// Dodaj event listener po załadowaniu DOM
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Copy link script loaded');
+});
 </script>

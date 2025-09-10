@@ -159,14 +159,15 @@ class PreRegistrationResource extends Resource
                 Tables\Actions\Action::make('copy_link')
                     ->label('Kopiuj link')
                     ->icon('heroicon-o-clipboard')
-                    ->color('gray')
+                    ->color('info')
                     ->modalHeading('Kopiuj link pre-rejestracji')
-                    ->modalDescription('Kliknij na link poniżej, aby go skopiować do schowka')
+                    ->modalDescription('Kliknij przycisk poniżej, aby skopiować link do schowka')
                     ->modalContent(function ($record) {
                         $url = route('pre-register', $record->token);
-                        return view('filament.admin.resources.pre-registration-resource.modals.copy-link', [
+                        return view('filament.admin.resources.pre-registration-resource.modals.copy-link-simple', [
                             'url' => $url,
-                            'token' => $record->token
+                            'token' => $record->token,
+                            'record' => $record
                         ]);
                     })
                     ->modalSubmitAction(false)
