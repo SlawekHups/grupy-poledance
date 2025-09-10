@@ -27,16 +27,24 @@
 
 ### 🆕 Najnowsze Funkcjonalności
 
+- **System Pre-rejestracji** - generowanie krótkoterminowych linków (30 min) do wypełnienia podstawowych danych przez potencjalnych użytkowników
 - **System Zaproszeń Użytkowników** - automatyczne wysyłanie zaproszeń email z linkami do ustawienia hasła
 - **Zarządzanie Wiadomościami Email** - kompleksowy system logowania i importu maili
 - **Automatyczne Generowanie Płatności** - miesięczne płatności dla grup
 - **System Obecności** - śledzenie frekwencji na zajęciach
-- **Ujednolicone akcje w tabelach** - `ActionGroup` z przyciskiem „Actions” i masowe akcje (płatności: oznacz opłacone/nieopłacone; obecności: oznacz obecny/nieobecny)
+- **Ujednolicone akcje w tabelach** - `ActionGroup` z przyciskiem „Actions" i masowe akcje (płatności: oznacz opłacone/nieopłacone; obecności: oznacz obecny/nieobecny)
 - **Logi resetów haseł** - zasób do podglądu i operacji: ponowne wysłanie zaproszenia, ponowny reset, oznaczanie statusów
+- **Automatyczne czyszczenie pre-rejestracji** - usuwanie wygasłych i używanych linków pre-rejestracji
 
 ## 🚀 Funkcjonalności
 
 ### Panel Administratora (`/admin`)
+- **System Pre-rejestracji**
+  - Generowanie pojedynczych i masowych linków pre-rejestracji (7-10 linków)
+  - Linki ważne przez 30 minut z konkretną godziną wygaśnięcia
+  - Kopiowanie linków do schowka (pojedynczo i wszystkie naraz)
+  - Konwersja wypełnionych pre-rejestracji na pełnych użytkowników
+  - Automatyczne czyszczenie wygasłych i używanych linków
 - **Zarządzanie Użytkownikami**
   - Tworzenie użytkowników bez hasła
   - Automatyczne wysyłanie zaproszeń email
@@ -114,6 +122,10 @@ php artisan tinker --execute "App\\Models\\User::where('email','admin@hups.pl')-
 2. **Email** - konfiguracja SMTP i IMAP
 3. **Uprawnienia** - ustawienie praw do katalogów `storage/` i `bootstrap/cache/`
 4. **Cron jobs** - automatyczne zadania systemowe
+   - Czyszczenie wygasłych pre-rejestracji (co 5 minut)
+   - Czyszczenie używanych pre-rejestracji (codziennie o 7:00)
+   - Generowanie płatności miesięcznych
+   - Import wiadomości email
 
 ## 🔧 Konfiguracja
 
@@ -164,6 +176,7 @@ REDIS_PORT=6379
 ### 📋 Zadania i Automatyzacja
 - [Zadania Cron](docs/zadania-cron.md) - automatyczne zadania systemowe
 - [Zadania System Zajęć](docs/zadania-system-zajec.md) - zarządzanie harmonogramem
+- [Instrukcja Pre-rejestracji](docs/instrukcja-pre-rejestracja.md) - szczegółowy przewodnik systemu pre-rejestracji
 
 ### 📧 System Wiadomości Email
 - [System Wiadomości Email](docs/system-wiadomosci-email.md) - kompleksowa dokumentacja
@@ -187,12 +200,17 @@ php artisan test --filter=UserInvitationTest
 
 # Testy systemu wiadomości email
 php artisan test --filter=UserMailMessageTest
+
+# Testy systemu pre-rejestracji
+php artisan test --filter=PreRegistrationTest
 ```
 
 ### Testy Specyficzne
 - **UserInvitationTest** - testy systemu zaproszeń użytkowników
 - **UserMailMessageTest** - testy systemu wiadomości email
 - **PaymentGenerationTest** - testy generowania płatności
+- **PreRegistrationTest** - testy systemu pre-rejestracji (nowe)
+- **PreRegistrationCleanupTest** - testy czyszczenia pre-rejestracji (nowe)
 
 ## 📊 Struktura Projektu
 
@@ -200,21 +218,41 @@ php artisan test --filter=UserMailMessageTest
 grupy-poledance/
 ├── app/
 │   ├── Console/Commands/          # Komendy Artisan
+│   │   ├── CleanupExpiredPreRegistrations.php  # Czyszczenie pre-rejestracji
+│   │   ├── GeneratePreRegistrationTokens.php   # Generowanie linków
+│   │   └── ...                    # Inne komendy
 │   ├── Filament/                  # Panel Filament
 │   │   ├── Admin/                 # Panel administratora
+│   │   │   ├── Resources/         # Zasoby (Users, Groups, Payments, etc.)
+│   │   │   │   └── PreRegistrationResource/  # Zasób pre-rejestracji
+│   │   │   └── ...                # Inne pliki admina
 │   │   └── UserPanel/             # Panel użytkownika
 │   ├── Http/Controllers/          # Kontrolery HTTP
+│   │   └── PreRegistrationController.php  # Kontroler pre-rejestracji
 │   ├── Http/Middleware/           # Middleware
 │   ├── Livewire/                  # Komponenty Livewire
 │   ├── Mail/                      # Klasy Mail
 │   ├── Models/                    # Modele Eloquent
+│   │   ├── PreRegistration.php    # Model pre-rejestracji
+│   │   ├── PasswordResetLog.php   # Model logów resetów
+│   │   └── ...                    # Inne modele
 │   └── Providers/                 # Dostawcy usług
 ├── config/                        # Pliki konfiguracyjne
 ├── database/                      # Migracje, seedery, factory
 ├── docs/                          # Dokumentacja projektu
 ├── public/                        # Pliki publiczne
 ├── resources/                     # Widoki, CSS, JS
+│   ├── views/
+│   │   ├── pre-registration/      # Widoki pre-rejestracji
+│   │   │   ├── form.blade.php     # Formularz pre-rejestracji
+│   │   │   ├── success.blade.php  # Strona sukcesu
+│   │   │   └── expired.blade.php  # Strona wygaśnięcia
+│   │   └── filament/admin/resources/pre-registration-resource/modals/
+│   │       ├── copy-link-simple.blade.php    # Modal kopiowania pojedynczego linku
+│   │       └── copy-all-links.blade.php      # Modal kopiowania wszystkich linków
+│   └── ...                        # Inne widoki
 ├── routes/                        # Definicje tras
+│   └── web.php                    # Trasy web (w tym pre-rejestracja)
 ├── storage/                       # Pliki tymczasowe
 └── tests/                         # Testy aplikacji
 ```
@@ -227,6 +265,8 @@ grupy-poledance/
 - **Lesson** - lekcje
 - **Term** - regulaminy
 - **UserMailMessage** - wiadomości email
+- **PreRegistration** - pre-rejestracje (nowe)
+- **PasswordResetLog** - logi resetów haseł (nowe)
 
 ## 🔒 Bezpieczeństwo
 
@@ -257,6 +297,10 @@ grupy-poledance/
 - System wiadomości email
 - Podwójne wywołanie `RolesAndUsersSeeder` w `DatabaseSeeder`
 - Potencjalne podwójne haszowanie hasła admina w seederze (ujednolicone – hasło ustawiane plain, haszowane przez mutator)
+- **System pre-rejestracji** - kompletna implementacja z kopiowaniem linków i walidacją wygaśnięcia
+- **Automatyczne czyszczenie pre-rejestracji** - usuwanie wygasłych i używanych linków
+- **Kopiowanie linków do schowka** - funkcjonalność JavaScript z wizualnym feedbackiem
+- **Walidacja wygaśnięcia linków** - zarówno po stronie frontend jak i backend
 
 ### 🔄 W Trakcie
 - Dalsza optymalizacja wydajności dashboardu
@@ -283,6 +327,9 @@ php artisan optimize:clear
 # Sprawdzenie tras
 php artisan route:list
 
+# Sprawdzenie tras pre-rejestracji
+php artisan route:list --name=pre-register
+
 # Sprawdzenie konfiguracji
 php artisan config:show
 
@@ -300,6 +347,14 @@ php artisan payments:update-group-amount
 
 # Import wiadomości email
 php artisan mails:import-incoming --days=30
+
+# System pre-rejestracji
+php artisan pre-register:generate --count=10  # Generowanie 10 linków pre-rejestracji
+
+# Czyszczenie pre-rejestracji
+php artisan pre-registrations:cleanup --days=0  # Natychmiastowe usuwanie wygasłych
+php artisan pre-registrations:cleanup --used-only --days=7  # Usuwanie używanych po 7 dniach
+php artisan pre-registrations:cleanup --dry-run  # Podgląd bez usuwania
 ```
 
 ## 📄 Licencja
@@ -309,4 +364,4 @@ Laravel framework is open-sourced software licensed under the [MIT license](http
 ---
 
 **Grupy Poledance** - System zarządzania szkołą tańca  
-*Wersja:* 1.0.0 | *Ostatnia aktualizacja:* Sierpień 2025
+*Wersja:* 1.1.0 | *Ostatnia aktualizacja:* Styczeń 2025
