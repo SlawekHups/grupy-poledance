@@ -21,6 +21,18 @@ class GenerateMonthlyPayments extends Command
 
         $activeUsers = User::where('is_active', true)
             ->where('id', '!=', 1) // Pomijamy admina
+            ->where(function ($query) {
+                // Użytkownicy z aktywnymi grupami ID >= 2 (status = 'active')
+                $query->whereHas('groups', function ($groupQuery) {
+                    $groupQuery->where('group_id', '>=', 2)
+                              ->where('status', 'active');
+                })
+                // LUB użytkownicy z legacy group_id >= 2 i aktywną grupą
+                ->orWhereHas('group', function ($groupQuery) {
+                    $groupQuery->where('id', '>=', 2)
+                              ->where('status', 'active');
+                });
+            })
             ->get();
 
         $generatedCount = 0;
