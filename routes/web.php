@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SetPasswordController;
+use App\Http\Controllers\PreRegistrationController;
 use App\Models\User;
 
 Route::get('/', function () {
@@ -15,6 +16,17 @@ Route::get('/set-password/{token}', [SetPasswordController::class, 'showSetPassw
 
 Route::post('/set-password', [SetPasswordController::class, 'setPassword'])
     ->name('set-password.store');
+
+// Trasy dla pre-rejestracji
+Route::get('/pre-register/{token}', [PreRegistrationController::class, 'showForm'])
+    ->name('pre-register');
+
+Route::post('/pre-register/{token}', [PreRegistrationController::class, 'store'])
+    ->name('pre-register.store');
+
+// Route do generowania tokenów (dla testów)
+Route::get('/admin/generate-pre-register-token', [PreRegistrationController::class, 'generateToken'])
+    ->name('admin.generate-pre-register-token');
 
 // Route do pobierania CSV (sesyjny)
 Route::get('/download-csv', function () {

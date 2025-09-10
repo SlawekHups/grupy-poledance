@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class SendUserInvitation implements ShouldQueue
@@ -52,7 +53,17 @@ class SendUserInvitation implements ShouldQueue
             $token = $tokenRecord->raw_token ?? $tokenRecord->token;
         } else {
             // Generuj nowy token tylko jeśli nie ma istniejącego
-            $token = Password::createToken($user);
+            $rawToken = Str::random(64);
+            
+            // Zapisz zahashowany token w tabeli password_reset_tokens
+            DB::table('password_reset_tokens')->insert([
+                'email' => $user->email,
+                'token' => Hash::make($rawToken),
+                'raw_token' => $rawToken,
+                'created_at' => now(),
+            ]);
+            
+            $token = $rawToken;
         }
         
         // Wyślij email z zaproszeniem
