@@ -119,19 +119,8 @@ class PreRegistration extends Model
             'group_id' => $groupId,
         ]);
 
-        // Wyślij event o konwersji
+        // Wyślij event o konwersji (tylko raz!)
         event(new \App\Events\PreRegistrationConverted($user, $this));
-        
-        // Bezpośrednie wywołanie listenera (fallback)
-        try {
-            $listener = new \App\Listeners\SendUserInvitationAfterConversion();
-            $listener->handle(new \App\Events\PreRegistrationConverted($user, $this));
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to send invitation after conversion', [
-                'error' => $e->getMessage(),
-                'user_id' => $user->id,
-            ]);
-        }
 
         return $user;
     }

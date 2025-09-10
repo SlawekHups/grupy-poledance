@@ -27,13 +27,10 @@ class AppServiceProvider extends ServiceProvider
      * Bootstrap any application services.
      */
     public function boot(): void
-    {
-        // Rejestracja listenerów dla pre-rejestracji
-        Event::listen(
-            PreRegistrationConverted::class,
-            SendUserInvitationAfterConversion::class
-        );
+    {        
+        // Laravel automatycznie wykrywa listenery na podstawie typu parametru w metodzie handle()
+        // Nie rejestrujemy listenerów jawnie, aby uniknąć duplikacji
         
-        \Illuminate\Support\Facades\Log::info('AppServiceProvider boot method called');
+        \Illuminate\Support\Facades\Log::info('AppServiceProvider boot method called - using auto-discovery for listeners');
     }
 }

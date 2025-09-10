@@ -32,14 +32,16 @@ class SendUserInvitationAfterConversion implements ShouldQueue
             'user_id' => $user->id,
             'user_email' => $user->email,
             'pre_registration_id' => $preRegistration->id,
+            'timestamp' => now()->toISOString(),
         ]);
         
         // Wyślij zaproszenie do użytkownika
         event(new UserInvited($user));
         
-        Log::info('UserInvited event fired', [
+        Log::info('UserInvited event fired from SendUserInvitationAfterConversion', [
             'user_id' => $user->id,
             'user_email' => $user->email,
+            'timestamp' => now()->toISOString(),
         ]);
     }
 }

@@ -31,6 +31,12 @@ class SendUserInvitation implements ShouldQueue
     {
         $user = $event->user;
         
+        \Illuminate\Support\Facades\Log::info('SendUserInvitation listener called', [
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'timestamp' => now()->toISOString(),
+        ]);
+        
         // Sprawdź czy użytkownik jest aktywny
         if (!$user->is_active) {
             \Illuminate\Support\Facades\Log::info('Skipping invitation for inactive user', [
