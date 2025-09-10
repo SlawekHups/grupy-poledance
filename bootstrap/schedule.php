@@ -179,6 +179,39 @@ Schedule::command('log:clear')
     });
 
 // ============================================================================
+// CZYSZCZENIE I OPTYMALIZACJA
+// ============================================================================
+
+// Czyszczenie wygasłych pre-rejestracji - co 5 minut (natychmiastowe usuwanie)
+Schedule::command('pre-registrations:cleanup --days=0')
+    ->everyFiveMinutes()
+    ->timezone('Europe/Warsaw')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Natychmiastowe usuwanie wygasłych pre-rejestracji (co 5 minut)')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Czyszczenie pre-rejestracji - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Czyszczenie pre-rejestracji - Błąd wykonania');
+    });
+
+// Czyszczenie używanych pre-rejestracji - codziennie o 7:00 (po konwersji na użytkowników)
+Schedule::command('pre-registrations:cleanup --used-only --days=7')
+    ->daily()
+    ->at('07:00')
+    ->timezone('Europe/Warsaw')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Czyszczenie używanych pre-rejestracji starszych niż 7 dni (codziennie o 7:00)')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Czyszczenie używanych pre-rejestracji - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Czyszczenie używanych pre-rejestracji - Błąd wykonania');
+    });
+
+// ============================================================================
 // BACKUP I BEZPIECZEŃSTWO
 // ============================================================================
 

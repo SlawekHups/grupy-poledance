@@ -109,6 +109,103 @@ class ListPreRegistrations extends ListRecords
                     ]);
                 }),
                 
+            Actions\Action::make('cleanup_expired')
+                ->label('Wyczyść wygasłe')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->modalHeading('Czyszczenie wygasłych pre-rejestracji')
+                ->modalDescription('Usuń wygasłe pre-rejestracje starsze niż określona liczba dni.')
+                ->form([
+                    \Filament\Forms\Components\TextInput::make('days')
+                        ->label('Usuń pre-rejestracje starsze niż (dni)')
+                        ->numeric()
+                        ->default(0)
+                        ->minValue(0)
+                        ->maxValue(30)
+                        ->required()
+                        ->helperText('0 = usuń od razu po wygaśnięciu, 1+ = usuń po X dniach od wygaśnięcia'),
+                        
+                    \Filament\Forms\Components\Toggle::make('dry_run')
+                        ->label('Tryb testowy (pokaż co zostanie usunięte)')
+                        ->default(true)
+                        ->helperText('Zaznacz aby zobaczyć co zostanie usunięte bez faktycznego usuwania'),
+                ])
+                ->action(function (array $data) {
+                    $days = (int) $data['days'];
+                    $dryRun = $data['dry_run'];
+                    
+                    if ($days === 0) {
+                        // Natychmiastowe usuwanie - usuń wszystkie wygasłe
+                        $expiredPreRegistrations = \App\Models\PreRegistration::where('expires_at', '<', now())
+                            ->where('used', false)
+                            ->get();
+                    } else {
+                        // Usuwanie z opóźnieniem - usuń wygasłe starsze niż X dni
+                        $cutoffDate = now()->subDays($days);
+                        $expiredPreRegistrations = \App\Models\PreRegistration::where('expires_at', '<', $cutoffDate)
+                            ->where('used', false)
+                            ->get();
+                    }
+                        
+                    $count = $expiredPreRegistrations->count();
+                    
+                    if ($count === 0) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Brak wygasłych pre-rejestracji')
+                            ->body('Nie znaleziono wygasłych pre-rejestracji do usunięcia.')
+                            ->info()
+                            ->send();
+                        return;
+                    }
+                    
+                    if ($dryRun) {
+                        $title = $days === 0 
+                            ? "Tryb testowy - natychmiastowe usuwanie"
+                            : "Tryb testowy - usuwanie z opóźnieniem";
+                            
+                        $message = $days === 0
+                            ? "Znaleziono {$count} wygasłych pre-rejestracji do natychmiastowego usunięcia:\n\n"
+                            : "Znaleziono {$count} wygasłych pre-rejestracji starszych niż {$days} dni do usunięcia:\n\n";
+                            
+                        foreach ($expiredPreRegistrations->take(10) as $preReg) {
+                            $message .= "• ID {$preReg->id}: " . ($preReg->name ?: 'Brak imienia') . " - wygasł " . $preReg->expires_at->format('d.m.Y H:i') . "\n";
+                        }
+                        if ($count > 10) {
+                            $message .= "... i " . ($count - 10) . " więcej\n";
+                        }
+                        $message .= "\nAby faktycznie usunąć, odznacz 'Tryb testowy' i uruchom ponownie.";
+                        
+                        \Filament\Notifications\Notification::make()
+                            ->title($title)
+                            ->body($message)
+                            ->info()
+                            ->persistent()
+                            ->send();
+                        return;
+                    }
+                    
+                    // Faktyczne usuwanie
+                    $deletedCount = 0;
+                    foreach ($expiredPreRegistrations as $preReg) {
+                        try {
+                            $preReg->delete();
+                            $deletedCount++;
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Błąd podczas usuwania')
+                                ->body("Błąd przy usuwaniu pre-rejestracji ID {$preReg->id}: " . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }
+                    
+                    \Filament\Notifications\Notification::make()
+                        ->title('Czyszczenie zakończone')
+                        ->body("Pomyślnie usunięto {$deletedCount} wygasłych pre-rejestracji.")
+                        ->success()
+                        ->send();
+                }),
+                
             Actions\CreateAction::make(),
         ];
     }
