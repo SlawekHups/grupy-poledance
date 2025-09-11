@@ -28,12 +28,6 @@ class GroupStats extends StatsOverviewWidget
                 ->description('Wszyscy użytkownicy w systemie')
                 ->url(route('filament.admin.resources.users.index')),
 
-            // 📂 Grupy
-            Card::make('Liczba grup', Group::count())
-                ->icon('heroicon-o-folder')
-                ->color('warning')
-                ->description('Wszystkie zarejestrowane grupy')
-                ->url(route('filament.admin.resources.groups.index')),
 
             // Użytkownicy bez przypisanej grupy (bez grup + w grupie "Bez grupy")
             Card::make('Bez grupy', User::where('role', 'user')
