@@ -102,6 +102,72 @@
         </div>
 
         @if(!empty($users))
+        @php($stats = $this->getAttendanceStats())
+        
+        <!-- Statystyki obecności -->
+        <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4"
+             wire:key="attendance-stats-{{ md5(serialize($attendances)) }}">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Statystyki -->
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Obecni: <span class="font-bold text-green-600">{{ $stats['present'] }}</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Nieobecni: <span class="font-bold text-red-600">{{ $stats['absent'] }}</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Frekwencja: <span class="font-bold text-blue-600">{{ $stats['percentage'] }}%</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Bulk Actions -->
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" wire:click="selectAll"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Zaznacz wszystkich
+                    </button>
+                    <button type="button" wire:click="deselectAll"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Odznacz wszystkich
+                    </button>
+                    <button type="button" wire:click="toggleAll"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Odwróć zaznaczenie
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Progress bar -->
+            <div class="mt-4">
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    <span>Frekwencja</span>
+                    <span>{{ $stats['percentage'] }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-300" 
+                         style="width: {{ $stats['percentage'] }}%"></div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Tabela desktop, karty mobile -->
         <div class="filament-card p-4 shadow rounded-lg">
             <!-- Desktop tabela -->
@@ -122,7 +188,18 @@
                                 <div class="text-xs text-gray-500">{{ $user['email'] }}</div>
                             </td>
                             <td class="px-4 py-2 align-top">
-                                <input type="checkbox" wire:model="attendances.{{ $user['id'] }}.present" />
+                                <div class="flex items-center gap-3">
+                                    <div class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 {{ ($attendances[$user['id']]['present'] ?? false) ? '' : 'bg-gray-200' }}"
+                                         style="{{ ($attendances[$user['id']]['present'] ?? false) ? 'background-color: #ea580c;' : '' }}"
+                                         wire:click="toggleAttendance({{ $user['id'] }})"
+                                         wire:key="attendance-{{ $user['id'] }}">
+                                        <span class="sr-only">Przełącz obecność</span>
+                                        <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ ($attendances[$user['id']]['present'] ?? false) ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ $attendances[$user['id']]['present'] ?? false ? 'Obecny' : 'Nieobecny' }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-2 align-top">
                                 <input type="text" wire:model="attendances.{{ $user['id'] }}.note" placeholder="Notatka"
@@ -140,13 +217,21 @@
                     class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1 shadow">
                     <div class="font-semibold">{{ $user['name'] }}</div>
                     <div class="text-xs text-gray-500">{{ $user['email'] }}</div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <label class="flex items-center gap-1">
-                            <input type="checkbox" wire:model="attendances.{{ $user['id'] }}.present" />
-                            <span>Obecny</span>
-                        </label>
+                    <div class="flex flex-col gap-3 mt-3">
+                        <div class="flex items-center gap-3">
+                            <div class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 {{ ($attendances[$user['id']]['present'] ?? false) ? '' : 'bg-gray-200' }}"
+                                 style="{{ ($attendances[$user['id']]['present'] ?? false) ? 'background-color: #ea580c;' : '' }}"
+                                 wire:click="toggleAttendance({{ $user['id'] }})"
+                                 wire:key="attendance-mobile-{{ $user['id'] }}">
+                                <span class="sr-only">Przełącz obecność</span>
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ ($attendances[$user['id']]['present'] ?? false) ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ $attendances[$user['id']]['present'] ?? false ? 'Obecny' : 'Nieobecny' }}
+                            </span>
+                        </div>
                         <input type="text" wire:model="attendances.{{ $user['id'] }}.note" placeholder="Notatka"
-                            class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 ml-2" />
+                            class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" />
                     </div>
                 </div>
                 @endforeach

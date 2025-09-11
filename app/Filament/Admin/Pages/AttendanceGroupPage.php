@@ -154,4 +154,74 @@ class AttendanceGroupPage extends Page
             ->success()
             ->send();
     }
+
+    // Bulk actions for attendance
+    public function selectAll()
+    {
+        foreach ($this->attendances as $userId => $data) {
+            $this->attendances[$userId]['present'] = true;
+        }
+        
+        Notification::make()
+            ->title('Zaznaczono wszystkich')
+            ->body('Wszyscy użytkownicy zostali zaznaczeni jako obecni.')
+            ->success()
+            ->send();
+    }
+
+    public function deselectAll()
+    {
+        foreach ($this->attendances as $userId => $data) {
+            $this->attendances[$userId]['present'] = false;
+        }
+        
+        Notification::make()
+            ->title('Odznaczono wszystkich')
+            ->body('Wszyscy użytkownicy zostali odznaczeni.')
+            ->success()
+            ->send();
+    }
+
+    public function toggleAll()
+    {
+        $hasSelected = collect($this->attendances)->where('present', true)->isNotEmpty();
+        
+        foreach ($this->attendances as $userId => $data) {
+            $this->attendances[$userId]['present'] = !$hasSelected;
+        }
+        
+        Notification::make()
+            ->title($hasSelected ? 'Odznaczono wszystkich' : 'Zaznaczono wszystkich')
+            ->body($hasSelected ? 'Wszyscy użytkownicy zostali odznaczeni.' : 'Wszyscy użytkownicy zostali zaznaczeni jako obecni.')
+            ->success()
+            ->send();
+    }
+
+    // Get attendance statistics
+    public function getAttendanceStats()
+    {
+        if (empty($this->attendances)) {
+            return ['total' => 0, 'present' => 0, 'absent' => 0, 'percentage' => 0];
+        }
+
+        $total = count($this->attendances);
+        $present = collect($this->attendances)->where('present', true)->count();
+        $absent = $total - $present;
+        $percentage = $total > 0 ? round(($present / $total) * 100, 1) : 0;
+
+        return [
+            'total' => $total,
+            'present' => $present,
+            'absent' => $absent,
+            'percentage' => $percentage
+        ];
+    }
+
+    // Toggle individual attendance
+    public function toggleAttendance($userId)
+    {
+        if (isset($this->attendances[$userId])) {
+            $this->attendances[$userId]['present'] = !$this->attendances[$userId]['present'];
+        }
+    }
 }
