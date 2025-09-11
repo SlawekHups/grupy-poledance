@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\Attendance;
 use Filament\Notifications\Notification;
+use Carbon\Carbon;
 
 class AttendanceGroupPage extends Page
 {
@@ -19,17 +20,66 @@ class AttendanceGroupPage extends Page
     public $date = '';
     public $users = [];
     public $attendances = [];
+    public $currentWeekStart;
+    public $selectedDate;
 
     public function mount()
     {
         $this->date = now()->toDateString();
+        $this->selectedDate = $this->date;
+        $this->currentWeekStart = Carbon::parse($this->date)->startOfWeek(Carbon::MONDAY)->toDateString();
     }
+
+    public function selectDate($date)
+    {
+        $this->date = $date;
+        $this->selectedDate = $date;
+        $this->loadUsers();
+    }
+
+    public function selectWeek($weekStart)
+    {
+        $this->currentWeekStart = $weekStart;
+    }
+
+    public function getWeekDays()
+    {
+        $weekStart = Carbon::parse($this->currentWeekStart);
+        $days = [];
+        
+        for ($i = 0; $i < 7; $i++) {
+            $day = $weekStart->copy()->addDays($i);
+            $days[] = [
+                'date' => $day->toDateString(),
+                'day_name' => $day->translatedFormat('D'),
+                'day_number' => $day->format('j'),
+                'is_today' => $day->isToday(),
+                'is_selected' => $day->toDateString() === $this->selectedDate,
+            ];
+        }
+        
+        return $days;
+    }
+
+    public function getWeekNavigation()
+    {
+        $currentWeek = Carbon::parse($this->currentWeekStart);
+        
+        return [
+            'previous' => $currentWeek->copy()->subWeek()->startOfWeek(Carbon::MONDAY)->toDateString(),
+            'current' => Carbon::now()->startOfWeek(Carbon::MONDAY)->toDateString(),
+            'next' => $currentWeek->copy()->addWeek()->startOfWeek(Carbon::MONDAY)->toDateString(),
+        ];
+    }
+
     public function updatedGroupId()
     {
         $this->loadUsers();
     }
     public function updatedDate()
     {
+        $this->selectedDate = $this->date;
+        $this->currentWeekStart = Carbon::parse($this->date)->startOfWeek(Carbon::MONDAY)->toDateString();
         $this->loadUsers();
     }
 
@@ -62,42 +112,46 @@ class AttendanceGroupPage extends Page
             ->get()
             ->keyBy('user_id');
 
-        // Ustaw obecności i notatki (domyślnie brak obecności i pusta notatka)
+        // Przygotuj dane obecności
         $this->attendances = [];
         foreach ($this->users as $user) {
             $attendance = $attendances->get($user['id']);
-            $this->attendances[$user['id']]['present'] = $attendance ? (bool)$attendance->present : false;
-            $this->attendances[$user['id']]['note'] = $attendance ? $attendance->note : '';
+            $this->attendances[$user['id']] = [
+                'present' => $attendance ? $attendance->present : false,
+                'note' => $attendance ? $attendance->note : '',
+            ];
         }
     }
 
     public function saveAttendance()
     {
-        foreach ($this->users as $user) {
-            $presentSet = array_key_exists($user['id'], $this->attendances)
-                && array_key_exists('present', $this->attendances[$user['id']]);
-            $present = $presentSet ? (bool)$this->attendances[$user['id']]['present'] : null;
-
-            // Zapisz tylko, jeśli obecność została określona (obecny lub nieobecny)
-            if ($present !== null) {
-                Attendance::updateOrCreate(
-                    [
-                        'user_id' => $user['id'],
-                        'date'    => $this->date,
-                    ],
-                    [
-                        'group_id' => $this->group_id,
-                        'present'  => $present,
-                        'note'     => $this->attendances[$user['id']]['note'] ?? null,
-                    ]
-                );
-            }
+        if (empty($this->group_id) || empty($this->date)) {
+            Notification::make()
+                ->title('Błąd')
+                ->body('Wybierz grupę i datę')
+                ->danger()
+                ->send();
+            return;
         }
+
+        foreach ($this->attendances as $userId => $attendanceData) {
+            Attendance::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'group_id' => $this->group_id,
+                    'date' => $this->date,
+                ],
+                [
+                    'present' => $attendanceData['present'],
+                    'note' => $attendanceData['note'],
+                ]
+            );
+        }
+
         Notification::make()
-            ->title('Obecność została zaktualizowana!')
+            ->title('Sukces')
+            ->body('Obecność została zapisana')
             ->success()
             ->send();
-
-        $this->loadUsers();
     }
 }

@@ -1,5 +1,60 @@
 <x-filament::page>
+    <!-- Widget z kalendarzem tygodniowym -->
+    <div class="mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    Wybierz dzień tygodnia
+                </h3>
+                <div class="flex gap-2">
+                    <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['previous'] }}')"
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        ← Poprzedni
+                    </button>
+                    <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['current'] }}')"
+                        class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-lg transition-colors">
+                        Ten tydzień
+                    </button>
+                    <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['next'] }}')"
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        Następny →
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-7 gap-2">
+                @foreach($this->getWeekDays() as $day)
+                <button type="button" 
+                    wire:click="selectDate('{{ $day['date'] }}')"
+                    @if($day['is_selected'])
+                        style="background-color: #10b981; color: white; border-color: #10b981; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);"
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md"
+                    @elseif($day['is_today'])
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
+                    @else
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    @endif>
+                    <div class="text-xs font-medium opacity-75">{{ $day['day_name'] }}</div>
+                    <div class="text-lg font-bold">{{ $day['day_number'] }}</div>
+                </button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     <form wire:submit.prevent="saveAttendance">
+        <!-- Wyświetlanie wybranej daty -->
+        @if($date)
+        <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div class="flex items-center gap-2">
+                <x-filament::icon icon="heroicon-o-calendar-days" class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <span class="text-blue-800 dark:text-blue-200 font-medium">
+                    Wybrana data: {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d.m.Y') }}
+                </span>
+            </div>
+        </div>
+        @endif
+
         <!-- Desktop layout -->
         <div class="hidden md:flex flex-wrap md:flex-nowrap gap-4 items-end mb-6">
             <div class="flex-1 min-w-[160px]">
@@ -13,13 +68,6 @@
                         <option value="{{ $group->id }}">{{ $group->name }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="flex-1 min-w-[140px]">
-                <label for="date" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200">
-                    Data zajęć:
-                </label>
-                <input id="date" type="date" wire:model="date"
-                    class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold" />
             </div>
             <div class="flex gap-2 flex-1 md:flex-none">
                 <button type="button" wire:click="loadUsers"
@@ -43,13 +91,6 @@
                         <option value="{{ $group->id }}">{{ $group->name }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div>
-                <label for="date_mobile" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                    Data zajęć:
-                </label>
-                <input id="date_mobile" type="date" wire:model="date"
-                    class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold" />
             </div>
             <div>
                 <button type="button" wire:click="loadUsers"
