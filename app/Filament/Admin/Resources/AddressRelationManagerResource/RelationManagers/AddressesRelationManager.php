@@ -34,8 +34,8 @@ class AddressesRelationManager extends RelationManager
             ->recordTitleAttribute('street')
             ->contentGrid([
                 'md' => 1,
-                'lg' => 2,
-                'xl' => 3,
+                'lg' => 1,
+                'xl' => 1,
             ])
             ->recordUrl(fn ($record) => null)
             ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
@@ -47,36 +47,29 @@ class AddressesRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\Layout\Panel::make([
                     Tables\Columns\Layout\Stack::make([
-                        // Typ adresu w osobnej linii, wyrównany do prawej
-                        Tables\Columns\TextColumn::make('type')
-                            ->label('')
-                            ->badge()
-                            ->color('info')
-                            ->alignRight()
-                            ->extraAttributes(['class' => 'text-lg font-semibold mb-3']),
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('type')
+                                ->label('Typ')
+                                ->badge()
+                                ->color('info')
+                                ->alignLeft(),
+                            Tables\Columns\TextColumn::make('postal_code')
+                                ->label('Kod')
+                                ->badge()
+                                ->color('secondary')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
 
-                        // Ulica - na całą szerokość kafelka
                         Tables\Columns\TextColumn::make('street')
                             ->label('')
                             ->weight('bold')
-                            ->size('xl')
-                            ->alignCenter()
-                            ->extraAttributes(['class' => 'text-2xl mb-4']),
+                            ->extraAttributes(['class' => 'text-lg mb-2']),
 
-                        // Miasto i kod pocztowy
                         Tables\Columns\TextColumn::make('city')
-                            ->label('Miasto')
-                            ->alignCenter()
-                            ->extraAttributes(['class' => 'mb-2 text-lg font-medium']),
-
-                        Tables\Columns\TextColumn::make('postal_code')
-                            ->label('Kod pocztowy')
-                            ->badge()
-                            ->color('secondary')
-                            ->alignCenter()
-                            ->extraAttributes(['class' => 'text-sm']),
-                    ])->space(0),
-                ])->extraAttributes(['class' => 'p-2']),
+                            ->label('')
+                            ->extraAttributes(['class' => 'text-gray-600']),
+                    ])->space(1),
+                ])->extraAttributes(['class' => 'p-3']),
             ])
             ->filters([
                 //
