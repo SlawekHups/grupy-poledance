@@ -10,9 +10,9 @@
                 ? 'warning'
                 : 'success');
     ?>
-    <div class="flex flex-wrap items-center justify-center gap-2">
-        <x-filament::badge color="info" icon="heroicon-o-user-plus" size="lg">
-            Wolne: <span class="font-bold text-lg">{{ $free }}</span>
+    <div class="flex flex-wrap items-center justify-center gap-1 !gap-1">
+        <x-filament::badge color="info" icon="heroicon-o-user-plus" size="sm">
+            Wolne: <span class="font-bold text-sm">{{ $free }}</span>
         </x-filament::badge>
     </div>
 @endif

@@ -95,8 +95,8 @@ class GroupResource extends Resource
         return $table
             ->contentGrid([
                 'md' => 1,
-                'lg' => 2,
-                'xl' => 3,
+                'lg' => 1,
+                'xl' => 1,
             ])
             ->recordUrl(fn ($record) => route('filament.admin.resources.groups.edit', ['record' => $record]))
             ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
@@ -120,30 +120,30 @@ class GroupResource extends Resource
                                 default => $state,
                             })
                             ->alignRight()
-                            ->extraAttributes(['class' => 'text-lg font-semibold mb-3']),
+                            ->extraAttributes(['class' => 'text-lg font-semibold mb-0 !mb-0']),
 
-                        // Nazwa grupy - na całą szerokość kafelka
+                        // Nazwa grupy - na lewą stronę
                         Tables\Columns\TextColumn::make('name')
                             ->label('')
                             ->searchable()
                             ->weight('bold')
                             ->size('xl')
-                            ->alignCenter()
-                            ->extraAttributes(['class' => 'text-2xl mb-4']),
+                            ->alignLeft()
+                            ->extraAttributes(['class' => 'text-2xl mb-0 !mb-0']),
 
                         Tables\Columns\ViewColumn::make('metrics')
                             ->label('')
                             ->view('filament.admin.groups.group-metrics')
-                            ->extraAttributes(['class' => 'mb-4']),
+                            ->extraAttributes(['class' => 'mb-0 !mb-0']),
 
                         Tables\Columns\TextColumn::make('description')
                             ->label('')
                             ->limit(160)
                             ->formatStateUsing(fn (?string $state) => $state ?: 'Brak opisu')
                             ->alignCenter()
-                            ->extraAttributes(['class' => 'text-sm text-gray-600 mt-6']),
-                    ])->space(4),
-                ])->extraAttributes(['class' => 'p-6']),
+                            ->extraAttributes(['class' => 'text-sm text-gray-600 mt-0 !mt-0']),
+                    ])->space(0),
+                ])->extraAttributes(['class' => 'p-2 !p-2']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
