@@ -58,6 +58,11 @@ class OnboardingWizard extends Page implements HasForms
                             ->required()
                             ->minLength(9)
                             ->maxLength(15)
+                            ->validationMessages([
+                                'required' => 'Numer telefonu jest wymagany.',
+                                'minLength' => 'Numer telefonu musi mieć minimum 9 cyfr.',
+                                'maxLength' => 'Numer telefonu może mieć maksymalnie 15 cyfr.',
+                            ])
                             ->dehydrateStateUsing(function ($state) {
                                 if (!$state) return null;
                                 $number = preg_replace('/\\D/', '', $state);
@@ -68,20 +73,33 @@ class OnboardingWizard extends Page implements HasForms
                             }),
                         Forms\Components\TextInput::make('address_street')
                             ->label('Ulica i numer')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Ulica i numer są wymagane.',
+                            ]),
                         Forms\Components\TextInput::make('address_postal_code')
                             ->label('Kod pocztowy')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Kod pocztowy jest wymagany.',
+                            ]),
                         Forms\Components\TextInput::make('address_city')
                             ->label('Miasto')
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Miasto jest wymagane.',
+                            ]),
                     ]),
                 Forms\Components\Wizard\Step::make('RODO')
                     ->schema([
                         Forms\Components\Checkbox::make('rodo_accept')
                             ->label('Wyrażam zgodę na przetwarzanie moich danych osobowych zgodnie z RODO')
                             ->accepted()
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'accepted' => 'Musisz zaakceptować zgodę RODO.',
+                                'required' => 'Zgoda RODO jest wymagana.',
+                            ]),
                         Forms\Components\Placeholder::make('rodo_info')
                             ->label('Informacja RODO')
                             ->content('Twoje dane będą przetwarzane zgodnie z obowiązującymi przepisami RODO. Administratorem danych jest właściciel serwisu.'),
@@ -91,7 +109,11 @@ class OnboardingWizard extends Page implements HasForms
                         Forms\Components\Checkbox::make('terms_accept')
                             ->label('Zapoznałem się i akceptuję regulamin korzystania z panelu')
                             ->accepted()
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'accepted' => 'Musisz zaakceptować regulamin.',
+                                'required' => 'Akceptacja regulaminu jest wymagana.',
+                            ]),
                         Forms\Components\Placeholder::make('terms_info')
                             ->label('Regulamin')
                             ->content('Regulamin korzystania z panelu dostępny jest na stronie głównej. Akceptacja regulaminu jest wymagana do korzystania z serwisu.'),
@@ -111,15 +133,7 @@ class OnboardingWizard extends Page implements HasForms
     {
         $data = $this->form->getState();
 
-        // RĘCZNA WALIDACJA
-        if (empty($data['rodo_accept'])) {
-            $this->addError('rodo_accept', 'Musisz zaakceptować zgodę RODO.');
-            return;
-        }
-        if (empty($data['terms_accept'])) {
-            $this->addError('terms_accept', 'Musisz zaakceptować regulamin.');
-            return;
-        }
+        // Walidacja jest teraz obsługiwana przez validationMessages() w polach formularza
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
