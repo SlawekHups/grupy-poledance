@@ -62,13 +62,59 @@ class PaymentsRelationManager extends RelationManager
     public function table(Tables\Table $table): Tables\Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'lg' => 2,
+                'xl' => 3,
+            ])
+            ->recordUrl(fn ($record) => null)
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
+            ->recordAction('edit')
+            ->recordTitleAttribute('month')
+            ->reorderable(false)
+            ->paginated(false)
+            ->defaultSort('month', 'desc')
             ->columns([
-                TextColumn::make('month')->label('Miesiąc'),
-                TextColumn::make('amount')->label('Kwota')->money('PLN'),
-                BooleanColumn::make('paid')->label('Opłacone')
-                    ->trueIcon('heroicon-o-shield-check')
-                    ->falseIcon('heroicon-o-currency-dollar'),
-                TextColumn::make('updated_at')->label('Data_zapłaty')->dateTime('d.m.Y H:i'),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        // Status płatności w osobnej linii, wyrównany do prawej
+                        Tables\Columns\TextColumn::make('paid')
+                            ->label('')
+                            ->badge()
+                            ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                            ->formatStateUsing(fn (bool $state): string => $state ? 'Opłacone' : 'Nieopłacone')
+                            ->alignRight()
+                            ->extraAttributes(['class' => 'text-lg font-semibold mb-3']),
+
+                        // Miesiąc - na całą szerokość kafelka
+                        Tables\Columns\TextColumn::make('month')
+                            ->label('')
+                            ->formatStateUsing(function (string $state): string {
+                                return mb_strtoupper(\Carbon\Carbon::parse($state)->translatedFormat('F Y'), 'UTF-8');
+                            })
+                            ->weight('bold')
+                            ->size('xl')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-2xl mb-4']),
+
+                        // Kwota
+                        Tables\Columns\TextColumn::make('amount')
+                            ->label('Kwota')
+                            ->money('PLN')
+                            ->badge()
+                            ->color('primary')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'mb-4 text-lg font-bold']),
+
+                        // Data zapłaty
+                        Tables\Columns\TextColumn::make('updated_at')
+                            ->label('Data zapłaty')
+                            ->dateTime('d.m.Y H:i')
+                            ->formatStateUsing(fn (?string $state, $record) => $record->paid ? \Carbon\Carbon::parse($state)->format('d.m.Y H:i') : 'Brak')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-sm text-gray-600 mt-2']),
+                    ])->space(1),
+                ])->extraAttributes(['class' => 'p-3']),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('paid')

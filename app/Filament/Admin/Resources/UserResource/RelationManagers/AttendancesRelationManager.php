@@ -72,37 +72,50 @@ class AttendancesRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        \Illuminate\Support\Facades\Log::info('AttendancesRelationManager table method called');
         return $table
             ->recordTitleAttribute('date')
+            ->contentGrid([
+                'md' => 1,
+                'lg' => 2,
+                'xl' => 3,
+            ])
+            ->recordUrl(fn ($record) => null)
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
+            ->recordAction('edit')
+            ->recordTitleAttribute('date')
+            ->reorderable(false)
+            ->paginated(false)
+            ->defaultSort('date', 'desc')
             ->columns([
-                TextColumn::make('date')
-                    ->label('Data')
-                    ->date('d.m.Y')
-                    ->sortable()
-                    ->searchable(),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('date')
+                                ->label('Data')
+                                ->date('d.m.Y')
+                                ->weight('bold')
+                                ->sortable(),
+                            Tables\Columns\TextColumn::make('present')
+                                ->label('Obecność')
+                                ->badge()
+                                ->formatStateUsing(fn ($state) => $state ? 'Obecny' : 'Nieobecny')
+                                ->color(fn ($state) => $state ? 'success' : 'warning')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
 
-                TextColumn::make('group.name')
-                    ->label('Grupa')
-                    ->searchable()
-                    ->sortable(),
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('group.name')
+                                ->label('Grupa')
+                                ->searchable(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
 
-                BooleanColumn::make('present')
-                    ->label('Obecny')
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
-
-                TextColumn::make('note')
-                    ->label('Notatka')
-                    ->limit(50)
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-                        if (strlen($state) <= 50) {
-                            return null;
-                        }
-                        return $state;
-                    }),
+                        Tables\Columns\TextColumn::make('note')
+                            ->label('Notatka')
+                            ->wrap()
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                    ])->space(2),
+                ])->extraAttributes(['class' => 'p-4']),
             ])
             ->filters([
                 SelectFilter::make('present')
@@ -137,6 +150,17 @@ class AttendancesRelationManager extends RelationManager
                             );
                     }),
             ])
+            ->actions([
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                        ->label('Edytuj'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('Usuń'),
+                ])
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->button()
+                    ->label('Akcje'),
+            ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Dodaj obecność')
@@ -147,12 +171,6 @@ class AttendancesRelationManager extends RelationManager
                         }
                         return $data;
                     }),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('Edytuj'),
-                Tables\Actions\DeleteAction::make()
-                    ->label('Usuń'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
