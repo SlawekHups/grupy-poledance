@@ -81,47 +81,68 @@ class PasswordResetLogResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable()
-                    ->searchable(),
-                
-                TextColumn::make('user.name')
-                    ->label('Użytkownik')
-                    ->searchable()
-                    ->sortable(),
-                
-                TextColumn::make('user_email')
-                    ->label('Email użytkownika')
-                    ->searchable(),
-                
-                TextColumn::make('reason')
-                    ->label('Powód')
-                    ->limit(50)
-                    ->searchable(),
-                
-                TextColumn::make('token_expires_at')
-                    ->label('Wygasa')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->color(fn (PasswordResetLog $record): string => 
-                        $record->isExpired() ? 'danger' : 
-                        ($record->token_expires_at->diffInHours(now()) < 24 ? 'warning' : 'success')
-                    ),
-                
-                BadgeColumn::make('status')
-                    ->label('Status')
-                    ->colors([
-                        'success' => 'completed',
-                        'warning' => 'pending',
-                        'danger' => 'expired',
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('user.name')
+                                ->label('Użytkownik')
+                                ->searchable()
+                                ->sortable()
+                                ->weight('bold')
+                                ->limit(40),
+                            Tables\Columns\TextColumn::make('token_expires_at')
+                                ->label('Wygasa')
+                                ->dateTime('d.m.Y H:i')
+                                ->sortable()
+                                ->color(fn (PasswordResetLog $record): string => 
+                                    $record->isExpired() ? 'danger' : 
+                                    ($record->token_expires_at->diffInHours(now()) < 24 ? 'warning' : 'success')
+                                )
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
+
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('user_email')
+                                ->label('Email')
+                                ->searchable()
+                                ->limit(30),
+                            Tables\Columns\TextColumn::make('status')
+                                ->label('Status')
+                                ->badge()
+                                ->color(fn (string $state): string => match ($state) {
+                                    'completed' => 'success',
+                                    'pending' => 'warning',
+                                    'expired' => 'danger',
+                                    default => 'gray',
+                                })
+                                ->formatStateUsing(fn (string $state): string => match ($state) {
+                                    'completed' => 'Zakończony',
+                                    'pending' => 'Oczekujący',
+                                    'expired' => 'Wygasły',
+                                    default => 'Nieznany',
+                                })
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        Tables\Columns\TextColumn::make('reason')
+                            ->label('Powód')
+                            ->limit(80)
+                            ->searchable()
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
+                        Tables\Columns\TextColumn::make('created_at')
+                            ->label('Utworzono')
+                            ->dateTime('d.m.Y H:i')
+                            ->sortable()
+                            ->extraAttributes(['class' => 'text-sm text-gray-500']),
                     ]),
-                
-                TextColumn::make('created_at')
-                    ->label('Utworzono')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable(),
+                ]),
             ])
             ->filters([
                 SelectFilter::make('status')
