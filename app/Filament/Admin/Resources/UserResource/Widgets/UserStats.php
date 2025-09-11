@@ -16,6 +16,7 @@ class UserStats extends BaseWidget
         $totalUsers = User::where('role', 'user')->count();
         $activeUsers = User::where('role', 'user')->where('is_active', true)->count();
         $inactiveUsers = $totalUsers - $activeUsers;
+        $notAcceptedTerms = User::where('role', 'user')->whereNull('terms_accepted_at')->count();
 
         return [
             Stat::make('Wszyscy użytkownicy', $totalUsers)
@@ -44,6 +45,18 @@ class UserStats extends BaseWidget
                 ->url(route('filament.admin.resources.users.index') . '?' . http_build_query([
                     'tableFilters[role][value]' => 'user',
                     'tableFilters[is_active][value]' => false
+                ]))
+                ->extraAttributes(['class' => 'cursor-pointer']),
+
+            Stat::make('Brak akceptacji regulaminu', $notAcceptedTerms)
+                ->description('Nie zaakceptowali regulaminu')
+                ->descriptionIcon('heroicon-m-document-text')
+                ->color('warning')
+                ->url(route('filament.admin.resources.users.index') . '?' . http_build_query([
+                    'tableFilters[role][value]' => 'user',
+                    'tableFilters[terms_not_accepted][value]' => '1',
+                    'tableFilters[terms_not_accepted][isActive]' => 'false',
+                    'activeTab' => '⚠️ Brak akceptacji regulaminu (' . $notAcceptedTerms . ')'
                 ]))
                 ->extraAttributes(['class' => 'cursor-pointer']),
         ];
