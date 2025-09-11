@@ -13,6 +13,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\BooleanColumn;
@@ -64,85 +65,125 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->label('Imię i nazwisko')
-                    ->required()
-                    ->minLength(3)
-                    ->maxLength(45)
-                    ->validationMessages([
-                        'minLength' => 'Imię musi mieć minimum 3 znaki.',
-                        'maxLength' => 'Imię może mieć maksymalnie 10 znaków.',
-                    ]),
-                TextInput::make('email')
-                    ->label('E-mail')
-                    ->required()
-                    ->email()
-                    ->rules([
-                        fn($context, $record) => \Illuminate\Validation\Rule::unique('users', 'email')->ignore($record?->id),
-                    ])
-                    ->validationMessages([
-                        'unique' => 'Ten e-mail już istnieje w systemie.',
-                    ]),
-
-                TextInput::make('phone')
-                    ->label('Telefon')
-                    ->tel()
-                    ->minLength(9)
-                    ->maxLength(9)
-                    ->rule(function () {
-                        return \Illuminate\Validation\Rule::unique('users', 'phone')->ignore(request()->route('record'));
-                    })
-                    ->validationMessages([
-                        'unique' => 'Ten numer telefonu już istnieje w systemie.',
-                        'min' => 'Numer telefonu musi mieć co najmniej 9 cyfr.',
-                        'max' => 'Numer telefonu nie może mieć więcej niż 15 znaków.',
-                    ])
-                    ->dehydrated(true)
-                    ->afterStateHydrated(function (\Filament\Forms\Components\TextInput $component, $state) {
-                        if (str_starts_with($state, '+48')) {
-                            $component->state(substr($state, 3));
+                // Lokalny przełącznik trybu edycji utrzymywany w stanie Livewire
+                Forms\Components\Hidden::make('_editMode')
+                    ->default(false)
+                    ->afterStateHydrated(function (Get $get, callable $set) {
+                        // Ustaw tylko przy pierwszym załadowaniu, aby utrzymać wartość w kolejnych żądaniach Livewire
+                        if ($get('_editMode') === null || $get('_editMode') === false) {
+                            if (request()->boolean('edit', false)) {
+                                $set('_editMode', true);
+                            }
                         }
                     })
-                    ->dehydrateStateUsing(function ($state) {
-                        $number = preg_replace('/\D/', '', $state);
-                        if (strlen($number) === 9) {
-                            return '+48' . $number;
-                        } elseif (str_starts_with($number, '48') && strlen($number) === 11) {
-                            return '+' . $number;
-                        } elseif (str_starts_with($number, '+48') && strlen($number) === 12) {
-                            return $number;
-                        }
-                        return $state;
-                    }),
-                DatePicker::make('joined_at')->label('Data zapisu'),
-
-                // Deprecated single select (kept hidden for backward compatibility)
-                Select::make('group_id')
-                    ->label('Grupa (legacy)')
-                    ->relationship('group', 'name')
-                    ->hidden()
                     ->dehydrated(false),
 
-                // New multi-select groups
-                Select::make('groups')
-                    ->label('Grupy')
-                    ->relationship('groups', 'name')
-                    ->multiple()
-                    ->preload()
-                    ->searchable(),
+                Forms\Components\View::make('filament.admin.users.user-summary')
+                    ->visible(fn (Get $get) => ! (bool) $get('_editMode'))
+                    ->columnSpanFull(),
+                Forms\Components\Card::make()
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Imię i nazwisko')
+                            ->required()
+                            ->minLength(3)
+                            ->maxLength(45)
+                            ->validationMessages([
+                                'minLength' => 'Imię musi mieć minimum 3 znaki.',
+                                'maxLength' => 'Imię może mieć maksymalnie 10 znaków.',
+                            ])
+                            ->columnSpanFull()
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
 
-                TextInput::make('amount')
-                    ->label('Kwota miesięczna (zł)')
-                    ->numeric()
-                    ->required()
-                    ->default(200),
-                Forms\Components\DateTimePicker::make('terms_accepted_at')
-                    ->label('Akceptacja regulaminu')
-                    ->nullable()
-                    ->default(null)
-                    ->dehydrated(true)
-                    ->dehydrateStateUsing(fn($state) => $state ?: null),
-                    Toggle::make('is_active')->label('Aktywny'),
+                        TextInput::make('email')
+                            ->label('E-mail')
+                            ->required()
+                            ->email()
+                            ->rules([
+                                fn($context, $record) => \Illuminate\Validation\Rule::unique('users', 'email')->ignore($record?->id),
+                            ])
+                            ->validationMessages([
+                                'unique' => 'Ten e-mail już istnieje w systemie.',
+                            ])
+                            ->columnSpanFull()
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+
+                        TextInput::make('phone')
+                            ->label('Telefon')
+                            ->tel()
+                            ->minLength(9)
+                            ->maxLength(9)
+                            ->rule(function () {
+                                return \Illuminate\Validation\Rule::unique('users', 'phone')->ignore(request()->route('record'));
+                            })
+                            ->validationMessages([
+                                'unique' => 'Ten numer telefonu już istnieje w systemie.',
+                                'min' => 'Numer telefonu musi mieć co najmniej 9 cyfr.',
+                                'max' => 'Numer telefonu nie może mieć więcej niż 15 znaków.',
+                            ])
+                            ->dehydrated(true)
+                            ->afterStateHydrated(function (\Filament\Forms\Components\TextInput $component, $state) {
+                                if (str_starts_with($state, '+48')) {
+                                    $component->state(substr($state, 3));
+                                }
+                            })
+                            ->dehydrateStateUsing(function ($state) {
+                                $number = preg_replace('/\D/', '', $state);
+                                if (strlen($number) === 9) {
+                                    return '+48' . $number;
+                                } elseif (str_starts_with($number, '48') && strlen($number) === 11) {
+                                    return '+' . $number;
+                                } elseif (str_starts_with($number, '+48') && strlen($number) === 12) {
+                                    return $number;
+                                }
+                                return $state;
+                            })
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                DatePicker::make('joined_at')
+                                    ->label('Data zapisu')
+                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+
+                                TextInput::make('amount')
+                                    ->label('Kwota miesięczna (zł)')
+                                    ->numeric()
+                                    ->required()
+                                    ->default(200)
+                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+                            ]),
+
+                        // Deprecated single select (kept hidden for backward compatibility)
+                        Select::make('group_id')
+                            ->label('Grupa (legacy)')
+                            ->relationship('group', 'name')
+                            ->hidden()
+                            ->dehydrated(false),
+
+                        // New multi-select groups
+                        Select::make('groups')
+                            ->label('Grupy')
+                            ->relationship('groups', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+
+                        Forms\Components\DateTimePicker::make('terms_accepted_at')
+                            ->label('Akceptacja regulaminu')
+                            ->nullable()
+                            ->default(null)
+                            ->dehydrated(true)
+                            ->dehydrateStateUsing(fn($state) => $state ?: null)
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+
+                        Toggle::make('is_active')
+                            ->label('Aktywny')
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (Get $get) => (bool) $get('_editMode')),
             ]);
     }
 
