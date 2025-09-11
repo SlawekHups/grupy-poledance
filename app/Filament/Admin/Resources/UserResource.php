@@ -65,6 +65,10 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\View::make('filament.admin.users.user-summary')
+                    ->visible(fn (Get $get) => ! (bool) $get('_editMode'))
+                    ->columnSpanFull(),
+
                 // Lokalny przełącznik trybu edycji utrzymywany w stanie Livewire
                 Forms\Components\Hidden::make('_editMode')
                     ->default(false)
@@ -77,10 +81,6 @@ class UserResource extends Resource
                         }
                     })
                     ->dehydrated(false),
-
-                Forms\Components\View::make('filament.admin.users.user-summary')
-                    ->visible(fn (Get $get) => ! (bool) $get('_editMode'))
-                    ->columnSpanFull(),
                 Forms\Components\Card::make()
                     ->schema([
                         TextInput::make('name')

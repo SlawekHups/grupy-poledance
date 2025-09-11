@@ -51,26 +51,43 @@
 
                 <!-- Karta Adres -->
                 <div class="rounded-xl border bg-white">
-                    <a href="{{ route('filament.admin.resources.users.edit', ['record' => $record->id, 'edit' => 1, 'activeTab' => 'addresses']) }}" class="block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors" aria-label="Przejdź do edycji adresów">
-                        <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
-                            <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" style="color: var(--fi-color-warning-hover, #d97706)" />
-                            <span style="color: var(--fi-color-warning-hover, #d97706)">Adres</span>
+                    @if($address)
+                        <div class="cursor-pointer hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors" 
+                             onclick="window.location.href='{{ route('filament.admin.resources.users.edit', ['record' => $record->id, 'edit' => 1, 'activeTab' => 'addresses']) }}'" 
+                             aria-label="Przejdź do edycji adresu">
+                            <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
+                                <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" style="color: var(--fi-color-warning-hover, #d97706)" />
+                                <span style="color: var(--fi-color-warning-hover, #d97706)">Adres</span>
+                            </div>
+                            <div class="p-4 space-y-2 text-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-500">Ulica</span>
+                                    <span class="font-semibold break-words text-right">{{ $address->street ?? '—' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-500">Kod / Miasto</span>
+                                    <span class="font-semibold break-words text-right">{{ $address?->postal_code ? ($address->postal_code.' '.$address->city) : ($address->city ?? '—') }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-500">Typ</span>
+                                    <span class="font-semibold break-words text-right">{{ $address->type ?? '—' }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="p-4 space-y-2 text-gray-700">
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">Ulica</span>
-                                <span class="font-semibold break-words text-right">{{ $address->street ?? '—' }}</span>
+                    @else
+                        <a href="{{ route('filament.admin.resources.users.edit', ['record' => $record->id, 'edit' => 1, 'activeTab' => 'addresses']) }}" class="block hover:bg-gray-50 shadow-sm hover:shadow-md transition-colors" aria-label="Dodaj adres">
+                            <div class="px-4 py-3 border-b font-medium flex items-center gap-2">
+                                <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" style="color: var(--fi-color-warning-hover, #d97706)" />
+                                <span style="color: var(--fi-color-warning-hover, #d97706)">Adres</span>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">Kod / Miasto</span>
-                                <span class="font-semibold break-words text-right">{{ $address?->postal_code ? ($address->postal_code.' '.$address->city) : ($address->city ?? '—') }}</span>
+                            <div class="p-4 space-y-2 text-gray-700">
+                                <div class="text-center text-gray-500 py-4">
+                                    <x-filament::icon icon="heroicon-o-plus" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                    <span>Brak adresu - kliknij aby dodać</span>
+                                </div>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-500">Typ</span>
-                                <span class="font-semibold break-words text-right">{{ $address->type ?? '—' }}</span>
-                            </div>
-                        </div>
-                    </a>
+                        </a>
+                    @endif
                 </div>
 
                 <!-- Karta Grupa -->
