@@ -129,8 +129,8 @@ class PaymentResource extends Resource
         return $table
             ->contentGrid([
                 'md' => 1,
-                'lg' => 2,
-                'xl' => 3,
+                'lg' => 1,
+                'xl' => 1,
             ])
             ->recordUrl(fn ($record) => route('filament.admin.resources.payments.edit', ['record' => $record]))
             ->recordClasses(function ($record) {
