@@ -1,6 +1,7 @@
 <x-filament::page>
     <form wire:submit.prevent="saveAttendance">
-        <div class="flex flex-wrap md:flex-nowrap gap-4 items-end mb-6">
+        <!-- Desktop layout -->
+        <div class="hidden md:flex flex-wrap md:flex-nowrap gap-4 items-end mb-6">
             <div class="flex-1 min-w-[160px]">
                 <label for="group_id" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200">
                     Grupa:
@@ -24,6 +25,36 @@
                 <button type="button" wire:click="loadUsers"
                     class="w-full md:w-auto inline-flex items-center justify-center font-medium rounded-lg outline-none transition focus:ring-2 focus:ring-amber-500"
                     style="background-color:#d97706; color:#fff; border-radius:0.5rem; padding:0.5em 1em; min-width:160px;">
+                    Pokaż użytkowników
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile layout - wszystko w osobnych liniach -->
+        <div class="md:hidden flex flex-col gap-4 mb-6">
+            <div>
+                <label for="group_id_mobile" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Grupa:
+                </label>
+                <select id="group_id_mobile" wire:model="group_id"
+                    class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
+                    <option value="">-- Wybierz grupę --</option>
+                    @foreach(\App\Models\Group::orderBy('name')->get() as $group)
+                        <option value="{{ $group->id }}">{{ $group->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="date_mobile" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Data zajęć:
+                </label>
+                <input id="date_mobile" type="date" wire:model="date"
+                    class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold" />
+            </div>
+            <div>
+                <button type="button" wire:click="loadUsers"
+                    class="w-full inline-flex items-center justify-center font-medium rounded-lg outline-none transition focus:ring-2 focus:ring-amber-500"
+                    style="background-color:#d97706; color:#fff; border-radius:0.5rem; padding:0.5em 1em;">
                     Pokaż użytkowników
                 </button>
             </div>
