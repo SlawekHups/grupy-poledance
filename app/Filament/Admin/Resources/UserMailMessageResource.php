@@ -146,37 +146,52 @@ class UserMailMessageResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('direction')
-                    ->label('Kierunek')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'in' => 'success',
-                        'out' => 'warning',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'in' => 'Odebrana',
-                        'out' => 'Wysłana',
-                        default => 'Nieznany',
-                    }),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('subject')
-                    ->label('Temat')
-                    ->searchable()
-                    ->limit(50),
-                Tables\Columns\TextColumn::make('content')
-                    ->label('Treść')
-                    ->limit(50),
-                Tables\Columns\TextColumn::make('sent_at')
-                    ->label('Data')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable(),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('subject')
+                                ->label('Temat')
+                                ->searchable()
+                                ->limit(80)
+                                ->weight('bold'),
+                            Tables\Columns\TextColumn::make('sent_at')
+                                ->label('Data')
+                                ->dateTime('d.m.Y H:i')
+                                ->alignRight()
+                                ->sortable(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
+
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('direction')
+                                ->label('Kierunek')
+                                ->badge()
+                                ->color(fn (string $state): string => match ($state) {
+                                    'in' => 'success',
+                                    'out' => 'warning',
+                                    default => 'gray',
+                                })
+                                ->formatStateUsing(fn (string $state): string => match ($state) {
+                                    'in' => 'Odebrana',
+                                    'out' => 'Wysłana',
+                                    default => 'Nieznany',
+                                }),
+                            Tables\Columns\TextColumn::make('email')
+                                ->label('Email')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        Tables\Columns\TextColumn::make('content')
+                            ->label('Podgląd')
+                            ->formatStateUsing(fn (?string $state) => $state ? \Illuminate\Support\Str::limit(strip_tags(html_entity_decode($state, ENT_QUOTES | ENT_HTML5, 'UTF-8')), 160) : 'Brak treści')
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                    ]),
+                ]),
             ])
             ->filters([
                 // Tables\Filters\SelectFilter::make('direction')
