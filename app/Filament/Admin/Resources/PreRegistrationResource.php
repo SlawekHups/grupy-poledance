@@ -79,56 +79,64 @@ class PreRegistrationResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
+            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-                    
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Imię i nazwisko')
-                    ->searchable()
-                    ->sortable(),
-                    
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable()
-                    ->sortable(),
-                    
-                Tables\Columns\TextColumn::make('phone')
-                    ->label('Telefon')
-                    ->searchable(),
-                    
-                Tables\Columns\TextColumn::make('token')
-                    ->label('Token')
-                    ->limit(8)
-                    ->copyable()
-                    ->tooltip('Kliknij aby skopiować'),
-                    
-                Tables\Columns\IconColumn::make('used')
-                    ->label('Użyty')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger'),
-                    
-                Tables\Columns\TextColumn::make('expires_at')
-                    ->label('Wygasa')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->color(fn ($record) => $record->expires_at < now() ? 'danger' : 'success'),
-                    
-                Tables\Columns\TextColumn::make('used_at')
-                    ->label('Data użycia')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->placeholder('Nie użyty'),
-                    
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Utworzono')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\Layout\Panel::make([
+                    Tables\Columns\Layout\Stack::make([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('name')
+                                ->label('Imię i nazwisko')
+                                ->searchable()
+                                ->sortable()
+                                ->weight('bold')
+                                ->limit(40),
+                            Tables\Columns\TextColumn::make('expires_at')
+                                ->label('Wygasa')
+                                ->dateTime('d.m.Y H:i')
+                                ->sortable()
+                                ->color(fn ($record) => $record->expires_at < now() ? 'danger' : 'success')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-start']),
+
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('email')
+                                ->label('Email')
+                                ->searchable()
+                                ->sortable()
+                                ->limit(30),
+                            Tables\Columns\TextColumn::make('used')
+                                ->label('Status')
+                                ->badge()
+                                ->color(fn ($state) => $state ? 'success' : 'danger')
+                                ->formatStateUsing(fn ($state) => $state ? 'Użyty' : 'Nie użyty')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\TextColumn::make('phone')
+                                ->label('Telefon')
+                                ->searchable()
+                                ->limit(20),
+                            Tables\Columns\TextColumn::make('token')
+                                ->label('Token')
+                                ->limit(8)
+                                ->copyable()
+                                ->tooltip('Kliknij aby skopiować')
+                                ->alignRight(),
+                        ])->extraAttributes(['class' => 'justify-between items-center']),
+
+                        Tables\Columns\TextColumn::make('used_at')
+                            ->label('Data użycia')
+                            ->dateTime('d.m.Y H:i')
+                            ->sortable()
+                            ->placeholder('Nie użyty')
+                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                    ]),
+                ]),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('used')
