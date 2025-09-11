@@ -13,12 +13,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables\Columns\BooleanColumn;
+use App\Models\Attendance;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Group;
-use App\Models\Attendance;
 
 class AttendancesRelationManager extends RelationManager
 {
@@ -77,8 +77,8 @@ class AttendancesRelationManager extends RelationManager
             ->recordTitleAttribute('date')
             ->contentGrid([
                 'md' => 1,
-                'lg' => 2,
-                'xl' => 3,
+                'lg' => 1,
+                'xl' => 1,
             ])
             ->recordUrl(fn ($record) => null)
             ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
@@ -107,6 +107,8 @@ class AttendancesRelationManager extends RelationManager
                         Tables\Columns\Layout\Split::make([
                             Tables\Columns\TextColumn::make('group.name')
                                 ->label('Grupa')
+                                ->badge()
+                                ->color('info')
                                 ->searchable(),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
@@ -154,6 +156,24 @@ class AttendancesRelationManager extends RelationManager
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make()
                         ->label('Edytuj'),
+                    Tables\Actions\Action::make('togglePresent')
+                        ->label(fn (Attendance $record): string => $record->present ? 'Oznacz jako nieobecny' : 'Oznacz jako obecny')
+                        ->icon(fn (Attendance $record): string => $record->present ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
+                        ->color(fn (Attendance $record): string => $record->present ? 'warning' : 'success')
+                        ->action(function (Attendance $record) {
+                            $record->update(['present' => !$record->present]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Status obecności zaktualizowany')
+                                ->success()
+                                ->send();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Zmiana statusu obecności')
+                        ->modalDescription(fn (Attendance $record): string => 
+                            $record->present 
+                                ? 'Czy na pewno chcesz oznaczyć jako nieobecny?' 
+                                : 'Czy na pewno chcesz oznaczyć jako obecny?'
+                        ),
                     Tables\Actions\DeleteAction::make()
                         ->label('Usuń'),
                 ])
