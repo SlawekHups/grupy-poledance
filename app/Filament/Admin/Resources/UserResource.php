@@ -973,6 +973,7 @@ class UserResource extends Resource
         return [
             AddressesRelationManager::class,
             \App\Filament\Admin\Resources\UserResource\RelationManagers\PaymentsRelationManager::class,
+            \App\Filament\Admin\Resources\UserResource\RelationManagers\AttendancesRelationManager::class,
         ];
     }
 
