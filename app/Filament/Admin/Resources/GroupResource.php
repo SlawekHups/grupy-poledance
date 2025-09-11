@@ -103,42 +103,47 @@ class GroupResource extends Resource
             ->columns([
                 Tables\Columns\Layout\Panel::make([
                     Tables\Columns\Layout\Stack::make([
-                        Tables\Columns\Layout\Split::make([
-                            Tables\Columns\TextColumn::make('name')
-                                ->label('Nazwa')
-                                ->searchable()
-                                ->weight('bold')
-                                ->size('lg')
-                                ->extraAttributes(['class' => 'md:text-xl']),
-                            Tables\Columns\TextColumn::make('status')
-                                ->label('Status')
-                                ->badge()
-                                ->color(fn (string $state): string => match ($state) {
-                                    'active' => 'success',
-                                    'inactive' => 'danger',
-                                    'full' => 'warning',
-                                    default => 'gray',
-                                })
-                                ->formatStateUsing(fn (string $state): string => match ($state) {
-                                    'active' => 'Aktywna',
-                                    'inactive' => 'Nieaktywna',
-                                    'full' => 'Pełna',
-                                    default => $state,
-                                })
-                                ->alignRight(),
-                        ])->extraAttributes(['class' => 'justify-between items-start']),
+                        // Status w osobnej linii, wyrównany do prawej
+                        Tables\Columns\TextColumn::make('status')
+                            ->label('')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'active' => 'success',
+                                'inactive' => 'danger',
+                                'full' => 'warning',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'Aktywna',
+                                'inactive' => 'Nieaktywna',
+                                'full' => 'Pełna',
+                                default => $state,
+                            })
+                            ->alignRight()
+                            ->extraAttributes(['class' => 'text-lg font-semibold mb-3']),
+
+                        // Nazwa grupy - na całą szerokość kafelka
+                        Tables\Columns\TextColumn::make('name')
+                            ->label('')
+                            ->searchable()
+                            ->weight('bold')
+                            ->size('xl')
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-2xl mb-4']),
 
                         Tables\Columns\ViewColumn::make('metrics')
                             ->label('')
-                            ->view('filament.admin.groups.group-metrics'),
+                            ->view('filament.admin.groups.group-metrics')
+                            ->extraAttributes(['class' => 'mb-4']),
 
                         Tables\Columns\TextColumn::make('description')
-                            ->label('Opis')
+                            ->label('')
                             ->limit(160)
                             ->formatStateUsing(fn (?string $state) => $state ?: 'Brak opisu')
-                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
-                    ])->space(2),
-                ])->extraAttributes(['class' => 'p-4']),
+                            ->alignCenter()
+                            ->extraAttributes(['class' => 'text-sm text-gray-600 mt-6']),
+                    ])->space(4),
+                ])->extraAttributes(['class' => 'p-6']),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
