@@ -55,50 +55,136 @@
         </div>
         @endif
 
-        <!-- Desktop layout -->
-        <div class="hidden md:flex flex-wrap md:flex-nowrap gap-4 items-end mb-6">
-            <div class="flex-1 min-w-[160px]">
-                <label for="group_id" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200">
-                    Grupa:
-                </label>
-                <select id="group_id" wire:model="group_id"
-                    class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
-                    <option value="">-- Wybierz grupę --</option>
-                    @foreach(\App\Models\Group::orderBy('name')->get() as $group)
-                        <option value="{{ $group->id }}">{{ $group->name }}</option>
-                    @endforeach
-                </select>
+        <!-- Desktop layout - Kalendarz grup -->
+        <div class="hidden md:block mb-6">
+            <label class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                <x-heroicon-o-user-group class="inline w-4 h-4 mr-1" />
+                Wybierz grupę:
+            </label>
+            <div class="text-xs text-gray-500 mb-4">
+                💡 Grupa jest automatycznie wybierana na podstawie dnia tygodnia
             </div>
-            <div class="flex gap-2 flex-1 md:flex-none">
-                <button type="button" wire:click="loadUsers"
-                    class="w-full md:w-auto inline-flex items-center justify-center font-medium rounded-lg outline-none transition focus:ring-2 focus:ring-amber-500"
-                    style="background-color:#d97706; color:#fff; border-radius:0.5rem; padding:0.5em 1em; min-width:160px;">
-                    Pokaż użytkowników
+            
+            @php
+                $currentGroups = $this->getCurrentGroups();
+                $nav = $this->getGroupNavigation();
+            @endphp
+            
+            <!-- Nawigacja grup -->
+            <div class="flex items-center justify-between mb-4">
+                <button type="button" wire:click="previousGroups" 
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors {{ !$nav['has_previous'] ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        {{ !$nav['has_previous'] ? 'disabled' : '' }}>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
                 </button>
+                
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    Strona {{ $nav['current_page'] + 1 }} z {{ $nav['max_pages'] + 1 }}
+                </div>
+                
+                <button type="button" wire:click="nextGroups"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors {{ !$nav['has_next'] ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        {{ !$nav['has_next'] ? 'disabled' : '' }}>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Grupy w stylu kalendarza -->
+            <div class="grid grid-cols-7 gap-2">
+                @foreach($currentGroups as $group)
+                    @php
+                        $membersCount = $group->members()->count();
+                        $maxSize = $group->max_size;
+                        $freeSpots = max(0, $maxSize - $membersCount);
+                        $isSelected = $group_id == $group->id;
+                        
+                        // Kolor statusu
+                        $statusColor = match($group->status) {
+                            'active' => 'green',
+                            'full' => 'yellow', 
+                            'inactive' => 'red',
+                            default => 'gray'
+                        };
+                    @endphp
+                    <button type="button" 
+                        wire:click="selectGroup({{ $group->id }})"
+                        @if($isSelected)
+                            style="background-color: #10b981; color: white; border-color: #10b981; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);"
+                            class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md"
+                        @else
+                            class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 {{ $group->status === 'inactive' ? 'opacity-60' : '' }}"
+                        @endif>
+                        
+                        <!-- Status indicator -->
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="w-2 h-2 rounded-full 
+                                @if($statusColor === 'green') bg-green-500
+                                @elseif($statusColor === 'yellow') bg-yellow-500
+                                @elseif($statusColor === 'red') bg-red-500
+                                @else bg-gray-500
+                                @endif"></div>
+                            @if($isSelected)
+                                <x-heroicon-s-check-circle class="w-4 h-4 text-white" />
+                            @endif
+                        </div>
+                        
+                        <!-- Nazwa grupy -->
+                        <div class="text-xs font-medium opacity-90 truncate mb-1">{{ $group->name }}</div>
+                        
+                        <!-- Liczba uczestników -->
+                        <div class="text-xs opacity-75 mb-1">
+                            <span class="inline-flex items-center">
+                                <x-heroicon-o-users class="w-3 h-3 mr-1" />
+                                {{ $membersCount }}/{{ $maxSize }}
+                            </span>
+                        </div>
+                        
+                        <!-- Wolne miejsca -->
+                        @if($freeSpots > 0 && $group->status === 'active')
+                            <div class="text-xs font-medium opacity-90">
+                                {{ $freeSpots }} wolnych
+                            </div>
+                        @elseif($group->status === 'full')
+                            <div class="text-xs font-medium opacity-90">
+                                Pełna
+                            </div>
+                        @elseif($group->status === 'inactive')
+                            <div class="text-xs font-medium opacity-90">
+                                Nieaktywna
+                            </div>
+                        @endif
+                    </button>
+                @endforeach
+                
+                <!-- Puste miejsca jeśli mniej niż 7 grup -->
+                @for($i = count($currentGroups); $i < 7; $i++)
+                    <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 opacity-50"></div>
+                @endfor
             </div>
         </div>
 
-        <!-- Mobile layout - wszystko w osobnych liniach -->
-        <div class="md:hidden flex flex-col gap-4 mb-6">
-            <div>
-                <label for="group_id_mobile" class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                    Grupa:
-                </label>
-                <select id="group_id_mobile" wire:model="group_id"
-                    class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
-                    <option value="">-- Wybierz grupę --</option>
-                    @foreach(\App\Models\Group::orderBy('name')->get() as $group)
-                        <option value="{{ $group->id }}">{{ $group->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <button type="button" wire:click="loadUsers"
-                    class="w-full inline-flex items-center justify-center font-medium rounded-lg outline-none transition focus:ring-2 focus:ring-amber-500"
-                    style="background-color:#d97706; color:#fff; border-radius:0.5rem; padding:0.5em 1em;">
-                    Pokaż użytkowników
-                </button>
-            </div>
+        <!-- Mobile layout - Prosty dropdown -->
+        <div class="md:hidden mb-6">
+            <label class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                <x-heroicon-o-user-group class="inline w-4 h-4 mr-1" />
+                Grupa:
+            </label>
+            <select wire:model="group_id"
+                class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
+                <option value="">-- Wybierz grupę --</option>
+                @foreach(\App\Models\Group::orderBy('name')->get() as $group)
+                    <option value="{{ $group->id }}">{{ $group->name }} 
+                        @if($group->status === 'full') (Pełna)
+                        @elseif($group->status === 'inactive') (Nieaktywna)
+                        @else ({{ $group->members()->count() }}/{{ $group->max_size }})
+                        @endif
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         @if(!empty($users))

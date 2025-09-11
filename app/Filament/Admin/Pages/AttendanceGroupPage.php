@@ -22,19 +22,26 @@ class AttendanceGroupPage extends Page
     public $attendances = [];
     public $currentWeekStart;
     public $selectedDate;
+    public $currentGroupPage = 0;
+    public $groupsPerPage = 7;
 
     public function mount()
     {
         $this->date = now()->toDateString();
         $this->selectedDate = $this->date;
         $this->currentWeekStart = Carbon::parse($this->date)->startOfWeek(Carbon::MONDAY)->toDateString();
+        
+        // Automatyczne zaznaczanie grupy na podstawie dnia tygodnia
+        $this->selectGroupByDayOfWeek();
     }
 
     public function selectDate($date)
     {
         $this->date = $date;
         $this->selectedDate = $date;
-        $this->loadUsers();
+        
+        // Automatycznie zaznacz grupę dla wybranej daty
+        $this->selectGroupByDate($date);
     }
 
     public function selectWeek($weekStart)
@@ -222,6 +229,148 @@ class AttendanceGroupPage extends Page
     {
         if (isset($this->attendances[$userId])) {
             $this->attendances[$userId]['present'] = !$this->attendances[$userId]['present'];
+        }
+    }
+
+    // Select group from cards
+    public function selectGroup($groupId)
+    {
+        $this->group_id = $groupId;
+        $this->loadUsers();
+    }
+
+    // Group navigation methods
+    public function previousGroups()
+    {
+        if ($this->currentGroupPage > 0) {
+            $this->currentGroupPage--;
+        }
+    }
+
+    public function nextGroups()
+    {
+        $totalGroups = \App\Models\Group::count();
+        $maxPages = ceil($totalGroups / $this->groupsPerPage) - 1;
+        if ($this->currentGroupPage < $maxPages) {
+            $this->currentGroupPage++;
+        }
+    }
+
+    public function getCurrentGroups()
+    {
+        $groups = \App\Models\Group::orderBy('name')->get();
+        $startIndex = $this->currentGroupPage * $this->groupsPerPage;
+        return $groups->slice($startIndex, $this->groupsPerPage);
+    }
+
+    public function getGroupNavigation()
+    {
+        $totalGroups = \App\Models\Group::count();
+        $maxPages = ceil($totalGroups / $this->groupsPerPage) - 1;
+        
+        return [
+            'current_page' => $this->currentGroupPage,
+            'max_pages' => $maxPages,
+            'has_previous' => $this->currentGroupPage > 0,
+            'has_next' => $this->currentGroupPage < $maxPages,
+        ];
+    }
+
+    // Automatyczne zaznaczanie grupy na podstawie dnia tygodnia
+    public function selectGroupByDayOfWeek()
+    {
+        $today = Carbon::now();
+        $dayOfWeek = $today->dayOfWeek; // 0 = niedziela, 1 = poniedziałek, ..., 6 = sobota
+        
+        // Mapowanie dni tygodnia na polskie nazwy w grupach
+        $dayNames = [
+            1 => 'Poniedziałek',
+            2 => 'Wtorek', 
+            3 => 'Środa',
+            4 => 'Czwartek',
+            5 => 'Piątek',
+            6 => 'Sobota',
+            0 => 'Niedziela', // niedziela = 0
+        ];
+        
+        $todayName = $dayNames[$dayOfWeek];
+        
+        // Znajdź pierwszą aktywną grupę dla dzisiejszego dnia
+        $group = \App\Models\Group::where('name', 'LIKE', $todayName . '%')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->first();
+            
+        if ($group) {
+            $this->group_id = $group->id;
+            $this->loadUsers();
+            
+            // Ustaw odpowiednią stronę dla tej grupy
+            $this->setCurrentPageForGroup($group->id);
+        } else {
+            // Jeśli nie ma grupy dla dzisiejszego dnia, wybierz pierwszą aktywną grupę
+            $firstActiveGroup = \App\Models\Group::where('status', 'active')
+                ->where('id', '!=', 1) // Wyklucz "Bez grupy"
+                ->orderBy('name')
+                ->first();
+                
+            if ($firstActiveGroup) {
+                $this->group_id = $firstActiveGroup->id;
+                $this->loadUsers();
+                $this->setCurrentPageForGroup($firstActiveGroup->id);
+            }
+        }
+    }
+
+    // Ustaw stronę na której znajduje się wybrana grupa
+    public function setCurrentPageForGroup($groupId)
+    {
+        $groups = \App\Models\Group::orderBy('name')->get();
+        $groupIndex = $groups->search(function($group) use ($groupId) {
+            return $group->id == $groupId;
+        });
+        
+        if ($groupIndex !== false) {
+            $this->currentGroupPage = floor($groupIndex / $this->groupsPerPage);
+        }
+    }
+
+    // Automatyczne zaznaczanie grupy na podstawie wybranej daty
+    public function selectGroupByDate($date)
+    {
+        $selectedDate = Carbon::parse($date);
+        $dayOfWeek = $selectedDate->dayOfWeek; // 0 = niedziela, 1 = poniedziałek, ..., 6 = sobota
+        
+        // Mapowanie dni tygodnia na polskie nazwy w grupach
+        $dayNames = [
+            1 => 'Poniedziałek',
+            2 => 'Wtorek', 
+            3 => 'Środa',
+            4 => 'Czwartek',
+            5 => 'Piątek',
+            6 => 'Sobota',
+            0 => 'Niedziela', // niedziela = 0
+        ];
+        
+        $dayName = $dayNames[$dayOfWeek];
+        
+        // Znajdź pierwszą aktywną grupę dla wybranego dnia
+        $group = \App\Models\Group::where('name', 'LIKE', $dayName . '%')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->first();
+            
+        if ($group) {
+            $this->group_id = $group->id;
+            $this->loadUsers();
+            
+            // Ustaw odpowiednią stronę dla tej grupy
+            $this->setCurrentPageForGroup($group->id);
+        } else {
+            // Jeśli nie ma grupy dla tego dnia, wyczyść wybór
+            $this->group_id = '';
+            $this->users = [];
+            $this->attendances = [];
         }
     }
 }
