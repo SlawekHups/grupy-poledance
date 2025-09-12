@@ -25,6 +25,10 @@
                         <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5" />
                         <span>Obecność grupy</span>
                     </a>
+                    <a href="{{ route('filament.admin.resources.pre-registrations.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-user-plus" class="h-5 w-5" />
+                        <span>Pre-rejestracje</span>
+                    </a>
                 </div>
             </div>
 
@@ -84,10 +88,6 @@
                     <a href="{{ route('filament.admin.resources.terms.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                         <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5" />
                         <span>Regulaminy</span>
-                    </a>
-                    <a href="{{ route('filament.admin.resources.pre-registrations.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
-                        <x-filament::icon icon="heroicon-o-user-plus" class="h-5 w-5" />
-                        <span>Pre-rejestracje</span>
                     </a>
                     <a href="{{ route('filament.admin.resources.user-mail-messages.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                         <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" />
