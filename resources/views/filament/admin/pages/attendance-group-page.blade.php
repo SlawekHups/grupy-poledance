@@ -252,7 +252,9 @@
         </div>
 
         @if(!empty($users))
-        @php($stats = $this->getAttendanceStats())
+        @php
+            $stats = $this->getAttendanceStats();
+        @endphp
         
         <!-- Opis i odstęp -->
         <div class="mb-8">
@@ -316,30 +318,6 @@
                     </div>
                 </div>
                 
-                <!-- Bulk Actions -->
-                <div class="flex flex-wrap gap-2 lg:flex-col">
-                    <button type="button" wire:click="selectAll"
-                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Zaznacz wszystkich
-                    </button>
-                    <button type="button" wire:click="deselectAll"
-                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Odznacz wszystkich
-                    </button>
-                    <button type="button" wire:click="toggleAll"
-                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Odwróć zaznaczenie
-                </button>
-                </div>
             </div>
             
             <!-- Progress bar -->
@@ -362,6 +340,77 @@
                                         @endif">
                             </div>
                         </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="my-16">
+            <!-- Desktop - przyciski w jednej linii -->
+            <div class="hidden md:flex flex-wrap gap-3 justify-center">
+                <button type="button" wire:click="selectAll"
+                    style="background-color: #ea580c !important; color: white !important;"
+                    class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-orange-500 transition-all duration-200 shadow-sm min-w-[200px]">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Zaznacz wszystkich
+                </button>
+                <button type="button" wire:click="deselectAll"
+                    style="background-color: #dc2626 !important; color: white !important;"
+                    class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-red-500 transition-all duration-200 shadow-sm min-w-[200px]">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Odznacz wszystkich
+                </button>
+                <button type="button" wire:click="toggleAll"
+                    style="background-color: #6b7280 !important; color: white !important;"
+                    class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-gray-500 transition-all duration-200 shadow-sm min-w-[200px]">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Odwróć zaznaczenie
+                </button>
+                <button type="button" wire:click="openExternalUserModal"
+                    style="background-color: #9333ea !important; color: white !important;"
+                    class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-purple-500 transition-all duration-200 shadow-sm min-w-[200px]">
+                    <x-heroicon-o-user-plus class="w-4 h-4 mr-2" />
+                    Dodaj osobę z poza grupy (odrabianie)
+                </button>
+            </div>
+            
+            <!-- Mobile - każdy przycisk w nowej linii -->
+            <div class="md:hidden space-y-3">
+                <button type="button" wire:click="selectAll"
+                    style="background-color: #ea580c !important; color: white !important;"
+                    class="w-full flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-orange-500 transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Zaznacz wszystkich
+                </button>
+                <button type="button" wire:click="deselectAll"
+                    style="background-color: #dc2626 !important; color: white !important;"
+                    class="w-full flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-red-500 transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Odznacz wszystkich
+                </button>
+                <button type="button" wire:click="toggleAll"
+                    style="background-color: #6b7280 !important; color: white !important;"
+                    class="w-full flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-gray-500 transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Odwróć zaznaczenie
+                </button>
+                <button type="button" wire:click="openExternalUserModal"
+                    style="background-color: #9333ea !important; color: white !important;"
+                    class="w-full flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 focus:ring-2 focus:ring-purple-500 transition-all duration-200 shadow-sm">
+                    <x-heroicon-o-user-plus class="w-4 h-4 mr-2" />
+                    Dodaj osobę z poza grupy (odrabianie)
+                </button>
             </div>
         </div>
 
@@ -469,4 +518,137 @@
         </div>
         @endif
     </form>
+
+    <!-- Modal do dodawania użytkownika spoza grupy -->
+    @if($showExternalUserModal)
+    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form wire:submit.prevent="addExternalUserAttendance">
+                    <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 sm:mx-0 sm:h-10 sm:w-10">
+                                <x-heroicon-o-user-plus class="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-title">
+                                    Dodaj osobę z poza grupy (odrabianie)
+                                </h3>
+                                <div class="mt-4 space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Wyszukaj użytkownika
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" 
+                                                   wire:model.live="externalUserSearch"
+                                                   placeholder="Wpisz nazwę, email lub telefon..."
+                                                   class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 pl-10">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <x-heroicon-o-magnifying-glass class="h-5 w-5 text-gray-400" />
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Lista wyników wyszukiwania -->
+                                        @if($externalUserSearch && strlen($externalUserSearch) >= 2)
+                                        <div class="mt-2 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 shadow-lg">
+                                            @php
+                                                $searchResults = $this->getExternalUsers()->filter(function($user) {
+                                                    $search = strtolower($this->externalUserSearch);
+                                                    return str_contains(strtolower($user->name), $search) ||
+                                                           str_contains(strtolower($user->email), $search) ||
+                                                           str_contains(strtolower($user->phone ?? ''), $search);
+                                                })->take(10);
+                                            @endphp
+                                            
+                                            @if($searchResults->count() > 0)
+                                                @foreach($searchResults as $user)
+                                                <button type="button" 
+                                                        wire:click="selectExternalUser({{ $user->id }})"
+                                                        class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
+                                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                        <span class="flex items-center gap-1">
+                                                            <x-heroicon-o-envelope class="w-3 h-3" />
+                                                            {{ $user->email }}
+                                                        </span>
+                                                        @if($user->phone)
+                                                        <span class="flex items-center gap-1 mt-1">
+                                                            <x-heroicon-o-phone class="w-3 h-3" />
+                                                            {{ $user->phone }}
+                                                        </span>
+                                                        @endif
+                                                    </div>
+                                                </button>
+                                                @endforeach
+                                            @else
+                                                <div class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                                    Brak wyników wyszukiwania
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @endif
+                                        
+                                        <!-- Wybrany użytkownik -->
+                                        @if($externalUserId)
+                                            @php
+                                                $selectedUser = \App\Models\User::find($externalUserId);
+                                            @endphp
+                                            @if($selectedUser)
+                                            <div class="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <div class="font-medium text-green-800 dark:text-green-200">{{ $selectedUser->name }}</div>
+                                                        <div class="text-sm text-green-600 dark:text-green-300">
+                                                            <span class="flex items-center gap-1">
+                                                                <x-heroicon-o-envelope class="w-3 h-3" />
+                                                                {{ $selectedUser->email }}
+                                                            </span>
+                                                            @if($selectedUser->phone)
+                                                            <span class="flex items-center gap-1 mt-1">
+                                                                <x-heroicon-o-phone class="w-3 h-3" />
+                                                                {{ $selectedUser->phone }}
+                                                            </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" 
+                                                            wire:click="clearExternalUser"
+                                                            class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200">
+                                                        <x-heroicon-o-x-mark class="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            @endif
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Notatka
+                                        </label>
+                                        <input type="text" wire:model="externalUserNote" 
+                                               class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                                               placeholder="Odrabianie">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Dodaj obecność
+                        </button>
+                        <button type="button" wire:click="closeExternalUserModal"
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Anuluj
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 </x-filament::page>

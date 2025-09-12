@@ -24,6 +24,10 @@ class AttendanceGroupPage extends Page
     public $selectedDate;
     public $currentGroupPage = 0;
     public $groupsPerPage = 7;
+    public $showExternalUserModal = false;
+    public $externalUserId = '';
+    public $externalUserNote = 'Odrabianie';
+    public $externalUserSearch = '';
 
 
     public function mount()
@@ -398,5 +402,112 @@ class AttendanceGroupPage extends Page
                 $this->attendances = [];
             }
         }
+    }
+
+    // Otwórz modal do wyboru użytkownika spoza grupy
+    public function openExternalUserModal()
+    {
+        $this->showExternalUserModal = true;
+        $this->externalUserId = '';
+        $this->externalUserNote = 'Odrabianie';
+        $this->externalUserSearch = '';
+    }
+
+    // Zamknij modal
+    public function closeExternalUserModal()
+    {
+        $this->showExternalUserModal = false;
+        $this->externalUserId = '';
+        $this->externalUserNote = 'Odrabianie';
+        $this->externalUserSearch = '';
+    }
+
+    // Wybierz użytkownika z wyników wyszukiwania
+    public function selectExternalUser($userId)
+    {
+        $this->externalUserId = $userId;
+        $this->externalUserSearch = '';
+    }
+
+    // Wyczyść wybór użytkownika
+    public function clearExternalUser()
+    {
+        $this->externalUserId = '';
+        $this->externalUserSearch = '';
+    }
+
+    // Dodaj obecność spoza grupy (odrabianie)
+    public function addExternalUserAttendance()
+    {
+        if (empty($this->group_id) || empty($this->date)) {
+            Notification::make()
+                ->title('Błąd')
+                ->body('Wybierz grupę i datę')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if (empty($this->externalUserId)) {
+            Notification::make()
+                ->title('Błąd')
+                ->body('Wybierz użytkownika')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Sprawdź czy użytkownik istnieje
+        $user = \App\Models\User::find($this->externalUserId);
+        if (!$user) {
+            Notification::make()
+                ->title('Błąd')
+                ->body('Użytkownik nie został znaleziony')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Dodaj obecność
+        \App\Models\Attendance::updateOrCreate(
+            [
+                'user_id' => $this->externalUserId,
+                'group_id' => $this->group_id,
+                'date' => $this->date,
+            ],
+            [
+                'present' => true,
+                'note' => $this->externalUserNote,
+            ]
+        );
+
+        // Odśwież listę użytkowników
+        $this->loadUsers();
+
+        // Zamknij modal
+        $this->closeExternalUserModal();
+
+        Notification::make()
+            ->title('Sukces')
+            ->body('Dodano obecność dla ' . $user->name)
+            ->success()
+            ->send();
+    }
+
+    // Pobierz listę użytkowników do wyboru (spoza grupy)
+    public function getExternalUsers()
+    {
+        if (empty($this->group_id)) {
+            return collect();
+        }
+
+        return \App\Models\User::query()
+            ->where('is_active', true)
+            ->whereNot('role', 'admin')
+            ->whereDoesntHave('groups', function ($q) {
+                $q->where('groups.id', $this->group_id);
+            })
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'phone']);
     }
 }
