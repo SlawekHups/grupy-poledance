@@ -2,6 +2,22 @@
     <!-- Widget z kalendarzem tygodniowym -->
     <div class="mb-6">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <!-- Nagłówek z miesiącem, rokiem i "dziś" -->
+            <div class="text-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {{ \Carbon\Carbon::parse($currentWeekStart)->translatedFormat('F Y') }}
+                </h2>
+                <div class="flex items-center justify-center gap-4 mt-2">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                        Dziś: {{ \Carbon\Carbon::now()->translatedFormat('d.m.Y') }}
+                    </span>
+                    <button type="button" wire:click="selectDate('{{ \Carbon\Carbon::now()->toDateString() }}')"
+                        class="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-700 dark:text-green-300 rounded-lg transition-colors">
+                        Przejdź do dziś
+                    </button>
+                </div>
+            </div>
+            
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Wybierz dzień tygodnia
@@ -36,6 +52,7 @@
                     @endif>
                     <div class="text-xs font-medium opacity-75">{{ $day['day_name'] }}</div>
                     <div class="text-lg font-bold">{{ $day['day_number'] }}</div>
+                    <div class="text-xs font-medium opacity-60">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('M') }}</div>
                 </button>
                 @endforeach
             </div>
