@@ -184,25 +184,72 @@
             </div>
         </div>
 
-        <!-- Mobile layout - Prosty dropdown -->
+        <!-- Mobile layout - Ulepszony dropdown -->
         <div class="md:hidden mb-6">
-            <label class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                <x-heroicon-o-user-group class="inline w-4 h-4 mr-1" />
-                    Grupa:
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <label class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    <x-heroicon-o-user-group class="inline w-4 h-4 mr-1" />
+                    Wybierz grupę:
                 </label>
-            <select wire:model="group_id"
-                    class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
-                    <option value="">-- Wybierz grupę --</option>
-                    @foreach(\App\Models\Group::orderBy('name')->get() as $group)
-                    <option value="{{ $group->id }}">{{ $group->name }} 
-                        @if($group->status === 'full') (Pełna)
-                        @elseif($group->status === 'inactive') (Nieaktywna)
-                        @else ({{ $group->members()->count() }}/{{ $group->max_size }})
-                        @endif
-                    </option>
-                    @endforeach
-                </select>
+                
+                <!-- Informacja o automatycznym wybieraniu -->
+                <div class="text-xs text-gray-500 mb-4 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    💡 Grupa jest automatycznie wybierana na podstawie dnia tygodnia. Jeśli nie ma grupy dla danego dnia, wybiera pierwszą grupę z poniedziałku.
+                </div>
+                
+                <!-- Dropdown z grupami -->
+                <select wire:model="group_id"
+                        class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold text-sm">
+                        <option value="">-- Wybierz grupę --</option>
+                        @foreach(\App\Models\Group::orderBy('name')->get() as $group)
+                        @php
+                            $membersCount = $group->members()->count();
+                            $maxSize = $group->max_size;
+                            $freeSpots = max(0, $maxSize - $membersCount);
+                        @endphp
+                        <option value="{{ $group->id }}" 
+                                @if($group->status === 'inactive') disabled @endif>
+                            {{ $group->name }} 
+                            @if($group->status === 'full') (Pełna - {{ $membersCount }}/{{ $maxSize }})
+                            @elseif($group->status === 'inactive') (Nieaktywna)
+                            @else ({{ $membersCount }}/{{ $maxSize }} - {{ $freeSpots }} wolnych)
+                            @endif
+                        </option>
+                        @endforeach
+                    </select>
+                    
+                <!-- Wyświetlanie wybranej grupy -->
+                @if($group_id)
+                    @php
+                        $selectedGroup = \App\Models\Group::find($group_id);
+                    @endphp
+                    @if($selectedGroup)
+                        <div class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                            <div class="flex items-center gap-2">
+                                <x-heroicon-s-check-circle class="w-4 h-4 text-green-600 dark:text-green-400" />
+                                <span class="text-sm font-medium text-green-800 dark:text-green-200">
+                                    Wybrana grupa: {{ $selectedGroup->name }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-green-700 dark:text-green-300 mt-1">
+                                @php
+                                    $membersCount = $selectedGroup->members()->count();
+                                    $maxSize = $selectedGroup->max_size;
+                                    $freeSpots = max(0, $maxSize - $membersCount);
+                                @endphp
+                                @if($selectedGroup->status === 'full')
+                                    Pełna ({{ $membersCount }}/{{ $maxSize }})
+                                @elseif($selectedGroup->status === 'inactive')
+                                    Nieaktywna
+                                @else
+                                    {{ $membersCount }}/{{ $maxSize }} uczestników ({{ $freeSpots }} wolnych miejsc)
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                @endif
             </div>
+        </div>
 
         @if(!empty($users))
         @php($stats = $this->getAttendanceStats())
