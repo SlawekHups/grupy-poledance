@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\PreRegistrationResource;
 use App\Filament\Admin\Resources\PreRegistrationResource\Widgets\PreRegistrationStatsWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Filament\View\PanelsRenderHook;
 
 class ListPreRegistrations extends ListRecords
 {
@@ -18,53 +19,53 @@ class ListPreRegistrations extends ListRecords
                 ->label('Generuj tokeny')
                 ->icon('heroicon-o-plus-circle')
                 ->color('success')
-                ->modalHeading('Generuj tokeny pre-rejestracji')
-                ->modalDescription('Wybierz ile tokenów chcesz wygenerować i na jak długo mają być ważne.')
-                ->form([
-                    \Filament\Forms\Components\TextInput::make('count')
-                        ->label('Liczba tokenów')
-                        ->numeric()
-                        ->default(10)
-                        ->minValue(1)
-                        ->maxValue(50)
-                        ->required(),
+                    ->modalHeading('Generuj tokeny pre-rejestracji')
+                    ->modalDescription('Wybierz ile tokenów chcesz wygenerować i na jak długo mają być ważne.')
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('count')
+                            ->label('Liczba tokenów')
+                            ->numeric()
+                            ->default(10)
+                            ->minValue(1)
+                            ->maxValue(50)
+                            ->required(),
+                            
+                        \Filament\Forms\Components\TextInput::make('minutes')
+                            ->label('Czas ważności (minuty)')
+                            ->numeric()
+                            ->default(30)
+                            ->minValue(5)
+                            ->maxValue(1440)
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $count = (int) $data['count'];
+                        $minutes = (int) $data['minutes'];
                         
-                    \Filament\Forms\Components\TextInput::make('minutes')
-                        ->label('Czas ważności (minuty)')
-                        ->numeric()
-                        ->default(30)
-                        ->minValue(5)
-                        ->maxValue(1440)
-                        ->required(),
-                ])
-                ->action(function (array $data) {
-                    $count = (int) $data['count'];
-                    $minutes = (int) $data['minutes'];
-                    
-                    $tokens = [];
-                    $expiresAt = now()->addMinutes($minutes);
-                    
-                    for ($i = 0; $i < $count; $i++) {
-                        $token = \App\Models\PreRegistration::generateToken();
+                        $tokens = [];
+                        $expiresAt = now()->addMinutes($minutes);
                         
-                        $preReg = \App\Models\PreRegistration::create([
-                            'token' => $token,
-                            'name' => '',
-                            'email' => '',
-                            'phone' => '',
-                            'expires_at' => $expiresAt,
-                        ]);
+                        for ($i = 0; $i < $count; $i++) {
+                            $token = \App\Models\PreRegistration::generateToken();
+                            
+                            $preReg = \App\Models\PreRegistration::create([
+                                'token' => $token,
+                                'name' => '',
+                                'email' => '',
+                                'phone' => '',
+                                'expires_at' => $expiresAt,
+                            ]);
+                            
+                            $tokens[] = $preReg;
+                        }
                         
-                        $tokens[] = $preReg;
-                    }
+                        \Filament\Notifications\Notification::make()
+                            ->title('Tokeny wygenerowane')
+                            ->body("Pomyślnie wygenerowano {$count} tokenów ważnych przez {$minutes} minut")
+                            ->success()
+                            ->send();
+                    }),
                     
-                    \Filament\Notifications\Notification::make()
-                        ->title('Tokeny wygenerowane')
-                        ->body("Pomyślnie wygenerowano {$count} tokenów ważnych przez {$minutes} minut")
-                        ->success()
-                        ->send();
-                }),
-                
             Actions\Action::make('copy_all_links')
                 ->label('Kopiuj wszystkie linki')
                 ->icon('heroicon-o-clipboard-document-list')
@@ -205,7 +206,7 @@ class ListPreRegistrations extends ListRecords
                         ->success()
                         ->send();
                 }),
-                
+            
             Actions\CreateAction::make(),
         ];
     }
@@ -215,5 +216,14 @@ class ListPreRegistrations extends ListRecords
         return [
             PreRegistrationStatsWidget::class,
         ];
+    }
+    
+    public function getHeader(): ?\Illuminate\Contracts\View\View
+    {
+        return view('filament.admin.resources.pre-registration-resource.pages.custom-header', [
+            'actions' => $this->getCachedHeaderActions(),
+            'heading' => $this->getHeading(),
+            'subheading' => $this->getSubheading(),
+        ]);
     }
 }

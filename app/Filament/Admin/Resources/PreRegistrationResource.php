@@ -80,6 +80,7 @@ class PreRegistrationResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
                 'xl' => 1,
             ])
@@ -156,75 +157,84 @@ class PreRegistrationResource extends Resource
                     ->toggle(),
             ])
             ->actions([
-                Tables\Actions\Action::make('view_form')
-                    ->label('Zobacz formularz')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(fn ($record) => route('pre-register', $record->token))
-                    ->openUrlInNewTab()
-                    ->visible(fn ($record) => $record->isValid()),
-                    
-                Tables\Actions\Action::make('copy_link')
-                    ->label('Kopiuj link')
-                    ->icon('heroicon-o-clipboard')
-                    ->color('info')
-                    ->modalHeading('Kopiuj link pre-rejestracji')
-                    ->modalDescription('Kliknij przycisk poniżej, aby skopiować link do schowka')
-                    ->modalContent(function ($record) {
-                        $url = route('pre-register', $record->token);
-                        return view('filament.admin.resources.pre-registration-resource.modals.copy-link-simple', [
-                            'url' => $url,
-                            'token' => $record->token,
-                            'record' => $record
-                        ]);
-                    })
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Zamknij')
-                    ->visible(fn ($record) => $record->isValid()),
-                    
-                Tables\Actions\Action::make('convert_to_user')
-                    ->label('Konwertuj na użytkownika')
-                    ->icon('heroicon-o-user-plus')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Konwersja na użytkownika')
-                    ->modalDescription('Wybierz grupę dla nowego użytkownika. Możesz zostawić puste, aby przypisać później.')
-                    ->form([
-                        \Filament\Forms\Components\Select::make('group_id')
-                            ->label('Grupa')
-                            ->options(\App\Models\Group::all()->pluck('name', 'id'))
-                            ->searchable()
-                            ->placeholder('Wybierz grupę (opcjonalne)')
-                            ->helperText('Możesz przypisać użytkownika do grupy teraz lub później'),
-                    ])
-                    ->action(function ($record, array $data) {
-                        try {
-                            $user = $record->convertToUser($data['group_id'] ?? null);
-                            
-                            \Filament\Notifications\Notification::make()
-                                ->title('Konwersja zakończona')
-                                ->body("Użytkownik {$user->name} został utworzony" . 
-                                      ($data['group_id'] ? " i przypisany do grupy" : ""))
-                                ->success()
-                                ->send();
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('view_form')
+                        ->label('Zobacz formularz')
+                        ->icon('heroicon-o-eye')
+                        ->color('info')
+                        ->url(fn ($record) => route('pre-register', $record->token))
+                        ->openUrlInNewTab()
+                        ->visible(fn ($record) => $record->isValid()),
+                        
+                    Tables\Actions\Action::make('copy_link')
+                        ->label('Kopiuj link')
+                        ->icon('heroicon-o-clipboard')
+                        ->color('info')
+                        ->modalHeading('Kopiuj link pre-rejestracji')
+                        ->modalDescription('Kliknij przycisk poniżej, aby skopiować link do schowka')
+                        ->modalContent(function ($record) {
+                            $url = route('pre-register', $record->token);
+                            return view('filament.admin.resources.pre-registration-resource.modals.copy-link-simple', [
+                                'url' => $url,
+                                'token' => $record->token,
+                                'record' => $record
+                            ]);
+                        })
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel('Zamknij')
+                        ->visible(fn ($record) => $record->isValid()),
+                        
+                    Tables\Actions\Action::make('convert_to_user')
+                        ->label('Konwertuj na użytkownika')
+                        ->icon('heroicon-o-user-plus')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Konwersja na użytkownika')
+                        ->modalDescription('Wybierz grupę dla nowego użytkownika. Możesz zostawić puste, aby przypisać później.')
+                        ->form([
+                            \Filament\Forms\Components\Select::make('group_id')
+                                ->label('Grupa')
+                                ->options(\App\Models\Group::all()->pluck('name', 'id'))
+                                ->searchable()
+                                ->placeholder('Wybierz grupę (opcjonalne)')
+                                ->helperText('Możesz przypisać użytkownika do grupy teraz lub później'),
+                        ])
+                        ->action(function ($record, array $data) {
+                            try {
+                                $user = $record->convertToUser($data['group_id'] ?? null);
                                 
-                        } catch (\Exception $e) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Błąd konwersji')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    })
-                    ->visible(fn ($record) => $record->canConvertToUser()),
-                    
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Konwersja zakończona')
+                                    ->body("Użytkownik {$user->name} został utworzony" . 
+                                          ($data['group_id'] ? " i przypisany do grupy" : ""))
+                                    ->success()
+                                    ->send();
+                                    
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd konwersji')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->visible(fn ($record) => $record->canConvertToUser()),
+                        
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
+                ->label('Akcje')
+                ->icon('heroicon-o-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray')
+                ->button()
+                ->extraAttributes(['class' => 'w-full sm:w-auto'])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ])
+                ->extraAttributes(['class' => 'flex flex-col sm:flex-row gap-2 w-full sm:w-auto'])
             ])
             ->defaultSort('created_at', 'desc');
     }
