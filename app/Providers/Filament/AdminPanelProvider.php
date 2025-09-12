@@ -18,6 +18,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Models\User;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -74,6 +75,7 @@ class AdminPanelProvider extends PanelProvider
                 'Finanse',
                 'Zajęcia',
                 'Ustawienia',
-            ]);
+            ])
+            ->renderHook(PanelsRenderHook::BODY_START, fn (): string => view('filament.admin.mobile-top-nav')->render());
     }
 }
