@@ -200,8 +200,8 @@
                 <!-- Dropdown z grupami -->
                 <select wire:model="group_id"
                         class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold text-sm">
-                        <option value="">-- Wybierz grupę --</option>
-                        @foreach(\App\Models\Group::orderBy('name')->get() as $group)
+                    <option value="">-- Wybierz grupę --</option>
+                    @foreach(\App\Models\Group::orderBy('name')->get() as $group)
                         @php
                             $membersCount = $group->members()->count();
                             $maxSize = $group->max_size;
@@ -215,8 +215,8 @@
                             @else ({{ $membersCount }}/{{ $maxSize }} - {{ $freeSpots }} wolnych)
                             @endif
                         </option>
-                        @endforeach
-                    </select>
+                    @endforeach
+                </select>
                     
                 <!-- Wyświetlanie wybranej grupy -->
                 @if($group_id)
@@ -275,45 +275,53 @@
         </div>
         
         <!-- Statystyki obecności -->
-        <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+        <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-2"
              wire:key="attendance-stats-{{ md5(serialize($attendances)) }}"
              wire:poll.1s="getAttendanceStats">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="flex flex-col gap-4">
                 <!-- Statystyki -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                <div class="flex flex-col sm:flex-row gap-1 w-full">
                     <!-- Obecni -->
-                    <div class="text-center rounded-xl p-4 border-2" 
+                    <div class="flex-1 text-center rounded-lg p-4 border-2 min-w-0" 
                          style="background-color: #f0fdf4; border-color: #22c55e;">
-                        <div class="text-4xl font-black mb-2" style="color: #16a34a;" data-present="{{ $stats['present'] }}">
+                        <div class="text-3xl font-black mb-2" style="color: #16a34a;" data-present="{{ $stats['present'] }}">
                             {{ $stats['present'] }}
                         </div>
                         <div class="text-sm font-semibold uppercase tracking-wide" style="color: #15803d;">
-                            <x-heroicon-s-check-circle class="inline w-4 h-4 mr-1" />
                             Obecni
                         </div>
                     </div>
                     
-                    <!-- Nieobecni -->
-                    <div class="text-center rounded-xl p-4 border-2" 
+                    <!-- Nieob. -->
+                    <div class="flex-1 text-center rounded-lg p-4 border-2 min-w-0" 
                          style="background-color: #fef2f2; border-color: #ef4444;">
-                        <div class="text-4xl font-black mb-2" style="color: #dc2626;" data-absent="{{ $stats['absent'] }}">
+                        <div class="text-3xl font-black mb-2" style="color: #dc2626;" data-absent="{{ $stats['absent'] }}">
                             {{ $stats['absent'] }}
                         </div>
                         <div class="text-sm font-semibold uppercase tracking-wide" style="color: #b91c1c;">
-                            <x-heroicon-s-x-circle class="inline w-4 h-4 mr-1" />
-                            Nieobecni
+                            Nieob.
                         </div>
                     </div>
                     
-                    <!-- Frekwencja -->
-                    <div class="text-center rounded-xl p-4 border-2" 
+                    <!-- Frekw. -->
+                    <div class="flex-1 text-center rounded-lg p-4 border-2 min-w-0" 
                          style="background-color: #eff6ff; border-color: #3b82f6;">
-                        <div class="text-4xl font-black mb-2" style="color: #2563eb;">
+                        <div class="text-3xl font-black mb-2" style="color: #2563eb;">
                             {{ number_format($stats['percentage'], 1) }}%
                         </div>
                         <div class="text-sm font-semibold uppercase tracking-wide" style="color: #1d4ed8;">
-                            <x-heroicon-s-chart-pie class="inline w-4 h-4 mr-1" />
-                            Frekwencja
+                            Frekw.
+                        </div>
+                    </div>
+                    
+                    <!-- Odrabianie -->
+                    <div class="flex-1 text-center rounded-lg p-4 border-2 min-w-0" 
+                         style="background-color: #faf5ff; border-color: #9333ea;">
+                        <div class="text-3xl font-black mb-2" style="color: #7c3aed;" data-odrabianie="{{ $stats['odrabianie'] }}">
+                            {{ $stats['odrabianie'] }}
+                        </div>
+                        <div class="text-sm font-semibold uppercase tracking-wide" style="color: #6b21a8;">
+                            Odrab.
                         </div>
                     </div>
                 </div>
@@ -430,7 +438,15 @@
                         @foreach($users as $user)
                         <tr>
                             <td class="px-4 py-2 align-top">
+                                <div class="flex items-center gap-2">
                                 <div class="font-semibold">{{ $user['name'] }}</div>
+                                    @if($attendances[$user['id']]['is_odrabianie'] ?? false)
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                        <x-heroicon-s-user-plus class="w-3 h-3 mr-1" />
+                                        Odrabianie
+                                    </span>
+                                    @endif
+                                </div>
                                 <div class="text-xs text-gray-500 flex items-center gap-1">
                                     <x-heroicon-o-envelope class="w-3 h-3" />
                                     {{ $user['email'] }}
@@ -470,7 +486,15 @@
                 @foreach($users as $user)
                 <div
                     class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1 shadow">
+                    <div class="flex items-center gap-2">
                     <div class="font-semibold">{{ $user['name'] }}</div>
+                        @if($attendances[$user['id']]['is_odrabianie'] ?? false)
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                            <x-heroicon-s-user-plus class="w-3 h-3 mr-1" />
+                            Odrabianie
+                        </span>
+                        @endif
+                    </div>
                     <div class="text-xs text-gray-500 flex items-center gap-1">
                         <x-heroicon-o-envelope class="w-3 h-3" />
                         {{ $user['email'] }}

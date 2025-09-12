@@ -112,12 +112,32 @@ class AttendanceGroupPage extends Page
         }
 
         // Pobierz użytkowników przypiętych do grupy przez pivot members()
-        $this->users = $group->members()
+        $groupUsers = $group->members()
             ->select('users.id as user_id', 'users.name', 'users.email', 'users.phone')
             ->orderBy('users.name')
             ->get()
-            ->map(fn ($u) => ['id' => $u->user_id, 'name' => $u->name, 'email' => $u->email, 'phone' => $u->phone])
+            ->map(fn ($u) => ['id' => $u->user_id, 'name' => $u->name, 'email' => $u->email, 'phone' => $u->phone, 'is_group_member' => true])
             ->toArray();
+
+        // Pobierz użytkowników z poza grupy (odrabianie) dla tej daty i grupy
+        $externalUsers = Attendance::where('group_id', $this->group_id)
+            ->where('date', $this->date)
+            ->whereNotNull('note')
+            ->where('note', '!=', '')
+            ->with('user:id,name,email,phone')
+            ->get()
+            ->map(fn ($attendance) => [
+                'id' => $attendance->user_id,
+                'name' => $attendance->user->name,
+                'email' => $attendance->user->email,
+                'phone' => $attendance->user->phone,
+                'is_group_member' => false,
+                'is_odrabianie' => true
+            ])
+            ->toArray();
+
+        // Połącz użytkowników z grupy i odrabiających
+        $this->users = array_merge($groupUsers, $externalUsers);
 
         // Pobierz obecności dla wybranej grupy i daty
         $attendances = Attendance::where('group_id', $this->group_id)
@@ -132,6 +152,7 @@ class AttendanceGroupPage extends Page
             $this->attendances[$user['id']] = [
                 'present' => $attendance ? $attendance->present : false,
                 'note' => $attendance ? $attendance->note : '',
+                'is_odrabianie' => $user['is_odrabianie'] ?? false,
             ];
         }
     }
@@ -214,11 +235,12 @@ class AttendanceGroupPage extends Page
     public function getAttendanceStats()
     {
         if (empty($this->attendances)) {
-            return ['total' => 0, 'present' => 0, 'absent' => 0, 'percentage' => 0];
+            return ['total' => 0, 'present' => 0, 'absent' => 0, 'odrabianie' => 0, 'percentage' => 0];
         }
 
         $total = count($this->attendances);
         $present = collect($this->attendances)->where('present', true)->count();
+        $odrabianie = collect($this->attendances)->where('is_odrabianie', true)->count();
         $absent = $total - $present;
         $percentage = $total > 0 ? round(($present / $total) * 100, 1) : 0;
 
@@ -226,6 +248,7 @@ class AttendanceGroupPage extends Page
             'total' => $total,
             'present' => $present,
             'absent' => $absent,
+            'odrabianie' => $odrabianie,
             'percentage' => $percentage
         ];
     }
@@ -235,6 +258,23 @@ class AttendanceGroupPage extends Page
     {
         if (isset($this->attendances[$userId])) {
             $this->attendances[$userId]['present'] = !$this->attendances[$userId]['present'];
+            
+            // Jeśli osoba z poza grupy (odrabianie) została odznaczona jako nieobecna, usuń ją z listy
+            if (($this->attendances[$userId]['is_odrabianie'] ?? false) && !$this->attendances[$userId]['present']) {
+                // Usuń z listy użytkowników
+                $this->users = array_filter($this->users, function($user) use ($userId) {
+                    return $user['id'] != $userId;
+                });
+                
+                // Usuń z obecności
+                unset($this->attendances[$userId]);
+                
+                // Usuń rekord z bazy danych
+                Attendance::where('user_id', $userId)
+                    ->where('group_id', $this->group_id)
+                    ->where('date', $this->date)
+                    ->delete();
+            }
         }
     }
 
