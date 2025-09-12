@@ -109,10 +109,10 @@ class AttendanceGroupPage extends Page
 
         // Pobierz użytkowników przypiętych do grupy przez pivot members()
         $this->users = $group->members()
-            ->select('users.id as user_id', 'users.name', 'users.email')
+            ->select('users.id as user_id', 'users.name', 'users.email', 'users.phone')
             ->orderBy('users.name')
             ->get()
-            ->map(fn ($u) => ['id' => $u->user_id, 'name' => $u->name, 'email' => $u->email])
+            ->map(fn ($u) => ['id' => $u->user_id, 'name' => $u->name, 'email' => $u->email, 'phone' => $u->phone])
             ->toArray();
 
         // Pobierz obecności dla wybranej grupy i daty

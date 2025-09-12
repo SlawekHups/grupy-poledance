@@ -382,7 +382,16 @@
                         <tr>
                             <td class="px-4 py-2 align-top">
                                 <div class="font-semibold">{{ $user['name'] }}</div>
-                                <div class="text-xs text-gray-500">{{ $user['email'] }}</div>
+                                <div class="text-xs text-gray-500 flex items-center gap-1">
+                                    <x-heroicon-o-envelope class="w-3 h-3" />
+                                    {{ $user['email'] }}
+                                </div>
+                                @if($user['phone'])
+                                <div class="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                    <x-heroicon-o-phone class="w-3 h-3" />
+                                    {{ $user['phone'] }}
+                                </div>
+                                @endif
                             </td>
                             <td class="px-4 py-2 align-top">
                                 <div class="flex items-center gap-3">
@@ -413,7 +422,16 @@
                 <div
                     class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1 shadow">
                     <div class="font-semibold">{{ $user['name'] }}</div>
-                    <div class="text-xs text-gray-500">{{ $user['email'] }}</div>
+                    <div class="text-xs text-gray-500 flex items-center gap-1">
+                        <x-heroicon-o-envelope class="w-3 h-3" />
+                        {{ $user['email'] }}
+                    </div>
+                    @if($user['phone'])
+                    <div class="text-xs text-gray-500 flex items-center gap-1">
+                        <x-heroicon-o-phone class="w-3 h-3" />
+                        {{ $user['phone'] }}
+                    </div>
+                    @endif
                     <div class="flex flex-col gap-3 mt-3">
                         <div class="flex items-center gap-3">
                             <div class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 {{ ($attendances[$user['id']]['present'] ?? false) ? '' : 'bg-gray-200' }}"
