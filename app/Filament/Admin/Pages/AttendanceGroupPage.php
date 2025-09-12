@@ -25,6 +25,7 @@ class AttendanceGroupPage extends Page
     public $currentGroupPage = 0;
     public $groupsPerPage = 7;
 
+
     public function mount()
     {
         $this->date = now()->toDateString();
@@ -34,6 +35,7 @@ class AttendanceGroupPage extends Page
         // Automatyczne zaznaczanie grupy na podstawie dnia tygodnia
         $this->selectGroupByDayOfWeek();
     }
+
 
     public function selectDate($date)
     {
@@ -297,7 +299,7 @@ class AttendanceGroupPage extends Page
         
         // Znajdź pierwszą aktywną grupę dla dzisiejszego dnia
         $group = \App\Models\Group::where('name', 'LIKE', $todayName . '%')
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'full'])
             ->orderBy('name')
             ->first();
             
@@ -308,16 +310,28 @@ class AttendanceGroupPage extends Page
             // Ustaw odpowiednią stronę dla tej grupy
             $this->setCurrentPageForGroup($group->id);
         } else {
-            // Jeśli nie ma grupy dla dzisiejszego dnia, wybierz pierwszą aktywną grupę
-            $firstActiveGroup = \App\Models\Group::where('status', 'active')
-                ->where('id', '!=', 1) // Wyklucz "Bez grupy"
+            // Jeśli nie ma grupy dla dzisiejszego dnia, wybierz pierwszą grupę z poniedziałku
+            $mondayGroup = \App\Models\Group::where('name', 'LIKE', 'Poniedziałek%')
+                ->whereIn('status', ['active', 'full'])
                 ->orderBy('name')
                 ->first();
                 
-            if ($firstActiveGroup) {
-                $this->group_id = $firstActiveGroup->id;
+            if ($mondayGroup) {
+                $this->group_id = $mondayGroup->id;
                 $this->loadUsers();
-                $this->setCurrentPageForGroup($firstActiveGroup->id);
+                $this->setCurrentPageForGroup($mondayGroup->id);
+            } else {
+                // Fallback: wybierz pierwszą aktywną grupę
+                $firstActiveGroup = \App\Models\Group::where('status', 'active')
+                    ->where('id', '!=', 1) // Wyklucz "Bez grupy"
+                    ->orderBy('name')
+                    ->first();
+                    
+                if ($firstActiveGroup) {
+                    $this->group_id = $firstActiveGroup->id;
+                    $this->loadUsers();
+                    $this->setCurrentPageForGroup($firstActiveGroup->id);
+                }
             }
         }
     }
@@ -356,7 +370,7 @@ class AttendanceGroupPage extends Page
         
         // Znajdź pierwszą aktywną grupę dla wybranego dnia
         $group = \App\Models\Group::where('name', 'LIKE', $dayName . '%')
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'full'])
             ->orderBy('name')
             ->first();
             
@@ -367,10 +381,22 @@ class AttendanceGroupPage extends Page
             // Ustaw odpowiednią stronę dla tej grupy
             $this->setCurrentPageForGroup($group->id);
         } else {
-            // Jeśli nie ma grupy dla tego dnia, wyczyść wybór
-            $this->group_id = '';
-            $this->users = [];
-            $this->attendances = [];
+            // Jeśli nie ma grupy dla tego dnia, wybierz pierwszą grupę z poniedziałku
+            $mondayGroup = \App\Models\Group::where('name', 'LIKE', 'Poniedziałek%')
+                ->whereIn('status', ['active', 'full'])
+                ->orderBy('name')
+                ->first();
+                
+            if ($mondayGroup) {
+                $this->group_id = $mondayGroup->id;
+                $this->loadUsers();
+                $this->setCurrentPageForGroup($mondayGroup->id);
+            } else {
+                // Fallback: wyczyść wybór
+                $this->group_id = '';
+                $this->users = [];
+                $this->attendances = [];
+            }
         }
     }
 }

@@ -62,7 +62,7 @@
                 Wybierz grupę:
             </label>
             <div class="text-xs text-gray-500 mb-4">
-                💡 Grupa jest automatycznie wybierana na podstawie dnia tygodnia
+                💡 Grupa jest automatycznie wybierana na podstawie dnia tygodnia. Jeśli nie ma grupy dla danego dnia, wybiera pierwszą grupę z poniedziałku.
             </div>
             
             @php
@@ -171,89 +171,136 @@
         <div class="md:hidden mb-6">
             <label class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 <x-heroicon-o-user-group class="inline w-4 h-4 mr-1" />
-                Grupa:
-            </label>
+                    Grupa:
+                </label>
             <select wire:model="group_id"
-                class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
-                <option value="">-- Wybierz grupę --</option>
-                @foreach(\App\Models\Group::orderBy('name')->get() as $group)
+                    class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold">
+                    <option value="">-- Wybierz grupę --</option>
+                    @foreach(\App\Models\Group::orderBy('name')->get() as $group)
                     <option value="{{ $group->id }}">{{ $group->name }} 
                         @if($group->status === 'full') (Pełna)
                         @elseif($group->status === 'inactive') (Nieaktywna)
                         @else ({{ $group->members()->count() }}/{{ $group->max_size }})
                         @endif
                     </option>
-                @endforeach
-            </select>
-        </div>
+                    @endforeach
+                </select>
+            </div>
 
         @if(!empty($users))
         @php($stats = $this->getAttendanceStats())
         
+        <!-- Opis i odstęp -->
+        <div class="mb-8">
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <x-heroicon-o-information-circle class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <div class="text-sm text-blue-800 dark:text-blue-200">
+                        <p class="font-medium mb-1">💡 Jak zaznaczać obecność:</p>
+                        <ul class="space-y-1 text-xs">
+                            <li>• <strong>Przełącznik pomarańczowy</strong> - kliknij aby zmienić status obecności</li>
+                            <li>• <strong>Zaznacz wszystkich</strong> - zaznacza wszystkich użytkowników jako obecnych</li>
+                            <li>• <strong>Odznacz wszystkich</strong> - odznacza wszystkich użytkowników</li>
+                            <li>• <strong>Odwróć zaznaczenie</strong> - odwraca obecny stan zaznaczenia</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Statystyki obecności -->
-        <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4"
-             wire:key="attendance-stats-{{ md5(serialize($attendances)) }}">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+             wire:key="attendance-stats-{{ md5(serialize($attendances)) }}"
+             wire:poll.1s="getAttendanceStats">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <!-- Statystyki -->
-                <div class="flex flex-wrap gap-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Obecni: <span class="font-bold text-green-600">{{ $stats['present'] }}</span>
-                        </span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                    <!-- Obecni -->
+                    <div class="text-center rounded-xl p-4 border-2" 
+                         style="background-color: #f0fdf4; border-color: #22c55e;">
+                        <div class="text-4xl font-black mb-2" style="color: #16a34a;" data-present="{{ $stats['present'] }}">
+                            {{ $stats['present'] }}
+                        </div>
+                        <div class="text-sm font-semibold uppercase tracking-wide" style="color: #15803d;">
+                            <x-heroicon-s-check-circle class="inline w-4 h-4 mr-1" />
+                            Obecni
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Nieobecni: <span class="font-bold text-red-600">{{ $stats['absent'] }}</span>
-                        </span>
+                    
+                    <!-- Nieobecni -->
+                    <div class="text-center rounded-xl p-4 border-2" 
+                         style="background-color: #fef2f2; border-color: #ef4444;">
+                        <div class="text-4xl font-black mb-2" style="color: #dc2626;" data-absent="{{ $stats['absent'] }}">
+                            {{ $stats['absent'] }}
+                        </div>
+                        <div class="text-sm font-semibold uppercase tracking-wide" style="color: #b91c1c;">
+                            <x-heroicon-s-x-circle class="inline w-4 h-4 mr-1" />
+                            Nieobecni
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Frekwencja: <span class="font-bold text-blue-600">{{ $stats['percentage'] }}%</span>
-                        </span>
+                    
+                    <!-- Frekwencja -->
+                    <div class="text-center rounded-xl p-4 border-2" 
+                         style="background-color: #eff6ff; border-color: #3b82f6;">
+                        <div class="text-4xl font-black mb-2" style="color: #2563eb;">
+                            {{ number_format($stats['percentage'], 1) }}%
+                        </div>
+                        <div class="text-sm font-semibold uppercase tracking-wide" style="color: #1d4ed8;">
+                            <x-heroicon-s-chart-pie class="inline w-4 h-4 mr-1" />
+                            Frekwencja
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Bulk Actions -->
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-2 lg:flex-col">
                     <button type="button" wire:click="selectAll"
-                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 transition-colors">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                         Zaznacz wszystkich
                     </button>
                     <button type="button" wire:click="deselectAll"
-                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 transition-colors">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                         Odznacz wszystkich
                     </button>
                     <button type="button" wire:click="toggleAll"
-                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 transition-colors">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 focus:ring-2 focus:ring-gray-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                         Odwróć zaznaczenie
-                    </button>
+                </button>
                 </div>
             </div>
             
             <!-- Progress bar -->
-            <div class="mt-4">
-                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    <span>Frekwencja</span>
-                    <span>{{ $stats['percentage'] }}%</span>
+            <div class="mt-6">
+                <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <span class="font-medium">Postęp frekwencji</span>
+                    <span class="font-bold text-lg">{{ number_format($stats['percentage'], 1) }}%</span>
                 </div>
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-300" 
-                         style="width: {{ $stats['percentage'] }}%"></div>
-                </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
+                            <div class="h-4 rounded-full transition-all duration-500 ease-out shadow-sm" 
+                                 style="width: {{ $stats['percentage'] }}%; 
+                                        @if($stats['percentage'] >= 75)
+                                            background-color: #22c55e;
+                                        @elseif($stats['percentage'] >= 60)
+                                            background-color: #eab308;
+                                        @elseif($stats['percentage'] >= 30)
+                                            background-color: #f59e0b;
+                                        @else
+                                            background-color: #ef4444;
+                                        @endif">
+                            </div>
+                        </div>
             </div>
         </div>
-        
+
         <!-- Tabela desktop, karty mobile -->
         <div class="filament-card p-4 shadow rounded-lg">
             <!-- Desktop tabela -->
