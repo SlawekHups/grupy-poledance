@@ -521,11 +521,11 @@
 
     <!-- Modal do dodawania użytkownika spoza grupy -->
     @if($showExternalUserModal)
-    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border-2 border-purple-300 dark:border-purple-600">
                 <form wire:submit.prevent="addExternalUserAttendance">
                     <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
@@ -538,17 +538,15 @@
                                 </h3>
                                 <div class="mt-4 space-y-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">
+                                            <x-heroicon-o-magnifying-glass class="inline w-4 h-4 mr-1" />
                                             Wyszukaj użytkownika
                                         </label>
-                                        <div class="relative">
+                                        <div>
                                             <input type="text" 
                                                    wire:model.live="externalUserSearch"
                                                    placeholder="Wpisz nazwę, email lub telefon..."
-                                                   class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 pl-10">
-                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <x-heroicon-o-magnifying-glass class="h-5 w-5 text-gray-400" />
-                                            </div>
+                                                   class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 px-4 py-2">
                                         </div>
                                         
                                         <!-- Lista wyników wyszukiwania -->
@@ -636,15 +634,21 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit"
-                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Dodaj obecność
-                        </button>
-                        <button type="button" wire:click="closeExternalUserModal"
-                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Anuluj
-                        </button>
+                    <div class="bg-gray-50 dark:bg-gray-700 px-4 py-4 sm:px-6">
+                        <div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                            <button type="button" wire:click="closeExternalUserModal"
+                                    style="background-color: #6b7280 !important; color: white !important;"
+                                    class="w-full sm:w-auto inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 text-sm font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
+                                <x-heroicon-o-x-mark class="w-4 h-4 mr-2" />
+                                Anuluj
+                            </button>
+                            <button type="submit"
+                                    style="background-color: #9333ea !important; color: white !important;"
+                                    class="w-full sm:w-auto inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 text-sm font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200">
+                                <x-heroicon-o-check class="w-4 h-4 mr-2" />
+                                Dodaj obecność
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
