@@ -207,7 +207,7 @@
         </div>
 
         <!-- Mobile layout - Ulepszony dropdown -->
-        <div class="md:hidden mb-6">
+        <div class="md:hidden mb-8">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                 <label class="block text-sm !font-semibold text-gray-700 dark:text-gray-200 mb-2">
                     <x-heroicon-o-user-group class="inline w-4 h-4 mr-1" />
@@ -279,8 +279,8 @@
         @endphp
         
         <!-- Opis i odstęp -->
-        <div class="mb-8">
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <div class="mb-12 md:mb-16" style="margin-top: 2rem !important; margin-bottom: 3rem !important;">
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-8 md:mb-12" style="margin-bottom: 2rem !important; padding: 1rem !important;">
                 <div class="flex items-start">
                     <x-heroicon-o-information-circle class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
                     <div class="text-sm text-blue-800 dark:text-blue-200">
@@ -297,7 +297,7 @@
         </div>
         
         <!-- Statystyki obecności -->
-        <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-2"
+        <div class="mb-12 md:mb-16 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6" style="margin-bottom: 3rem !important; padding: 1.5rem !important;"
              wire:key="attendance-stats-{{ md5(serialize($attendances)) }}"
              wire:poll.1s="getAttendanceStats">
             <div class="flex flex-col gap-4">
@@ -374,7 +374,7 @@
         </div>
 
         <!-- Bulk Actions -->
-        <div class="my-16">
+        <div class="my-12 md:my-24" style="margin: 3rem 0 4rem 0 !important;">
             <!-- Desktop - przyciski w jednej linii -->
             <div class="hidden md:flex flex-wrap gap-3 justify-center">
                 <button type="button" wire:click="selectAll"
@@ -445,21 +445,21 @@
         </div>
 
         <!-- Tabela desktop, karty mobile -->
-        <div class="filament-card p-4 shadow rounded-lg">
+        <div class="filament-card p-6 md:p-8 shadow rounded-lg mt-8 md:mt-12" style="margin-top: 3rem !important; padding: 2rem !important;">
             <!-- Desktop tabela -->
             <div class="hidden md:block">
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead>
                         <tr>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">Użytkownik</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">Obecny</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">Notatka</th>
+                            <th class="px-6 py-4 md:px-8 md:py-6 text-left font-semibold text-gray-900 dark:text-gray-100" style="padding: 1rem 1.5rem !important;">Użytkownik</th>
+                            <th class="px-6 py-4 md:px-8 md:py-6 text-left font-semibold text-gray-900 dark:text-gray-100" style="padding: 1rem 1.5rem !important;">Obecny</th>
+                            <th class="px-6 py-4 md:px-8 md:py-6 text-left font-semibold text-gray-900 dark:text-gray-100" style="padding: 1rem 1.5rem !important;">Notatka</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach($users as $user)
-                        <tr>
-                            <td class="px-4 py-2 align-top">
+                        <tr class="py-4 md:py-6" style="padding: 1rem 0 !important;">
+                            <td class="px-6 py-4 md:px-8 md:py-6 align-top" style="padding: 1rem 1.5rem !important;">
                                 <div class="flex items-center gap-2">
                                 <div class="font-semibold text-gray-900 dark:text-gray-100">{{ $user['name'] }}</div>
                                     @if($attendances[$user['id']]['is_odrabianie'] ?? false)
@@ -480,7 +480,7 @@
                                 </div>
                                 @endif
                             </td>
-                            <td class="px-4 py-2 align-top">
+                            <td class="px-6 py-4 md:px-8 md:py-6 align-top" style="padding: 1rem 1.5rem !important;">
                                 <div class="flex items-center gap-3">
                                     <div class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 {{ ($attendances[$user['id']]['present'] ?? false) ? '' : 'bg-gray-200' }}"
                                          style="{{ ($attendances[$user['id']]['present'] ?? false) ? 'background-color: #ea580c;' : '' }}"
@@ -494,7 +494,7 @@
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-4 py-2 align-top">
+                            <td class="px-6 py-4 md:px-8 md:py-6 align-top" style="padding: 1rem 1.5rem !important;">
                                 <input type="text" wire:model="attendances.{{ $user['id'] }}.note" placeholder="Notatka"
                                     class="filament-forms-input w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600" />
                             </td>
@@ -504,10 +504,10 @@
                 </table>
             </div>
             <!-- Mobile karty -->
-            <div class="md:hidden flex flex-col gap-4">
+            <div class="md:hidden flex flex-col gap-6" style="gap: 1.5rem !important;">
                 @foreach($users as $user)
                 <div
-                    class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1 shadow">
+                    class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-2 shadow" style="padding: 1rem !important; gap: 0.5rem !important;">
                     <div class="flex items-center gap-2">
                     <div class="font-semibold text-gray-900 dark:text-gray-100">{{ $user['name'] }}</div>
                         @if($attendances[$user['id']]['is_odrabianie'] ?? false)
