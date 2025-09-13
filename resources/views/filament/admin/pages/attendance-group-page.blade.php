@@ -12,7 +12,7 @@
                         Dziś: {{ \Carbon\Carbon::now()->translatedFormat('d.m.Y') }}
                     </span>
                     <button type="button" wire:click="selectDate('{{ \Carbon\Carbon::now()->toDateString() }}')"
-                        class="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-700 dark:text-green-300 rounded-lg transition-colors">
+                        class="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-900 dark:text-green-100 rounded-lg transition-colors">
                         Przejdź do dziś
                     </button>
                 </div>
@@ -25,15 +25,15 @@
                 </h3>
                 <div class="flex gap-2">
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['previous'] }}')"
-                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg transition-colors">
                         ← Poprzedni
                     </button>
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['current'] }}')"
-                        class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-lg transition-colors">
+                        class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-100 rounded-lg transition-colors">
                         Ten tydzień
                     </button>
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['next'] }}')"
-                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg transition-colors">
                         Następny →
                     </button>
                 </div>
@@ -46,15 +46,15 @@
                 </h3>
                 <div class="flex gap-2 justify-center">
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['previous'] }}')"
-                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg transition-colors">
                         ← Poprzedni
                     </button>
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['current'] }}')"
-                        class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-lg transition-colors">
+                        class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-900 dark:text-blue-100 rounded-lg transition-colors">
                         Ten tydzień
                     </button>
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['next'] }}')"
-                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg transition-colors">
                         Następny →
                     </button>
                 </div>
@@ -70,11 +70,11 @@
                     @elseif($day['is_today'])
                         class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 w-full flex flex-col items-center justify-center text-center"
                     @else
-                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 w-full flex flex-col items-center justify-center text-center"
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 w-full flex flex-col items-center justify-center text-center"
                     @endif>
-                    <div class="text-xs font-medium opacity-75">{{ $day['day_name'] }}</div>
-                    <div class="text-lg font-bold">{{ $day['day_number'] }}</div>
-                    <div class="text-xs font-medium opacity-60">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('M') }}</div>
+                    <div class="text-xs font-medium text-gray-700 dark:text-gray-200">{{ $day['day_name'] }}</div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ $day['day_number'] }}</div>
+                    <div class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('M') }}</div>
                 </button>
                 @endforeach
             </div>
@@ -155,7 +155,7 @@
                             style="background-color: #10b981; color: white; border-color: #10b981; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);"
                             class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md"
                         @else
-                            class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 {{ $group->status === 'inactive' ? 'opacity-60' : '' }}"
+                            class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 {{ $group->status === 'inactive' ? 'opacity-60' : '' }}"
                         @endif>
                         
                         <!-- Status indicator -->
@@ -172,10 +172,10 @@
                         </div>
                         
                         <!-- Nazwa grupy -->
-                        <div class="text-xs font-medium opacity-90 truncate mb-1">{{ $group->name }}</div>
+                        <div class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate mb-1">{{ $group->name }}</div>
                         
                         <!-- Liczba uczestników -->
-                        <div class="text-xs opacity-75 mb-1">
+                        <div class="text-xs text-gray-700 dark:text-gray-300 mb-1">
                             <span class="inline-flex items-center">
                                 <x-heroicon-o-users class="w-3 h-3 mr-1" />
                                 {{ $membersCount }}/{{ $maxSize }}
@@ -184,15 +184,15 @@
                         
                         <!-- Wolne miejsca -->
                         @if($freeSpots > 0 && $group->status === 'active')
-                            <div class="text-xs font-medium opacity-90">
+                            <div class="text-xs font-medium text-green-700 dark:text-green-300">
                                 {{ $freeSpots }} wolnych
                             </div>
                         @elseif($group->status === 'full')
-                            <div class="text-xs font-medium opacity-90">
+                            <div class="text-xs font-medium text-red-700 dark:text-red-300">
                                 Pełna
                             </div>
                         @elseif($group->status === 'inactive')
-                            <div class="text-xs font-medium opacity-90">
+                            <div class="text-xs font-medium text-gray-600 dark:text-gray-400">
                                 Nieaktywna
                             </div>
                         @endif
@@ -451,9 +451,9 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead>
                         <tr>
-                            <th class="px-4 py-2 text-left font-semibold">Użytkownik</th>
-                            <th class="px-4 py-2 text-left font-semibold">Obecny</th>
-                            <th class="px-4 py-2 text-left font-semibold">Notatka</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">Użytkownik</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">Obecny</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-900 dark:text-gray-100">Notatka</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -461,7 +461,7 @@
                         <tr>
                             <td class="px-4 py-2 align-top">
                                 <div class="flex items-center gap-2">
-                                <div class="font-semibold">{{ $user['name'] }}</div>
+                                <div class="font-semibold text-gray-900 dark:text-gray-100">{{ $user['name'] }}</div>
                                     @if($attendances[$user['id']]['is_odrabianie'] ?? false)
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                                         <x-heroicon-s-user-plus class="w-3 h-3 mr-1" />
@@ -469,12 +469,12 @@
                                     </span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-gray-500 flex items-center gap-1">
+                                <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
                                     <x-heroicon-o-envelope class="w-3 h-3" />
                                     {{ $user['email'] }}
                                 </div>
                                 @if($user['phone'])
-                                <div class="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
                                     <x-heroicon-o-phone class="w-3 h-3" />
                                     {{ $user['phone'] }}
                                 </div>
@@ -509,7 +509,7 @@
                 <div
                     class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex flex-col gap-1 shadow">
                     <div class="flex items-center gap-2">
-                    <div class="font-semibold">{{ $user['name'] }}</div>
+                    <div class="font-semibold text-gray-900 dark:text-gray-100">{{ $user['name'] }}</div>
                         @if($attendances[$user['id']]['is_odrabianie'] ?? false)
                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                             <x-heroicon-s-user-plus class="w-3 h-3 mr-1" />
@@ -517,12 +517,12 @@
                         </span>
                         @endif
                     </div>
-                    <div class="text-xs text-gray-500 flex items-center gap-1">
+                    <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
                         <x-heroicon-o-envelope class="w-3 h-3" />
                         {{ $user['email'] }}
                     </div>
                     @if($user['phone'])
-                    <div class="text-xs text-gray-500 flex items-center gap-1">
+                    <div class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
                         <x-heroicon-o-phone class="w-3 h-3" />
                         {{ $user['phone'] }}
                     </div>
@@ -557,8 +557,7 @@
         </div>
         @elseif($group_id)
         <div class="w-full flex mt-12 mb-6">
-            <div class="mx-auto w-full md:w-2/3 lg:w-1/2 text-center font-semibold"
-                style="color: #dc2626; background-color: #fff1f2; border-left: 4px solid #dc2626; padding: 1.25em; border-radius: 0.75em; box-shadow: 0 2px 8px 0 #0000000a; margin: 20px;">
+            <div class="mx-auto w-full md:w-2/3 lg:w-1/2 text-center font-semibold text-red-800 dark:text-red-200 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-400 p-5 rounded-lg shadow-sm">
                 Brak użytkowników w wybranej grupie.
             </div>
         </div>
