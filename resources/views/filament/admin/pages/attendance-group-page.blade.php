@@ -18,11 +18,33 @@
                 </div>
             </div>
             
-            <div class="flex items-center justify-between mb-4">
+            <!-- Desktop layout - nagłówek i przyciski w jednej linii -->
+            <div class="hidden md:flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     Wybierz dzień tygodnia
                 </h3>
                 <div class="flex gap-2">
+                    <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['previous'] }}')"
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        ← Poprzedni
+                    </button>
+                    <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['current'] }}')"
+                        class="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-lg transition-colors">
+                        Ten tydzień
+                    </button>
+                    <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['next'] }}')"
+                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
+                        Następny →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile layout - nagłówek i przyciski w osobnych liniach -->
+            <div class="md:hidden mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 text-center">
+                    Wybierz dzień tygodnia
+                </h3>
+                <div class="flex gap-2 justify-center">
                     <button type="button" wire:click="selectWeek('{{ $this->getWeekNavigation()['previous'] }}')"
                         class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors">
                         ← Poprzedni
@@ -44,11 +66,11 @@
                     wire:click="selectDate('{{ $day['date'] }}')"
                     @if($day['is_selected'])
                         style="background-color: #10b981; color: white; border-color: #10b981; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);"
-                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md"
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md w-full flex flex-col items-center justify-center text-center"
                     @elseif($day['is_today'])
-                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 w-full flex flex-col items-center justify-center text-center"
                     @else
-                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        class="p-3 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 w-full flex flex-col items-center justify-center text-center"
                     @endif>
                     <div class="text-xs font-medium opacity-75">{{ $day['day_name'] }}</div>
                     <div class="text-lg font-bold">{{ $day['day_number'] }}</div>
@@ -198,7 +220,7 @@
                 </div>
                 
                 <!-- Dropdown z grupami -->
-                <select wire:model="group_id"
+                <select wire:model.live="group_id" 
                         class="filament-forms-select w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 font-semibold text-sm">
                     <option value="">-- Wybierz grupę --</option>
                     @foreach(\App\Models\Group::orderBy('name')->get() as $group)

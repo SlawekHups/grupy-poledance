@@ -28,6 +28,7 @@ class AttendanceGroupPage extends Page
     public $externalUserId = '';
     public $externalUserNote = 'Odrabianie';
     public $externalUserSearch = '';
+    public $manualGroupSelection = false; // Czy grupa została wybrana ręcznie
 
 
     public function mount()
@@ -46,13 +47,19 @@ class AttendanceGroupPage extends Page
         $this->date = $date;
         $this->selectedDate = $date;
         
-        // Automatycznie zaznacz grupę dla wybranej daty
-        $this->selectGroupByDate($date);
+        // Automatycznie zaznacz grupę dla wybranej daty tylko jeśli nie została wybrana ręcznie
+        if (!$this->manualGroupSelection) {
+            $this->selectGroupByDate($date);
+        } else {
+            // Jeśli grupa została wybrana ręcznie, tylko załaduj użytkowników
+            $this->loadUsers();
+        }
     }
 
     public function selectWeek($weekStart)
     {
         $this->currentWeekStart = $weekStart;
+        $this->manualGroupSelection = false; // Resetuj flagę ręcznego wyboru przy zmianie tygodnia
     }
 
     public function getWeekDays()
@@ -87,6 +94,7 @@ class AttendanceGroupPage extends Page
 
     public function updatedGroupId()
     {
+        $this->manualGroupSelection = true; // Oznacz że grupa została wybrana ręcznie
         $this->loadUsers();
     }
     public function updatedDate()
