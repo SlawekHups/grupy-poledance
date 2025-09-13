@@ -9,3 +9,75 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Custom styles dla Filament - wymuś odstępy */
+.fi-section {
+    margin-bottom: 3rem !important;
+}
+
+.fi-section-content {
+    margin-bottom: 2rem !important;
+}
+
+.fi-card {
+    margin-bottom: 2rem !important;
+    padding: 1.5rem !important;
+}
+
+.fi-table {
+    margin-top: 2rem !important;
+}
+
+.fi-table th,
+.fi-table td {
+    padding: 1rem 1.5rem !important;
+}
+
+.fi-table tbody tr {
+    padding: 1rem 0 !important;
+}
+
+/* Custom spacing utilities */
+.spacing-section {
+    margin: 3rem 0 !important;
+}
+
+.spacing-card {
+    margin: 2rem 0 !important;
+    padding: 1.5rem !important;
+}
+
+.spacing-table {
+    margin: 2rem 0 !important;
+}
+
+.spacing-table-cell {
+    padding: 1rem 1.5rem !important;
+}
+
+/* Dark mode fixes */
+.dark .fi-card {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .fi-table th,
+.dark .fi-table td {
+    color: #f9fafb !important;
+}
+
+/* Mobile spacing */
+@media (max-width: 768px) {
+    .fi-section {
+        margin-bottom: 2rem !important;
+    }
+    
+    .fi-card {
+        padding: 1rem !important;
+    }
+    
+    .fi-table th,
+    .fi-table td {
+        padding: 0.75rem 1rem !important;
+    }
+}
