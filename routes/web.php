@@ -5,10 +5,35 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SetPasswordController;
 use App\Http\Controllers\PreRegistrationController;
 use App\Models\User;
+use App\Models\File;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Route do pobierania plików publicznych z oryginalną nazwą
+Route::get('/admin-files/{path}', function ($path) {
+    // Znajdź plik po ścieżce
+    $file = File::where('path', 'uploads/' . $path)->first();
+    
+    if (!$file) {
+        abort(404, 'Plik nie został znaleziony');
+    }
+    
+    // Sprawdź czy plik jest publiczny
+    if (!$file->is_public) {
+        abort(403, 'Plik nie jest publiczny');
+    }
+    
+    $filePath = Storage::disk('admin_files')->path($file->path);
+    
+    if (!file_exists($filePath)) {
+        abort(404, 'Plik nie istnieje na dysku');
+    }
+    
+    return response()->download($filePath, $file->original_name);
+})->where('path', '.*')->name('admin-files.download');
 
 // Trasy dla ustawiania hasła
 Route::get('/set-password/{token}', [SetPasswordController::class, 'showSetPasswordForm'])
