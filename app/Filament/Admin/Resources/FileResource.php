@@ -9,8 +9,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Builder;
 
 class FileResource extends Resource
 {
@@ -39,42 +39,50 @@ class FileResource extends Resource
                     ->disk('admin_files')
                     ->directory('uploads')
                     ->visibility('public')
-                    ->live()
-                    ->storeFileNamesIn('original_name')
-                    ->helperText(fn ($record) => $record ? 'Zostaw puste aby zachować obecny plik' : 'Wybierz plik do przesłania')
+                    ->preserveFilenames() // PROFESJONALNE: zachowaj oryginalne nazwy plików
+                    ->helperText(fn ($record) => $record ? 'Kliknij "Wybierz plik" aby zastąpić obecny plik' : 'Wybierz plik do przesłania')
                     ->afterStateUpdated(function ($state, $set, $get) {
                         \Log::info('=== File upload afterStateUpdated ===', [
-                            'state' => $state,
-                            'original_name' => $get('original_name'),
-                            'file_exists' => $state ? file_exists(storage_path('app/admin-files/' . $state)) : false
+                            'state' => $state
                         ]);
                         
-                        if ($state && $get('original_name')) {
-                            // Ustaw nazwę pliku tylko jeśli pole jest puste
-                            $currentName = $get('name');
-                            if (empty($currentName)) {
-                                $set('name', $get('original_name'));
-                                \Log::info('Setting name from original (field was empty):', ['name' => $get('original_name')]);
-                            } else {
-                                \Log::info('Keeping user-provided name:', ['name' => $currentName]);
-                            }
+                        if ($state) {
+                            // Tylko ustaw nazwy - metadata zostanie ustawiona w mutateFormDataBeforeSave
+                            $originalName = basename($state);
+                            $set('original_name', $originalName);
                             
-                            // Ustaw MIME type i rozmiar
-                            $filePath = storage_path('app/admin-files/' . $state);
-                            if (file_exists($filePath)) {
-                                $mimeType = mime_content_type($filePath);
-                                $set('mime_type', $mimeType);
-                                
-                                $fileSize = filesize($filePath);
-                                $set('size', $fileSize);
-                                
-                                \Log::info('File metadata set:', [
-                                    'mime_type' => $mimeType,
-                                    'size' => $fileSize
-                                ]);
-                            }
+                            $fileName = pathinfo($originalName, PATHINFO_FILENAME);
+                            $set('name', $fileName);
+                            
+                            \Log::info('Set names from uploaded file:', [
+                                'original_name' => $originalName,
+                                'name' => $fileName
+                            ]);
                         }
                     }),
+
+
+                // Informacja o obecnym pliku (tylko przy edycji)
+                Forms\Components\Placeholder::make('current_file_info')
+                    ->label('Obecny plik')
+                    ->content(function ($record) {
+                        if ($record && $record->path) {
+                            return new \Illuminate\Support\HtmlString(
+                                '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' .
+                                '<div class="flex items-center">' .
+                                '<svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">' .
+                                '<path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>' .
+                                '</svg>' .
+                                '<span class="text-blue-800 font-medium">' . $record->original_name . '</span>' .
+                                '</div>' .
+                                '<p class="text-blue-600 text-sm mt-1">Aby wgrać nowy plik, wybierz plik powyżej. Zostaniesz poproszony o potwierdzenie zamiany.</p>' .
+                                '</div>'
+                            );
+                        }
+                        return null;
+                    })
+                    ->visible(fn ($record) => $record !== null && $record->path),
+
 
                 // Podgląd obrazka dla plików graficznych
                 Forms\Components\Placeholder::make('image_preview')
@@ -108,26 +116,13 @@ class FileResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label('Nazwa pliku')
                     ->maxLength(255)
-                    ->live()
                     ->placeholder('Wpisz swoją nazwę lub zostaw puste dla automatycznej nazwy pliku')
-                    ->helperText('Zostaw puste aby użyć oryginalnej nazwy pliku, lub wpisz swoją nazwę.')
-                    ->afterStateUpdated(function ($state, $set, $get) {
-                        \Log::info('Name field updated:', ['name' => $state]);
-                    }),
+                    ->helperText('Zostaw puste aby użyć oryginalnej nazwy pliku, lub wpisz swoją nazwę.'),
 
                 Forms\Components\TextInput::make('original_name')
                     ->label('Oryginalna nazwa')
                     ->disabled()
-                    ->dehydrated(true)
-                    ->live()
-                    ->afterStateUpdated(function ($state, $set, $get) {
-                        if ($state) {
-                            \Log::info('Original name updated:', ['original_name' => $state]);
-                            $fileName = pathinfo($state, PATHINFO_FILENAME);
-                            \Log::info('Setting name field:', ['fileName' => $fileName]);
-                            $set('name', $fileName);
-                        }
-                    }),
+                    ->dehydrated(true),
 
                 Forms\Components\TextInput::make('mime_type')
                     ->label('Typ MIME')

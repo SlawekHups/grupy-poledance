@@ -27,19 +27,17 @@ class CreateFile extends CreateRecord
         // Plik domyślnie prywatny - użytkownik może zmienić w formularzu
         // $data['is_public'] = false; // domyślnie false
         
-        // Ustaw ścieżkę pliku
+        // PROFESJONALNE: Ustaw ścieżkę pliku i nazwy
         if (isset($data['file'])) {
             $data['path'] = $data['file'];
+            
+            // Ustaw original_name z nowego pliku
+            $data['original_name'] = basename($data['file']);
+            
+            // Ustaw name z original_name (bez rozszerzenia)
+            $data['name'] = pathinfo($data['original_name'], PATHINFO_FILENAME);
+            
             unset($data['file']);
-        }
-
-        // Ustaw domyślną nazwę jeśli użytkownik zostawił puste pole
-        if (empty($data['name']) && !empty($data['original_name'])) {
-            \Log::info('User left name empty, setting from original_name:', [
-                'original_name' => $data['original_name'],
-                'current_name' => $data['name'] ?? 'EMPTY'
-            ]);
-            $data['name'] = $data['original_name'];
         }
         
         // Walidacja - upewnij się że nazwa nie jest pusta
@@ -47,20 +45,10 @@ class CreateFile extends CreateRecord
             throw new \Exception('Nazwa pliku jest wymagana. Zostaw puste pole aby użyć oryginalnej nazwy pliku.');
         }
         
-        // Upewnij się, że original_name jest ustawione
-        if (empty($data['original_name']) && !empty($data['name'])) {
-            $data['original_name'] = $data['name'];
-        }
-        
         \Log::info('Final name and original_name:', [
             'name' => $data['name'] ?? 'NOT SET',
             'original_name' => $data['original_name'] ?? 'NOT SET'
         ]);
-
-        // Upewnij się, że original_name jest ustawione
-        if (empty($data['original_name']) && !empty($data['name'])) {
-            $data['original_name'] = $data['name'];
-        }
 
         // Upewnij się, że mime_type jest ustawione
         if (empty($data['mime_type'])) {

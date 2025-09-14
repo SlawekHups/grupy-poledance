@@ -47,9 +47,8 @@ class File extends Model
         // Usuń 'uploads/' z początku ścieżki dla URL
         $urlPath = str_replace('uploads/', '', $path);
         
-        // Wymuś HTTPS dla URL
-        $url = url('admin-files/' . $urlPath);
-        return str_replace('http://', 'https://', $url);
+        // Użyj secure_url() aby wymusić HTTPS
+        return secure_url('admin-files/' . $urlPath);
     }
 
     /**
@@ -66,9 +65,8 @@ class File extends Model
         // Usuń 'uploads/' z początku ścieżki dla URL
         $urlPath = str_replace('uploads/', '', $path);
         
-        // Wymuś HTTPS dla URL
-        $url = url('admin-files/thumbnails/' . $urlPath);
-        return str_replace('http://', 'https://', $url);
+        // Użyj secure_url() aby wymusić HTTPS
+        return secure_url('admin-files/thumbnails/' . $urlPath);
     }
 
     /**
