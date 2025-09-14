@@ -62,26 +62,6 @@ class FileResource extends Resource
                     }),
 
 
-                // Informacja o obecnym pliku (tylko przy edycji)
-                Forms\Components\Placeholder::make('current_file_info')
-                    ->label('Obecny plik')
-                    ->content(function ($record) {
-                        if ($record && $record->path) {
-                            return new \Illuminate\Support\HtmlString(
-                                '<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">' .
-                                '<div class="flex items-center">' .
-                                '<svg class="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">' .
-                                '<path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>' .
-                                '</svg>' .
-                                '<span class="text-blue-800 font-medium">' . $record->original_name . '</span>' .
-                                '</div>' .
-                                '<p class="text-blue-600 text-sm mt-1">Aby wgrać nowy plik, wybierz plik powyżej. Zostaniesz poproszony o potwierdzenie zamiany.</p>' .
-                                '</div>'
-                            );
-                        }
-                        return null;
-                    })
-                    ->visible(fn ($record) => $record !== null && $record->path),
 
 
                 // Podgląd obrazka dla plików graficznych
@@ -92,25 +72,81 @@ class FileResource extends Resource
                             return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak podglądu</p>');
                         }
                         
-                        // Sprawdź czy to obrazek
-                        if (strpos($record->mime_type, 'image/') !== 0) {
-                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Podgląd dostępny tylko dla obrazków</p>');
+                        // Sprawdź czy to obrazek - pokaż oryginalny obraz
+                        if (strpos($record->mime_type, 'image/') === 0) {
+                            $imageUrl = $record->thumbnail_url;
+                            
+                            return new \Illuminate\Support\HtmlString(
+                                '<div class="mt-2">' .
+                                '<img src="' . $imageUrl . '" alt="Podgląd" class="max-w-xs max-h-48 object-contain border border-gray-300 rounded-lg shadow-sm" style="max-width: 300px; max-height: 192px;" />' .
+                                '<p class="text-xs text-gray-500 mt-1">Typ: ' . $record->mime_type . 
+                                ($record->size ? ' | Rozmiar: ' . number_format($record->size / 1024, 1) . ' KB' : '') .
+                                '</p>' .
+                                '</div>'
+                            );
                         }
                         
-                        // Użyj URL dla miniatur (działa dla wszystkich obrazków)
-                        $imageUrl = $record->thumbnail_url;
+                        return null;
+                    })
+                    ->visible(function ($record) {
+                        return $record && $record->mime_type && $record->path && strpos($record->mime_type, 'image/') === 0;
+                    }),
+
+                // Informacje o pliku dla plików niegraficznych
+                Forms\Components\Placeholder::make('file_info')
+                    ->label('Informacje o pliku')
+                    ->content(function ($record) {
+                        if (!$record || !$record->mime_type || !$record->path) {
+                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak informacji</p>');
+                        }
+                        
+                        $extension = strtolower(pathinfo($record->original_name, PATHINFO_EXTENSION));
+                        $fileType = 'Nieznany typ';
+                        $icon = '📄';
+                        
+                        // Określ typ pliku i ikonę
+                        if ($record->mime_type === 'application/pdf' || $extension === 'pdf') {
+                            $fileType = 'PDF';
+                            $icon = '📄';
+                        } elseif (strpos($record->mime_type, 'application/msword') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.wordprocessingml') === 0 || in_array($extension, ['doc', 'docx'])) {
+                            $fileType = 'Word Document';
+                            $icon = '📝';
+                        } elseif (strpos($record->mime_type, 'application/vnd.ms-excel') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.spreadsheetml') === 0 || in_array($extension, ['xls', 'xlsx'])) {
+                            $fileType = 'Excel Spreadsheet';
+                            $icon = '📊';
+                        } elseif ($record->mime_type === 'application/zip' || $extension === 'zip') {
+                            $fileType = 'ZIP Archive';
+                            $icon = '📦';
+                        } elseif (strpos($record->mime_type, 'text/') === 0 || in_array($extension, ['txt', 'csv', 'log', 'md'])) {
+                            $fileType = 'Text File';
+                            $icon = '📄';
+                        } elseif (strpos($record->mime_type, 'application/x-sh') === 0 || $extension === 'sh') {
+                            $fileType = 'Shell Script';
+                            $icon = '⚙️';
+                        } elseif (strpos($record->mime_type, 'application/octet-stream') === 0 || $extension === 'style') {
+                            $fileType = 'Style File';
+                            $icon = '🔧';
+                        } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'])) {
+                            $fileType = 'Image';
+                            $icon = '🖼️';
+                        }
                         
                         return new \Illuminate\Support\HtmlString(
-                            '<div class="mt-2">' .
-                            '<img src="' . $imageUrl . '" alt="Podgląd" class="max-w-xs max-h-48 object-contain border border-gray-300 rounded-lg shadow-sm" style="max-width: 300px; max-height: 192px;" />' .
-                            '<p class="text-xs text-gray-500 mt-1">Typ: ' . $record->mime_type . 
-                            ($record->size ? ' | Rozmiar: ' . number_format($record->size / 1024, 1) . ' KB' : '') .
+                            '<div class="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">' .
+                            '<div class="flex items-center space-x-2">' .
+                            '<span class="text-2xl">' . $icon . '</span>' .
+                            '<div>' .
+                            '<p class="text-sm font-medium text-gray-900">' . $record->original_name . '</p>' .
+                            '<p class="text-xs text-gray-500">' . $fileType . ' • ' . $record->mime_type . 
+                            ($record->size ? ' • ' . number_format($record->size / 1024, 1) . ' KB' : '') .
                             '</p>' .
+                            '</div>' .
+                            '</div>' .
                             '</div>'
                         );
                     })
                     ->visible(function ($record) {
-                        return $record && $record->mime_type && strpos($record->mime_type, 'image/') === 0;
+                        return $record && $record->mime_type && $record->path && strpos($record->mime_type, 'image/') !== 0;
                     }),
 
                 Forms\Components\TextInput::make('name')
@@ -170,19 +206,40 @@ class FileResource extends Resource
                         if ($record->mime_type && strpos($record->mime_type, 'image/') === 0) {
                             // Dla obrazków - pokaż miniaturkę
                             $thumbnailUrl = $record->thumbnail_url;
-                            \Log::info('Generating thumbnail for file ' . $record->id . ': ' . $thumbnailUrl);
                             return new \Illuminate\Support\HtmlString(
                                 '<div style="width: 48px; height: 48px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">' .
                                 '<img src="' . $thumbnailUrl . '" alt="Podgląd" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAzNkMzMC42Mjc0IDM2IDM2IDMwLjYyNzQgMzYgMjRDMzYgMTcuMzcyNiAzMC42Mjc0IDEyIDI0IDEyQzE3LjM3MjYgMTIgMTIgMTcuMzcyNiAxMiAyNEMxMiAzMC42Mjc0IDE3LjM3MjYgMzYgMjQgMzYiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==\'" />' .
                                 '</div>'
                             );
                         } else {
-                            // Dla nie-obrazków - pokaż ikonę
+                            // Dla nie-obrazków - pokaż emoji ikonę
+                            $extension = strtolower(pathinfo($record->original_name, PATHINFO_EXTENSION));
+                            $icon = '📄'; // Default icon
+                            
+                            // Określ ikonę na podstawie typu MIME i rozszerzenia
+                            if ($record->mime_type === 'application/pdf' || $extension === 'pdf') {
+                                $icon = '📄';
+                            } elseif (strpos($record->mime_type, 'application/msword') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.wordprocessingml') === 0 || in_array($extension, ['doc', 'docx'])) {
+                                $icon = '📝';
+                            } elseif (strpos($record->mime_type, 'application/vnd.ms-excel') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.spreadsheetml') === 0 || in_array($extension, ['xls', 'xlsx'])) {
+                                $icon = '📊';
+                            } elseif ($record->mime_type === 'application/zip' || $extension === 'zip') {
+                                $icon = '📦';
+                            } elseif (strpos($record->mime_type, 'text/') === 0 || in_array($extension, ['txt', 'csv', 'log', 'md'])) {
+                                $icon = '📄';
+                            } elseif (strpos($record->mime_type, 'application/vnd.ms-powerpoint') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.presentationml') === 0 || in_array($extension, ['ppt', 'pptx'])) {
+                                $icon = '📊';
+                            } elseif (strpos($record->mime_type, 'application/x-sh') === 0 || $extension === 'sh') {
+                                $icon = '⚙️';
+                            } elseif (strpos($record->mime_type, 'application/octet-stream') === 0 || $extension === 'style') {
+                                $icon = '🔧';
+                            } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'])) {
+                                $icon = '🖼️';
+                            }
+                            
                             return new \Illuminate\Support\HtmlString(
-                                '<div class="flex items-center justify-center w-12 h-12 bg-gray-100 rounded text-gray-500">' .
-                                '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">' .
-                                $record->icon .
-                                '</svg>' .
+                                '<div class="flex items-center justify-center w-12 h-12 bg-gray-50 border border-gray-200 rounded-lg">' .
+                                '<span class="text-2xl">' . $icon . '</span>' .
                                 '</div>'
                             );
                         }
@@ -347,6 +404,7 @@ class FileResource extends Resource
             'edit' => Pages\EditFile::route('/{record}/edit'),
         ];
     }
+
 
     public static function getEloquentQuery(): Builder
     {

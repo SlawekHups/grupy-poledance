@@ -150,5 +150,13 @@ class CreateFile extends CreateRecord
         if (!file_exists(public_path('admin-files'))) {
             \Artisan::call('storage:link');
         }
+        
+        // Przekieruj do tabeli po utworzeniu
+        $this->redirect($this->getResource()::getUrl('index'));
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

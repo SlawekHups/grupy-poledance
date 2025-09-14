@@ -46,5 +46,12 @@ export default {
     'p-4', 'p-6', 'p-8', 'p-12', 'p-16', 'p-18', 'p-20', 'p-22', 'p-24',
     'px-6', 'px-8', 'px-12', 'px-16', 'px-18', 'px-20', 'px-22', 'px-24',
     'py-4', 'py-6', 'py-8', 'py-12', 'py-16', 'py-18', 'py-20', 'py-22', 'py-24',
+    // Dodaj klasy dla ikon plików
+    'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-gray-500',
+    'bg-purple-500', 'bg-orange-500', 'text-white', 'w-12', 'h-12', 'w-8', 'h-8',
+    'flex', 'items-center', 'justify-center', 'rounded-lg', 'space-x-2', 'space-x-3',
+    'text-2xl', 'text-sm', 'text-xs', 'font-medium', 'text-gray-900', 'text-gray-500',
+    'bg-gray-50', 'border', 'border-gray-200', 'rounded-lg', 'flex-shrink-0', 'flex-1',
+    'min-w-0', 'truncate', 'mt-2'
   ]
 }

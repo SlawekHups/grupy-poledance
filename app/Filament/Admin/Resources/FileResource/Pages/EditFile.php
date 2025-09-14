@@ -163,5 +163,8 @@ class EditFile extends EditRecord
             'new_path' => $this->record->path,
             'file_replaced' => true
         ]);
+        
+        // Przekieruj do tabeli po zapisaniu
+        $this->redirect($this->getResource()::getUrl('index'));
     }
 }
