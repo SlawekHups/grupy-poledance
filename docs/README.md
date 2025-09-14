@@ -15,6 +15,8 @@ Ten katalog zawiera kompletną dokumentację uruchomienia, konfiguracji i dział
   - System płatności: `docs/system_przypomnien_platnosci.md`
   - System wiadomości email: `docs/system-wiadomosci-email.md`
   - System zajęć i obecności: `docs/zadania-system-zajec.md`, `docs/planowane-usprawnienia-obecnosci.md`
+  - **System plików administratora:** `docs/system-plikow-administratora.md` 📁
+  - **Instrukcja obsługi plików:** `docs/instrukcja-obsługi-plików.md` 📖
 - **Problemy i roadmapa:**
   - Znane problemy: `docs/problemy-i-bledy.md`
   - Planowane usprawnienia: `docs/planowane-usprawnienia-platnosci.md`, `docs/planowane-usprawnienia-obecnosci.md`

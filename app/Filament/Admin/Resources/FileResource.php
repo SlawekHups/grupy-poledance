@@ -32,167 +32,189 @@ class FileResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\FileUpload::make('file')
-                    ->label('Wybierz plik')
-                    ->required(fn ($record) => $record === null) // Wymagane tylko przy tworzeniu
-                    ->maxSize(10240) // 10MB
-                    ->disk('admin_files')
-                    ->directory('uploads')
-                    ->visibility('public')
-                    ->preserveFilenames() // PROFESJONALNE: zachowaj oryginalne nazwy plików
-                    ->helperText(fn ($record) => $record ? 'Kliknij "Wybierz plik" aby zastąpić obecny plik' : 'Wybierz plik do przesłania')
-                    ->afterStateUpdated(function ($state, $set, $get) {
-                        \Log::info('=== File upload afterStateUpdated ===', [
-                            'state' => $state
-                        ]);
-                        
-                        if ($state) {
-                            // Tylko ustaw nazwy - metadata zostanie ustawiona w mutateFormDataBeforeSave
-                            $originalName = basename($state);
-                            $set('original_name', $originalName);
-                            
-                            $fileName = pathinfo($originalName, PATHINFO_FILENAME);
-                            $set('name', $fileName);
-                            
-                            \Log::info('Set names from uploaded file:', [
-                                'original_name' => $originalName,
-                                'name' => $fileName
-                            ]);
-                        }
-                    }),
+                // Sekcja główna - plik i podgląd
+                Forms\Components\Section::make('Plik')
+                    ->schema([
+                        Forms\Components\FileUpload::make('file')
+                            ->label('Wybierz plik')
+                            ->required(fn ($record) => $record === null) // Wymagane tylko przy tworzeniu
+                            ->maxSize(10240) // 10MB
+                            ->disk('admin_files')
+                            ->directory('uploads')
+                            ->visibility('public')
+                            ->preserveFilenames() // PROFESJONALNE: zachowaj oryginalne nazwy plików
+                            ->helperText(fn ($record) => $record ? 'Kliknij "Wybierz plik" aby zastąpić obecny plik' : 'Wybierz plik do przesłania')
+                            ->afterStateUpdated(function ($state, $set, $get) {
+                                \Log::info('=== File upload afterStateUpdated ===', [
+                                    'state' => $state
+                                ]);
+                                
+                                if ($state) {
+                                    // Tylko ustaw nazwy - metadata zostanie ustawiona w mutateFormDataBeforeSave
+                                    $originalName = basename($state);
+                                    $set('original_name', $originalName);
+                                    
+                                    $fileName = pathinfo($originalName, PATHINFO_FILENAME);
+                                    $set('name', $fileName);
+                                    
+                                    \Log::info('Set names from uploaded file:', [
+                                        'original_name' => $originalName,
+                                        'name' => $fileName
+                                    ]);
+                                }
+                            })
+                            ->columnSpanFull(),
 
+                        // Podgląd w kolumnach
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                // Podgląd obrazka dla plików graficznych
+                                Forms\Components\Placeholder::make('image_preview')
+                                    ->label('Podgląd obrazka')
+                                    ->content(function ($record) {
+                                        if (!$record || !$record->mime_type || !$record->path) {
+                                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak podglądu</p>');
+                                        }
+                                        
+                                        // Sprawdź czy to obrazek - pokaż oryginalny obraz
+                                        if (strpos($record->mime_type, 'image/') === 0) {
+                                            $imageUrl = $record->thumbnail_url;
+                                            
+                                            return new \Illuminate\Support\HtmlString(
+                                                '<div class="mt-2">' .
+                                                '<img src="' . $imageUrl . '" alt="Podgląd" class="max-w-xs max-h-48 object-contain border border-gray-300 rounded-lg shadow-sm" style="max-width: 300px; max-height: 192px;" />' .
+                                                '<p class="text-xs text-gray-500 mt-1">Typ: ' . $record->mime_type . 
+                                                ($record->size ? ' | Rozmiar: ' . number_format($record->size / 1024, 1) . ' KB' : '') .
+                                                '</p>' .
+                                                '</div>'
+                                            );
+                                        }
+                                        
+                                        return null;
+                                    })
+                                    ->visible(function ($record) {
+                                        return $record && $record->mime_type && $record->path && strpos($record->mime_type, 'image/') === 0;
+                                    }),
 
-
-
-                // Podgląd obrazka dla plików graficznych
-                Forms\Components\Placeholder::make('image_preview')
-                    ->label('Podgląd obrazka')
-                    ->content(function ($record) {
-                        if (!$record || !$record->mime_type || !$record->path) {
-                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak podglądu</p>');
-                        }
-                        
-                        // Sprawdź czy to obrazek - pokaż oryginalny obraz
-                        if (strpos($record->mime_type, 'image/') === 0) {
-                            $imageUrl = $record->thumbnail_url;
-                            
-                            return new \Illuminate\Support\HtmlString(
-                                '<div class="mt-2">' .
-                                '<img src="' . $imageUrl . '" alt="Podgląd" class="max-w-xs max-h-48 object-contain border border-gray-300 rounded-lg shadow-sm" style="max-width: 300px; max-height: 192px;" />' .
-                                '<p class="text-xs text-gray-500 mt-1">Typ: ' . $record->mime_type . 
-                                ($record->size ? ' | Rozmiar: ' . number_format($record->size / 1024, 1) . ' KB' : '') .
-                                '</p>' .
-                                '</div>'
-                            );
-                        }
-                        
-                        return null;
-                    })
-                    ->visible(function ($record) {
-                        return $record && $record->mime_type && $record->path && strpos($record->mime_type, 'image/') === 0;
-                    }),
-
-                // Informacje o pliku dla plików niegraficznych
-                Forms\Components\Placeholder::make('file_info')
-                    ->label('Informacje o pliku')
-                    ->content(function ($record) {
-                        if (!$record || !$record->mime_type || !$record->path) {
-                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak informacji</p>');
-                        }
-                        
-                        $extension = strtolower(pathinfo($record->original_name, PATHINFO_EXTENSION));
-                        $fileType = 'Nieznany typ';
-                        $icon = '📄';
-                        
-                        // Określ typ pliku i ikonę
-                        if ($record->mime_type === 'application/pdf' || $extension === 'pdf') {
-                            $fileType = 'PDF';
-                            $icon = '📄';
-                        } elseif (strpos($record->mime_type, 'application/msword') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.wordprocessingml') === 0 || in_array($extension, ['doc', 'docx'])) {
-                            $fileType = 'Word Document';
-                            $icon = '📝';
-                        } elseif (strpos($record->mime_type, 'application/vnd.ms-excel') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.spreadsheetml') === 0 || in_array($extension, ['xls', 'xlsx'])) {
-                            $fileType = 'Excel Spreadsheet';
-                            $icon = '📊';
-                        } elseif ($record->mime_type === 'application/zip' || $extension === 'zip') {
-                            $fileType = 'ZIP Archive';
-                            $icon = '📦';
-                        } elseif (strpos($record->mime_type, 'text/') === 0 || in_array($extension, ['txt', 'csv', 'log', 'md'])) {
-                            $fileType = 'Text File';
-                            $icon = '📄';
-                        } elseif (strpos($record->mime_type, 'application/x-sh') === 0 || $extension === 'sh') {
-                            $fileType = 'Shell Script';
-                            $icon = '⚙️';
-                        } elseif (strpos($record->mime_type, 'application/octet-stream') === 0 || $extension === 'style') {
-                            $fileType = 'Style File';
-                            $icon = '🔧';
-                        } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'])) {
-                            $fileType = 'Image';
-                            $icon = '🖼️';
-                        }
-                        
-                        return new \Illuminate\Support\HtmlString(
-                            '<div class="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">' .
-                            '<div class="flex items-center space-x-2">' .
-                            '<span class="text-2xl">' . $icon . '</span>' .
-                            '<div>' .
-                            '<p class="text-sm font-medium text-gray-900">' . $record->original_name . '</p>' .
-                            '<p class="text-xs text-gray-500">' . $fileType . ' • ' . $record->mime_type . 
-                            ($record->size ? ' • ' . number_format($record->size / 1024, 1) . ' KB' : '') .
-                            '</p>' .
-                            '</div>' .
-                            '</div>' .
-                            '</div>'
-                        );
-                    })
-                    ->visible(function ($record) {
-                        return $record && $record->mime_type && $record->path && strpos($record->mime_type, 'image/') !== 0;
-                    }),
-
-                Forms\Components\TextInput::make('name')
-                    ->label('Nazwa pliku')
-                    ->maxLength(255)
-                    ->placeholder('Wpisz swoją nazwę lub zostaw puste dla automatycznej nazwy pliku')
-                    ->helperText('Zostaw puste aby użyć oryginalnej nazwy pliku, lub wpisz swoją nazwę.'),
-
-                Forms\Components\TextInput::make('original_name')
-                    ->label('Oryginalna nazwa')
-                    ->disabled()
-                    ->dehydrated(true),
-
-                Forms\Components\TextInput::make('mime_type')
-                    ->label('Typ MIME')
-                    ->disabled()
-                    ->dehydrated(true), // Zmieniono na true żeby było zapisywane
-
-                Forms\Components\TextInput::make('size')
-                    ->label('Rozmiar (bajty)')
-                    ->disabled()
-                    ->dehydrated(true), // Zmieniono na true żeby było zapisywane
-
-                Forms\Components\Select::make('category')
-                    ->label('Kategoria')
-                    ->options([
-                        'general' => 'Ogólne',
-                        'documents' => 'Dokumenty',
-                        'images' => 'Obrazy',
-                        'videos' => 'Filmy',
-                        'audio' => 'Audio',
-                        'archives' => 'Archiwa',
-                        'backups' => 'Kopie zapasowe',
+                                // Informacje o pliku dla plików niegraficznych
+                                Forms\Components\Placeholder::make('file_info')
+                                    ->label('Informacje o pliku')
+                                    ->content(function ($record) {
+                                        if (!$record || !$record->mime_type || !$record->path) {
+                                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak informacji</p>');
+                                        }
+                                        
+                                        $extension = strtolower(pathinfo($record->original_name, PATHINFO_EXTENSION));
+                                        $fileType = 'Nieznany typ';
+                                        $icon = '📄';
+                                        
+                                        // Określ typ pliku i ikonę
+                                        if ($record->mime_type === 'application/pdf' || $extension === 'pdf') {
+                                            $fileType = 'PDF';
+                                            $icon = '📄';
+                                        } elseif (strpos($record->mime_type, 'application/msword') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.wordprocessingml') === 0 || in_array($extension, ['doc', 'docx'])) {
+                                            $fileType = 'Word Document';
+                                            $icon = '📝';
+                                        } elseif (strpos($record->mime_type, 'application/vnd.ms-excel') === 0 || strpos($record->mime_type, 'application/vnd.openxmlformats-officedocument.spreadsheetml') === 0 || in_array($extension, ['xls', 'xlsx'])) {
+                                            $fileType = 'Excel Spreadsheet';
+                                            $icon = '📊';
+                                        } elseif ($record->mime_type === 'application/zip' || $extension === 'zip') {
+                                            $fileType = 'ZIP Archive';
+                                            $icon = '📦';
+                                        } elseif (strpos($record->mime_type, 'text/') === 0 || in_array($extension, ['txt', 'csv', 'log', 'md'])) {
+                                            $fileType = 'Text File';
+                                            $icon = '📄';
+                                        } elseif (strpos($record->mime_type, 'application/x-sh') === 0 || $extension === 'sh') {
+                                            $fileType = 'Shell Script';
+                                            $icon = '⚙️';
+                                        } elseif (strpos($record->mime_type, 'application/octet-stream') === 0 || $extension === 'style') {
+                                            $fileType = 'Style File';
+                                            $icon = '🔧';
+                                        } elseif (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'])) {
+                                            $fileType = 'Image';
+                                            $icon = '🖼️';
+                                        }
+                                        
+                                        return new \Illuminate\Support\HtmlString(
+                                            '<div class="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">' .
+                                            '<div class="flex items-center space-x-2">' .
+                                            '<span class="text-2xl">' . $icon . '</span>' .
+                                            '<div>' .
+                                            '<p class="text-sm font-medium text-gray-900">' . $record->original_name . '</p>' .
+                                            '<p class="text-xs text-gray-500">' . $fileType . ' • ' . $record->mime_type . 
+                                            ($record->size ? ' • ' . number_format($record->size / 1024, 1) . ' KB' : '') .
+                                            '</p>' .
+                                            '</div>' .
+                                            '</div>' .
+                                            '</div>'
+                                        );
+                                    })
+                                    ->visible(function ($record) {
+                                        return $record && $record->mime_type && $record->path && strpos($record->mime_type, 'image/') !== 0;
+                                    }),
+                            ])
+                            ->columnSpanFull(),
                     ])
-                    ->default('general')
-                    ->required(),
+                    ->columns(1),
 
-                Forms\Components\Toggle::make('is_public')
-                    ->label('Publiczny')
-                    ->helperText('Czy plik ma być dostępny publicznie')
-                    ->default(false),
+                // Sekcja informacji o pliku
+                Forms\Components\Section::make('Informacje o pliku')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nazwa pliku')
+                                    ->maxLength(255)
+                                    ->placeholder('Wpisz swoją nazwę lub zostaw puste dla automatycznej nazwy pliku'),
 
-                Forms\Components\Textarea::make('description')
-                    ->label('Opis')
-                    ->maxLength(1000)
-                    ->rows(3),
+                                Forms\Components\TextInput::make('original_name')
+                                    ->label('Oryginalna nazwa')
+                                    ->maxLength(255)
+                                    ->disabled()
+                                    ->dehydrated(),
+                            ]),
+
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\Select::make('category')
+                                    ->label('Kategoria')
+                                    ->options([
+                                        'general' => 'Ogólne',
+                                        'documents' => 'Dokumenty',
+                                        'images' => 'Obrazy',
+                                        'videos' => 'Wideo',
+                                        'audio' => 'Audio',
+                                        'archives' => 'Archiwa',
+                                        'backups' => 'Kopie zapasowe',
+                                    ])
+                                    ->default('general'),
+
+                                Forms\Components\TextInput::make('size')
+                                    ->label('Rozmiar (KB)')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(fn ($state) => $state ? round($state / 1024, 1) : 0),
+                            ]),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label('Opis')
+                            ->maxLength(1000)
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
+                // Sekcja ustawień na dole formularza
+                Forms\Components\Section::make('Ustawienia')
+                    ->schema([
+                        Forms\Components\Toggle::make('is_public')
+                            ->label('Plik publiczny')
+                            ->helperText('Czy plik ma być dostępny publicznie przez link')
+                            ->default(false)
+                            ->inline(false),
+                    ])
+                    ->compact()
+                    ->columns(1),
             ]);
     }
 

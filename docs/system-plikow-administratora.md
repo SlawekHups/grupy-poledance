@@ -1,106 +1,138 @@
-# System Plików Administratora
+# System Plików Administratora - Kompletna Dokumentacja
 
 ## Przegląd
 
-System plików administratora to zaawansowana funkcjonalność pozwalająca administratorom na zarządzanie plikami w aplikacji. System umożliwia upload, pobieranie, organizację i udostępnianie plików z pełną kontrolą dostępu.
+System plików administratora to zaawansowana funkcjonalność pozwalająca administratorom na zarządzanie plikami w aplikacji Laravel z panelem Filament. System umożliwia upload, pobieranie, organizację i udostępnianie plików z pełną kontrolą dostępu i profesjonalnym interfejsem użytkownika.
 
-## Funkcjonalności
+## 🚀 Główne Funkcjonalności
 
-### 1. Upload Plików
+### 1. Upload i Zarządzanie Plikami
+- **Upload plików** z zachowaniem oryginalnych nazw
+- **Zamiana plików** z automatycznym usuwaniem starych
+- **Podgląd obrazów** w czasie rzeczywistym
+- **Ikony plików** dla różnych typów (emoji)
+- **Walidacja** rozmiaru i typu plików
 
-#### Obsługiwane formaty:
-- **Obrazy**: JPG, JPEG, PNG, GIF, WebP
-- **Dokumenty**: PDF, DOC, DOCX, TXT, MD
-- **Archiwa**: ZIP, RAR, 7Z
-- **Dane**: CSV, SQL, XML, JSON
-- **Skrypty**: SH, BAT, PS1
-- **Inne**: MP3, MP4, AVI, MOV
+### 2. Organizacja i Kategoryzacja
+- **7 kategorii** plików (Ogólne, Dokumenty, Obrazy, Wideo, Audio, Archiwa, Kopie zapasowe)
+- **Opisy plików** z ograniczeniem do 1000 znaków
+- **Automatyczne wykrywanie** typu MIME
+- **Szukanie i filtrowanie** plików
 
-#### Ograniczenia:
-- Maksymalny rozmiar pliku: 10MB
-- Automatyczne wykrywanie typu MIME
-- Walidacja rozszerzeń plików
+### 3. Kontrola Dostępu
+- **Pliki prywatne** - dostęp tylko dla administratorów
+- **Pliki publiczne** - dostęp przez link
+- **Automatyczne kopiowanie** linków publicznych
+- **Bezpieczne pobieranie** z oryginalnymi nazwami
 
-### 2. Zarządzanie Nazwami Plików
+## 📁 Obsługiwane Formaty Plików
 
-#### Inteligentne wypełnianie:
-- **Puste pole**: Automatycznie używa oryginalnej nazwy pliku
-- **Wpisana nazwa**: Zachowuje nazwę wprowadzoną przez użytkownika
-- **Fallback**: Jeśli brak oryginalnej nazwy, używa nazwy użytkownika
+### Obrazy
+- **PNG, JPEG, JPG** - z podglądem miniatur
+- **GIF, WebP, BMP, SVG** - z ikonami
+- **Miniaturki** automatycznie generowane
 
-#### Przykład:
+### Dokumenty
+- **PDF** 📄 - z ikoną dokumentu
+- **Word** 📝 - DOC, DOCX
+- **Excel** 📊 - XLS, XLSX
+- **PowerPoint** 📊 - PPT, PPTX
+- **Tekst** 📄 - TXT, CSV, MD, LOG
+
+### Archiwa i Skrypty
+- **ZIP** 📦 - archiwa
+- **Shell Scripts** ⚙️ - SH, BASH
+- **Style Files** 🔧 - pliki stylów
+
+### Ograniczenia
+- **Maksymalny rozmiar**: 10MB
+- **Automatyczna walidacja** typu MIME
+- **Bezpieczne rozszerzenia** - ochrona przed szkodliwymi plikami
+
+## 🎨 Interfejs Użytkownika
+
+### Tabela Plików
 ```
-Oryginalny plik: "raport-miesięczny-2024.pdf"
-Pole puste → Automatycznie: "raport-miesięczny-2024.pdf"
-Wpisane: "Mój raport" → Zachowuje: "Mój raport"
+┌─────┬─────────────────┬─────────┬───────────────┬─────────┬─────────┐
+│ Ikona│ Nazwa pliku     │ Rozmiar │ Oryginalna    │ Kategoria│ Publiczny│
+├─────┼─────────────────┼─────────┼───────────────┼─────────┼─────────┤
+│ 🖼️  │ moje-zdjecie    │ 2.1 MB  │ IMG_001.jpg   │ Obrazy  │ ✅      │
+│ 📄  │ raport-pdf      │ 856 KB  │ report.pdf    │ Dokumenty│ ❌     │
+│ 📦  │ backup-zip      │ 15.2 MB │ backup.zip    │ Archiwa │ ❌     │
+└─────┴─────────────────┴─────────┴───────────────┴─────────┴─────────┘
 ```
 
-### 3. Organizacja Plików
+### Formularz Edycji (Nowy Layout)
+```
+┌─ Sekcja "Plik" ─────────────────────────┐
+│ [Upload pliku - pełna szerokość]        │
+│ [Podgląd obrazka] [Informacje o pliku]  │
+└─────────────────────────────────────────┘
 
-#### Kategorie:
-- **Ogólne** (general) - domyślna
-- **Dokumenty** (documents)
-- **Obrazy** (images)
-- **Filmy** (videos)
-- **Audio** (audio)
-- **Archiwa** (archives)
-- **Kopie zapasowe** (backups)
+┌─ Sekcja "Informacje o pliku" ──────────┐
+│ [Nazwa pliku] [Oryginalna nazwa]       │
+│ [Kategoria] [Rozmiar]                  │
+│ [Opis - pełna szerokość]               │
+└─────────────────────────────────────────┘
 
-#### Struktura katalogów:
+┌─ Sekcja "Ustawienia" ──────────────────┐
+│ [☐ Plik publiczny]                     │
+└─────────────────────────────────────────┘
+
+[⬅️ Powrót] [⬇️ Pobierz] [🗑️ Usuń] [💾 Zapisz]
+```
+
+## 🔧 Funkcje Zaawansowane
+
+### Zamiana Plików z Konfirmacją
+1. **Wybierz nowy plik** w edycji
+2. **JavaScript alert** - "Czy zastąpić obecny plik?"
+3. **Automatyczne usuwanie** starego pliku
+4. **Aktualizacja metadanych** (nazwa, rozmiar, typ)
+5. **Przekierowanie** do tabeli po zapisaniu
+
+### Inteligentne Nazewnictwo
+```php
+// Logika nazewnictwa:
+if (empty($user_name)) {
+    $name = pathinfo($original_name, PATHINFO_FILENAME);
+} else {
+    $name = $user_name;
+}
+```
+
+### Bezpieczne URL-e
+```php
+// HTTPS wymuszony dla wszystkich linków:
+public function getUrlAttribute(): string
+{
+    return secure_url('admin-files/' . $urlPath);
+}
+```
+
+## 🗂️ Struktura Plików
+
+### Katalogi
 ```
 storage/app/admin-files/
-└── uploads/
-    ├── 01K546QY0WDHZ7ZECJC5W6SQ6.png
-    ├── 68c6ca109624c.csv
-    └── raport-miesięczny-2024.pdf
+├── uploads/                 # Pliki użytkowników
+│   ├── 01K546QY0WDHZ7ZECJC5W6SQ6.png
+│   ├── raport-miesieczny-2024.pdf
+│   └── backup-systemu.zip
+└── thumbnails/              # Miniaturki (jeśli potrzebne)
+    └── uploads/
+        └── 01K546QY0WDHZ7ZECJC5W6SQ6.png
 ```
 
-### 4. System Dostępu
+### Symlink Publiczny
+```bash
+# Automatycznie tworzony:
+public/admin-files -> storage/app/admin-files
+```
 
-#### Poziomy dostępu:
-- **Prywatny** - dostęp tylko dla administratorów
-- **Publiczny** - dostęp przez link publiczny
+## 🛠️ Implementacja Techniczna
 
-#### Linki publiczne:
-- Format: `https://domena.com/admin-files/filename.ext`
-- Pobieranie z oryginalną nazwą pliku
-- Automatyczne kopiowanie do schowka
-
-### 5. Interfejs Użytkownika
-
-#### Tabela plików:
-- **Ikona pliku** - automatyczna na podstawie typu
-- **Nazwa pliku** - edytowalna
-- **Rozmiar** - formatowany (KB, MB, GB)
-- **Oryginalna nazwa** - tylko do odczytu
-- **Kategoria** - wybierana z listy
-- **Typ MIME** - automatyczny
-- **Status publiczny** - przełącznik
-- **Link publiczny** - "Kopiuj link" / "Prywatny"
-- **Data utworzenia** - automatyczna
-- **Data aktualizacji** - automatyczna
-
-#### Akcje:
-- **Pobierz** - pobieranie z oryginalną nazwą
-- **Edytuj** - modyfikacja metadanych
-- **Usuń** - usunięcie pliku i rekordu
-
-### 6. Bezpieczeństwo
-
-#### Walidacja:
-- Sprawdzanie rozmiaru pliku
-- Walidacja typu MIME
-- Ochrona przed uploadem szkodliwych plików
-
-#### Autoryzacja:
-- Dostęp tylko dla administratorów
-- Logowanie wszystkich operacji
-- Śledzenie kto przesłał plik
-
-## Implementacja Techniczna
-
-### 1. Model File
-
+### Model File
 ```php
 class File extends Model
 {
@@ -113,169 +145,294 @@ class File extends Model
         'is_public' => 'boolean',
         'size' => 'integer',
     ];
+    
+    // Accessory dla bezpiecznych URL-i
+    public function getUrlAttribute(): string
+    public function getThumbnailUrlAttribute(): string
+    public function getIconAttribute(): string
 }
 ```
 
-### 2. Struktura Bazy Danych
+### Filament Resource
+```php
+class FileResource extends Resource
+{
+    // Formularz z sekcjami i gridami
+    public static function form(Form $form): Form
+    
+    // Tabela z ikonami i skróconymi nazwami
+    public static function table(Table $table): Table
+    
+    // Strony CRUD
+    public static function getPages(): array
+}
+```
 
+### Route Publiczny
+```php
+// routes/web.php
+Route::get('/admin-files/{path}', [FileController::class, 'download'])
+    ->where('path', '.*');
+
+Route::get('/admin-files/thumbnails/{path}', [FileController::class, 'thumbnail'])
+    ->where('path', '.*');
+```
+
+## 📊 Baza Danych
+
+### Tabela `files`
 ```sql
 CREATE TABLE files (
-    id BIGINT PRIMARY KEY,
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     original_name VARCHAR(255) NOT NULL,
     path VARCHAR(255) NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
-    size BIGINT NOT NULL,
+    size BIGINT UNSIGNED NOT NULL,
     category VARCHAR(50) DEFAULT 'general',
     description TEXT NULL,
-    uploaded_by BIGINT NOT NULL,
+    uploaded_by BIGINT UNSIGNED NOT NULL,
     is_public BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    
+    INDEX idx_category (category),
+    INDEX idx_is_public (is_public),
+    INDEX idx_uploaded_by (uploaded_by),
+    FOREIGN KEY (uploaded_by) REFERENCES users(id)
 );
 ```
 
-### 3. Konfiguracja Storage
+## 🎯 Workflow Użytkownika
 
-```php
-// config/filesystems.php
-'admin_files' => [
-    'driver' => 'local',
-    'root' => storage_path('app/admin-files'),
-    'url' => env('APP_URL').'/admin-files',
-    'visibility' => 'public',
-    'throw' => false,
-],
+### 1. Dodawanie Nowego Pliku
+```
+1. Kliknij "Utwórz plik"
+2. Wybierz plik z dysku
+3. System automatycznie wypełnia:
+   - Oryginalną nazwę
+   - Nazwę (bez rozszerzenia)
+   - Rozmiar i typ MIME
+4. Opcjonalnie zmień kategorię i dodaj opis
+5. Ustaw czy ma być publiczny
+6. Kliknij "Utwórz"
+7. Automatyczne przekierowanie do tabeli
 ```
 
-### 4. Route Publiczny
-
-```php
-// routes/web.php
-Route::get('/admin-files/{path}', function ($path) {
-    $file = File::where('path', 'uploads/' . $path)->first();
-    
-    if (!$file || !$file->is_public) {
-        abort(404);
-    }
-    
-    $filePath = Storage::disk('admin_files')->path($file->path);
-    return response()->download($filePath, $file->original_name);
-})->where('path', '.*');
+### 2. Edycja Pliku
+```
+1. Kliknij "Edytuj" w tabeli
+2. Widzisz:
+   - Podgląd obrazka (dla obrazów)
+   - Informacje o pliku (dla innych typów)
+   - Formularz z metadanymi
+   - Przełącznik publiczny na dole
+3. Opcjonalnie zmień plik:
+   - Wybierz nowy plik
+   - Potwierdź zamianę w alert
+   - Stary plik zostanie usunięty
+4. Kliknij "Zapisz"
+5. Automatyczne przekierowanie do tabeli
 ```
 
-## Użycie
+### 3. Pobieranie Pliku
+```
+Jako administrator:
+1. Kliknij "Pobierz" w tabeli lub edycji
+2. Plik pobiera się z oryginalną nazwą
 
-### 1. Upload Pliku
-
-1. Przejdź do sekcji "Pliki" w panelu administratora
-2. Kliknij "Utwórz plik"
-3. Wybierz plik z dysku
-4. Wypełnij metadane (opcjonalnie)
-5. Kliknij "Utwórz"
-
-### 2. Pobieranie Pliku
-
-#### Jako administrator:
-1. W tabeli plików kliknij ikonę "Pobierz"
-2. Plik zostanie pobrany z oryginalną nazwą
-
-#### Link publiczny:
+Link publiczny:
 1. Ustaw plik jako publiczny
 2. Kliknij "Kopiuj link" w tabeli
-3. Link zostanie skopiowany do schowka
+3. Link zostaje skopiowany do schowka
 4. Udostępnij link innym osobom
-
-### 3. Edycja Pliku
-
-1. Kliknij "Edytuj" w tabeli plików
-2. Zmodyfikuj metadane (nazwa, kategoria, opis)
-3. Opcjonalnie zmień plik
-4. Kliknij "Zapisz"
-
-## Debugowanie
-
-### Logi
-
-System generuje szczegółowe logi w `storage/logs/laravel.log`:
-
 ```
+
+## 🔍 Debugowanie i Logi
+
+### Szczegółowe Logi
+```php
+// Logi uploadu:
 === File upload afterStateUpdated ===
 state: uploads/68c6ca109624c.csv
 original_name: raport-miesięczny-2024.csv
-file_exists: true
 
+// Logi tworzenia:
 === CREATE FILE - Data before processing ===
 file: uploads/68c6ca109624c.csv
-name: raport-miesięczny-2024.csv
-original_name: raport-miesięczny-2024.csv
+name: raport-miesięczny-2024
 mime_type: text/csv
 size: 400
+
+// Logi edycji:
+=== ZMIANA PLIKU W EDYCJI ===
+stary_plik: uploads/old-file.pdf
+nowy_plik: uploads/new-file.pdf
 ```
 
 ### Monitorowanie
-
 ```bash
-# Monitoruj logi w czasie rzeczywistym
-tail -f storage/logs/laravel.log | grep -A 5 -B 5 "File upload"
+# Monitoruj logi w czasie rzeczywistym:
+tail -f storage/logs/laravel.log | grep -A 5 -B 5 "File"
+
+# Sprawdź pliki w katalogu:
+ls -la storage/app/admin-files/uploads/
+
+# Sprawdź symlink:
+ls -la public/admin-files
 ```
 
-## Rozwiązywanie Problemów
+## 🚨 Rozwiązywanie Problemów
 
-### 1. Plik nie pobiera się
-
-**Problem**: Błąd "Plik nie istnieje"
-**Rozwiązanie**: 
-- Sprawdź czy plik istnieje w `storage/app/admin-files/uploads/`
-- Sprawdź ścieżkę w bazie danych
-- Sprawdź uprawnienia do katalogu
-
-### 2. Nieprawidłowa nazwa pliku
-
-**Problem**: Pobierany plik ma wygenerowaną nazwę zamiast oryginalnej
+### 1. Błąd "Plik nie istnieje"
+**Przyczyna**: Plik został usunięty z dysku, ale rekord pozostał w bazie
 **Rozwiązanie**:
-- Sprawdź czy `original_name` jest zapisane w bazie
-- Sprawdź logi `afterStateUpdated`
-- Sprawdź czy `storeFileNamesIn('original_name')` jest ustawione
+```bash
+# Sprawdź czy plik istnieje:
+ls -la storage/app/admin-files/uploads/
 
-### 3. Upload nie działa
+# Sprawdź rekord w bazie:
+php artisan tinker
+>>> App\Models\File::find(123)->path
+```
 
-**Problem**: Plik nie jest zapisywany
+### 2. Błąd formatowania rozmiaru
+**Przyczyna**: `SQLSTATE[01000]: Warning: 1265 Data truncated for column 'size'`
+**Rozwiązanie**: Sprawdź czy pole `size` używa `round()` zamiast `number_format()`
+
+### 3. Brak miniatur obrazów
+**Przyczyna**: Problem z route thumbnails lub symlink
 **Rozwiązanie**:
-- Sprawdź uprawnienia do katalogu `storage/app/admin-files/`
-- Sprawdź konfigurację `admin_files` w `filesystems.php`
-- Sprawdź logi `afterStateUpdated`
+```bash
+# Sprawdź route:
+php artisan route:list | grep admin-files
 
-## Przyszłe Usprawnienia
+# Sprawdź symlink:
+ls -la public/admin-files
+```
 
-### Planowane funkcje:
-- [ ] Podgląd plików w przeglądarce
-- [ ] Kompresja obrazów
-- [ ] Wersjonowanie plików
-- [ ] Automatyczne tagi
-- [ ] Wyszukiwanie pełnotekstowe
-- [ ] Integracja z chmurą (AWS S3, Google Drive)
-- [ ] Automatyczne kopie zapasowe
-- [ ] Analiza użycia plików
+### 4. Upload nie działa
+**Przyczyna**: Problemy z uprawnieniami lub konfiguracją
+**Rozwiązanie**:
+```bash
+# Sprawdź uprawnienia:
+chmod -R 755 storage/app/admin-files/
+chown -R www-data:www-data storage/app/admin-files/
 
-### Optymalizacje:
-- [ ] Lazy loading dla dużych list
-- [ ] Cache metadanych plików
-- [ ] Asynchroniczny upload
-- [ ] Progress bar dla uploadu
-- [ ] Drag & drop interface
+# Sprawdź konfigurację:
+php artisan config:cache
+php artisan route:cache
+```
 
-## Wsparcie
+## 🎨 Customizacja
 
-W przypadku problemów z systemem plików:
+### Dodanie Nowych Typów Plików
+```php
+// W FileResource.php, sekcja ikon:
+elseif (strpos($record->mime_type, 'application/your-type') === 0) {
+    $icon = '🔧'; // Wybierz emoji
+}
+```
 
-1. Sprawdź logi w `storage/logs/laravel.log`
-2. Sprawdź uprawnienia do katalogów
-3. Sprawdź konfigurację storage
-4. Skontaktuj się z administratorem systemu
+### Zmiana Kategorii
+```php
+// W formularzu:
+Forms\Components\Select::make('category')
+    ->options([
+        'general' => 'Ogólne',
+        'documents' => 'Dokumenty',
+        'your-category' => 'Twoja kategoria', // Dodaj nową
+    ])
+```
+
+### Modyfikacja Ograniczeń
+```php
+// W FileUpload:
+Forms\Components\FileUpload::make('file')
+    ->maxSize(20480) // Zmień na 20MB
+    ->acceptedFileTypes(['image/*', 'application/pdf', 'your-type/*'])
+```
+
+## 📈 Wydajność i Optymalizacja
+
+### Cache
+```bash
+# Wyczyść cache po zmianach:
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+```
+
+### Monitoring Rozmiaru
+```bash
+# Sprawdź rozmiar katalogu plików:
+du -sh storage/app/admin-files/
+
+# Znajdź największe pliki:
+find storage/app/admin-files/ -type f -exec ls -lh {} \; | sort -k5 -hr | head -10
+```
+
+### Backup
+```bash
+# Backup plików:
+tar -czf backup-files-$(date +%Y%m%d).tar.gz storage/app/admin-files/
+
+# Backup bazy danych:
+php artisan backup:run
+```
+
+## 🔮 Przyszłe Usprawnienia
+
+### Planowane Funkcje
+- [ ] **Podgląd PDF** w przeglądarce
+- [ ] **Kompresja obrazów** automatyczna
+- [ ] **Wersjonowanie plików** z historią
+- [ ] **Automatyczne tagi** na podstawie zawartości
+- [ ] **Wyszukiwanie pełnotekstowe** w plikach
+- [ ] **Integracja z chmurą** (AWS S3, Google Drive)
+- [ ] **Analiza użycia plików** z statystykami
+- [ ] **Automatyczne kopie zapasowe** na zewnętrzne dyski
+
+### Optymalizacje UI/UX
+- [ ] **Drag & drop** interface dla uploadu
+- [ ] **Progress bar** dla dużych plików
+- [ ] **Lazy loading** dla dużych list
+- [ ] **Bulk operations** (masowe operacje)
+- [ ] **Quick preview** bez otwierania edycji
+- [ ] **Keyboard shortcuts** dla częstych operacji
+
+### Bezpieczeństwo
+- [ ] **Antywirus scanning** uploadowanych plików
+- [ ] **Watermarking** dla obrazów
+- [ ] **Audit log** wszystkich operacji
+- [ ] **Rate limiting** dla uploadu
+- [ ] **IP whitelisting** dla dostępu publicznego
+
+## 📞 Wsparcie Techniczne
+
+### Kontakt
+- **Email**: admin@grupy-poledance.test
+- **Dokumentacja**: `/docs/system-plikow-administratora.md`
+- **Logi**: `storage/logs/laravel.log`
+
+### Przydatne Komendy
+```bash
+# Sprawdź status systemu:
+php artisan about
+
+# Wyczyść cache:
+php artisan optimize:clear
+
+# Sprawdź konfigurację:
+php artisan config:show filesystems.disks.admin_files
+
+# Sprawdź route:
+php artisan route:list | grep admin-files
+```
 
 ---
 
 **Ostatnia aktualizacja**: 14 września 2025  
-**Wersja**: 1.0  
-**Autor**: System Administrator
+**Wersja**: 2.0  
+**Autor**: System Administrator  
+**Status**: ✅ Aktywny i w pełni funkcjonalny
