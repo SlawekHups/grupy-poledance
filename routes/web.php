@@ -12,10 +12,50 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Route do miniatur obrazków (działa dla wszystkich plików obrazków)
+Route::get('/admin-files/thumbnails/{path}', function ($path) {
+    // Znajdź plik po ścieżce - sprawdź oba formaty
+    $file = File::where('path', 'uploads/' . $path)->first();
+    
+    if (!$file) {
+        // Spróbuj bez prefiksu uploads/
+        $file = File::where('path', $path)->first();
+    }
+    
+    if (!$file) {
+        abort(404, 'Plik nie został znaleziony');
+    }
+    
+    // Sprawdź czy to obrazek
+    if (strpos($file->mime_type, 'image/') !== 0) {
+        abort(404, 'Plik nie jest obrazkiem');
+    }
+    
+    // Obsłuż różne formaty ścieżek
+    $filePath = $file->path;
+    if (strpos($filePath, 'uploads/') !== 0) {
+        $filePath = 'uploads/' . $filePath;
+    }
+    
+    $fullPath = Storage::disk('admin_files')->path($filePath);
+    
+    if (!file_exists($fullPath)) {
+        abort(404, 'Plik nie istnieje na dysku');
+    }
+    
+    // Zwróć obrazek jako response (nie download)
+    return response()->file($fullPath);
+})->where('path', '.*')->name('admin.files.thumbnail');
+
 // Route do pobierania plików publicznych z oryginalną nazwą
 Route::get('/admin-files/{path}', function ($path) {
-    // Znajdź plik po ścieżce
+    // Znajdź plik po ścieżce - sprawdź oba formaty
     $file = File::where('path', 'uploads/' . $path)->first();
+    
+    if (!$file) {
+        // Spróbuj bez prefiksu uploads/
+        $file = File::where('path', $path)->first();
+    }
     
     if (!$file) {
         abort(404, 'Plik nie został znaleziony');
@@ -26,14 +66,20 @@ Route::get('/admin-files/{path}', function ($path) {
         abort(403, 'Plik nie jest publiczny');
     }
     
-    $filePath = Storage::disk('admin_files')->path($file->path);
+    // Obsłuż różne formaty ścieżek
+    $filePath = $file->path;
+    if (strpos($filePath, 'uploads/') !== 0) {
+        $filePath = 'uploads/' . $filePath;
+    }
     
-    if (!file_exists($filePath)) {
+    $fullPath = Storage::disk('admin_files')->path($filePath);
+    
+    if (!file_exists($fullPath)) {
         abort(404, 'Plik nie istnieje na dysku');
     }
     
-    return response()->download($filePath, $file->original_name);
-})->where('path', '.*')->name('admin-files.download');
+    return response()->download($fullPath, $file->original_name);
+})->where('path', '.*')->name('admin.files.public.download');
 
 // Trasy dla ustawiania hasła
 Route::get('/set-password/{token}', [SetPasswordController::class, 'showSetPasswordForm'])

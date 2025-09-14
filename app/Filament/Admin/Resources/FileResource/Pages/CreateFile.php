@@ -24,6 +24,9 @@ class CreateFile extends CreateRecord
         // Ustaw uploaded_by na ID aktualnie zalogowanego użytkownika
         $data['uploaded_by'] = auth()->id();
         
+        // Plik domyślnie prywatny - użytkownik może zmienić w formularzu
+        // $data['is_public'] = false; // domyślnie false
+        
         // Ustaw ścieżkę pliku
         if (isset($data['file'])) {
             $data['path'] = $data['file'];

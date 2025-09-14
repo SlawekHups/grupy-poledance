@@ -38,9 +38,37 @@ class File extends Model
      */
     public function getUrlAttribute(): string
     {
+        // Obsłuż różne formaty ścieżek
+        $path = $this->path;
+        if (strpos($path, 'uploads/') !== 0) {
+            $path = 'uploads/' . $path;
+        }
+        
         // Usuń 'uploads/' z początku ścieżki dla URL
-        $path = str_replace('uploads/', '', $this->path);
-        return url('admin-files/' . $path);
+        $urlPath = str_replace('uploads/', '', $path);
+        
+        // Wymuś HTTPS dla URL
+        $url = url('admin-files/' . $urlPath);
+        return str_replace('http://', 'https://', $url);
+    }
+
+    /**
+     * Pobierz URL do miniaturki (działa dla wszystkich obrazków)
+     */
+    public function getThumbnailUrlAttribute(): string
+    {
+        // Obsłuż różne formaty ścieżek
+        $path = $this->path;
+        if (strpos($path, 'uploads/') !== 0) {
+            $path = 'uploads/' . $path;
+        }
+        
+        // Usuń 'uploads/' z początku ścieżki dla URL
+        $urlPath = str_replace('uploads/', '', $path);
+        
+        // Wymuś HTTPS dla URL
+        $url = url('admin-files/thumbnails/' . $urlPath);
+        return str_replace('http://', 'https://', $url);
     }
 
     /**
@@ -81,11 +109,11 @@ class File extends Model
     {
         $mime = $this->mime_type;
         
-        if (str_starts_with($mime, 'image/')) {
+        if (strpos($mime, 'image/') === 0) {
             return 'heroicon-o-photo';
-        } elseif (str_starts_with($mime, 'video/')) {
+        } elseif (strpos($mime, 'video/') === 0) {
             return 'heroicon-o-video-camera';
-        } elseif (str_starts_with($mime, 'audio/')) {
+        } elseif (strpos($mime, 'audio/') === 0) {
             return 'heroicon-o-musical-note';
         } elseif (str_contains($mime, 'pdf')) {
             return 'heroicon-o-document-text';
@@ -97,6 +125,20 @@ class File extends Model
             return 'heroicon-o-presentation-chart-line';
         } elseif (str_contains($mime, 'zip') || str_contains($mime, 'rar') || str_contains($mime, 'archive')) {
             return 'heroicon-o-archive-box';
+        } elseif (str_contains($mime, 'shell') || str_contains($mime, 'bash') || str_contains($mime, 'sh')) {
+            return 'heroicon-o-code-bracket';
+        } elseif (str_contains($mime, 'text') || str_contains($mime, 'plain')) {
+            return 'heroicon-o-document-text';
+        } elseif (str_contains($mime, 'csv') || str_contains($mime, 'comma-separated')) {
+            return 'heroicon-o-table-cells';
+        } elseif (str_contains($mime, 'json')) {
+            return 'heroicon-o-code-bracket';
+        } elseif (str_contains($mime, 'xml')) {
+            return 'heroicon-o-code-bracket';
+        } elseif (str_contains($mime, 'sql')) {
+            return 'heroicon-o-code-bracket';
+        } elseif (str_contains($mime, 'markdown') || str_contains($mime, 'md')) {
+            return 'heroicon-o-document-text';
         } else {
             return 'heroicon-o-document';
         }

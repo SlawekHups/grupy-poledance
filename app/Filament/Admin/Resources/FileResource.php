@@ -76,6 +76,35 @@ class FileResource extends Resource
                         }
                     }),
 
+                // Podgląd obrazka dla plików graficznych
+                Forms\Components\Placeholder::make('image_preview')
+                    ->label('Podgląd obrazka')
+                    ->content(function ($record) {
+                        if (!$record || !$record->mime_type || !$record->path) {
+                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Brak podglądu</p>');
+                        }
+                        
+                        // Sprawdź czy to obrazek
+                        if (strpos($record->mime_type, 'image/') !== 0) {
+                            return new \Illuminate\Support\HtmlString('<p class="text-gray-500 text-sm">Podgląd dostępny tylko dla obrazków</p>');
+                        }
+                        
+                        // Użyj URL dla miniatur (działa dla wszystkich obrazków)
+                        $imageUrl = $record->thumbnail_url;
+                        
+                        return new \Illuminate\Support\HtmlString(
+                            '<div class="mt-2">' .
+                            '<img src="' . $imageUrl . '" alt="Podgląd" class="max-w-xs max-h-48 object-contain border border-gray-300 rounded-lg shadow-sm" style="max-width: 300px; max-height: 192px;" />' .
+                            '<p class="text-xs text-gray-500 mt-1">Typ: ' . $record->mime_type . 
+                            ($record->size ? ' | Rozmiar: ' . number_format($record->size / 1024, 1) . ' KB' : '') .
+                            '</p>' .
+                            '</div>'
+                        );
+                    })
+                    ->visible(function ($record) {
+                        return $record && $record->mime_type && strpos($record->mime_type, 'image/') === 0;
+                    }),
+
                 Forms\Components\TextInput::make('name')
                     ->label('Nazwa pliku')
                     ->maxLength(255)
@@ -140,12 +169,30 @@ class FileResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\IconColumn::make('icon')
+                Tables\Columns\TextColumn::make('thumbnail')
                     ->label('')
                     ->getStateUsing(function ($record) {
-                        return $record->icon;
+                        if ($record->mime_type && strpos($record->mime_type, 'image/') === 0) {
+                            // Dla obrazków - pokaż miniaturkę
+                            $thumbnailUrl = $record->thumbnail_url;
+                            \Log::info('Generating thumbnail for file ' . $record->id . ': ' . $thumbnailUrl);
+                            return new \Illuminate\Support\HtmlString(
+                                '<div style="width: 48px; height: 48px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">' .
+                                '<img src="' . $thumbnailUrl . '" alt="Podgląd" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yNCAzNkMzMC42Mjc0IDM2IDM2IDMwLjYyNzQgMzYgMjRDMzYgMTcuMzcyNiAzMC42Mjc0IDEyIDI0IDEyQzE3LjM3MjYgMTIgMTIgMTcuMzcyNiAxMiAyNEMxMiAzMC42Mjc0IDE3LjM3MjYgMzYgMjQgMzYiIHN0cm9rZT0iIzlDQTNBRiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==\'" />' .
+                                '</div>'
+                            );
+                        } else {
+                            // Dla nie-obrazków - pokaż ikonę
+                            return new \Illuminate\Support\HtmlString(
+                                '<div class="flex items-center justify-center w-12 h-12 bg-gray-100 rounded text-gray-500">' .
+                                '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">' .
+                                $record->icon .
+                                '</svg>' .
+                                '</div>'
+                            );
+                        }
                     })
-                    ->size(Tables\Columns\IconColumn\IconColumnSize::Large),
+                    ->html(),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nazwa pliku')
@@ -202,7 +249,7 @@ class FileResource extends Resource
                     ->trueColor('success')
                     ->falseColor('gray'),
 
-                Tables\Columns\TextColumn::make('public_url')
+                Tables\Columns\TextColumn::make('public_link')
                     ->label('Link publiczny')
                     ->getStateUsing(function ($record) {
                         if ($record->is_public) {
@@ -212,15 +259,12 @@ class FileResource extends Resource
                     })
                     ->color(fn ($record) => $record->is_public ? 'success' : 'gray')
                     ->icon(fn ($record) => $record->is_public ? 'heroicon-o-link' : 'heroicon-o-lock-closed')
-                    ->url(fn ($record) => $record->is_public ? '#' : null)
-                    ->openUrlInNewTab(false)
                     ->extraAttributes(fn ($record) => $record->is_public ? [
-                        'onclick' => "
-                            navigator.clipboard.writeText('{$record->url}');
-                            return false;
-                        "
+                        'onclick' => "navigator.clipboard.writeText('" . ($record->is_public ? url('admin-files/' . str_replace('uploads/', '', $record->path)) : '') . "'); return false;",
+                        'style' => 'cursor: pointer;'
                     ] : [])
                     ->tooltip(fn ($record) => $record->is_public ? 'Kliknij aby skopiować link' : 'Plik prywatny'),
+
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Utworzono')
