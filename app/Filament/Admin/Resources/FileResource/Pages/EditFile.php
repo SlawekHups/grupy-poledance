@@ -15,6 +15,14 @@ class EditFile extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('back')
+                ->label('Powrót do tabeli')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->action(function () {
+                    $this->redirect($this->getResource()::getUrl('index'));
+                }),
+
             Actions\Action::make('download')
                 ->label('Pobierz plik')
                 ->icon('heroicon-o-arrow-down-tray')

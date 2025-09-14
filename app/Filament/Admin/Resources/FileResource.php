@@ -249,10 +249,15 @@ class FileResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nazwa pliku')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(25)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        return strlen($state) > 25 ? $state : null;
+                    }),
 
                 Tables\Columns\TextColumn::make('size')
-                    ->label('Pojemność')
+                    ->label('Rozmiar')
                     ->formatStateUsing(function ($state) {
                         $bytes = $state;
                         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -263,12 +268,14 @@ class FileResource extends Resource
                         
                         return round($bytes, 2) . ' ' . $units[$i];
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('original_name')
                     ->label('Oryginalna nazwa')
                     ->searchable()
                     ->sortable()
+                    ->limit(30)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         return strlen($state) > 30 ? $state : null;
@@ -291,7 +298,12 @@ class FileResource extends Resource
                 Tables\Columns\TextColumn::make('mime_type')
                     ->label('Typ MIME')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(20)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        return strlen($state) > 20 ? $state : null;
+                    }),
 
                 Tables\Columns\IconColumn::make('is_public')
                     ->label('Publiczny')
