@@ -94,7 +94,7 @@ class PreRegistration extends Model
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
-            'amount' => 200, // Domyślna kwota
+            'amount' => config('app.default_user_amount'), // Domyślna kwota
             'is_active' => true,
             'group_id' => $groupId,
         ]);

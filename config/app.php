@@ -141,4 +141,7 @@ return [
     // Admin digest recipients (comma-separated emails)
     'admin_payment_digest_recipients' => env('ADMIN_PAYMENT_DIGEST_RECIPIENTS', ''),
 
+    // Domyślna kwota miesięczna dla nowych użytkowników
+    'default_user_amount' => env('DEFAULT_USER_AMOUNT', 160),
+
 ];

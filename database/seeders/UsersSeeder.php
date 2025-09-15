@@ -144,7 +144,7 @@ class UsersSeeder extends Seeder
                 'email' => "user{$userNumber}.{$group->id}@hups.pl",
                 'phone' => '+48' . rand(100000000, 999999999),
                 'group_id' => $group->id,
-                'amount' => 200,
+                'amount' => config('app.default_user_amount'),
                 'is_active' => true,
                 'role' => 'user',
                 'joined_at' => Carbon::now()->subDays(rand(1, 30)),
@@ -159,7 +159,7 @@ class UsersSeeder extends Seeder
             'email' => $userData['email'],
             'phone' => $userData['phone'],
             'group_id' => $group->id,
-            'amount' => 200, // Domyślna kwota miesięczna
+            'amount' => config('app.default_user_amount'), // Domyślna kwota miesięczna
             'is_active' => true,
             'role' => 'user',
             'joined_at' => Carbon::now()->subDays(rand(1, 30)), // Losowa data dołączenia

@@ -150,7 +150,7 @@ class UserResource extends Resource
                                     ->label('Kwota miesięczna (zł)')
                                     ->numeric()
                                     ->required()
-                                    ->default(200)
+                                    ->default(config('app.default_user_amount'))
                                     ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
                             ]),
 
@@ -567,7 +567,7 @@ class UserResource extends Resource
                                 
                                 // Zachowaj oryginalną wartość amount z CSV (nie konwertuj na int)
                                 if (empty($rowData['amount'])) {
-                                    $rowData['amount'] = 200; // domyślna wartość tylko jeśli puste
+                                    $rowData['amount'] = config('app.default_user_amount'); // domyślna wartość tylko jeśli puste
                                 } else {
                                     $rowData['amount'] = (float)$rowData['amount']; // konwertuj na float aby zachować grosze
                                 }

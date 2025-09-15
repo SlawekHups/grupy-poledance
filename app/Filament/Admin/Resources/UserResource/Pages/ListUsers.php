@@ -226,7 +226,7 @@ class ListUsers extends ListRecords
                 
                 // Zachowaj oryginalną wartość amount z CSV (nie konwertuj na int)
                 if (empty($rowData['amount'])) {
-                    $rowData['amount'] = 200; // domyślna wartość tylko jeśli puste
+                    $rowData['amount'] = config('app.default_user_amount'); // domyślna wartość tylko jeśli puste
                 } else {
                     $rowData['amount'] = (float)$rowData['amount']; // konwertuj na float aby zachować grosze
                 }

@@ -65,7 +65,7 @@ class CreateUser extends CreateRecord
                                     ->label('Kwota miesięczna (zł)')
                                     ->numeric()
                                     ->required()
-                                    ->default(200),
+                                    ->default(config('app.default_user_amount')),
                                 DatePicker::make('joined_at')
                                     ->label('Data zapisu')
                                     ->default(now()),
