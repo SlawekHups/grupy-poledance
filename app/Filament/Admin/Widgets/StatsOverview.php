@@ -61,13 +61,17 @@ class StatsOverview extends BaseWidget
                 ->extraAttributes(['class' => 'cursor-pointer']),
         ];
 
-        // 👥 Liczba użytkowników w każdej grupie (pivot: members) + kolory wg zajętości i tooltipy
+        // 👥 Liczba użytkowników w każdej grupie (pivot: members) + kolory wg zajętości i tooltipy + kolorowe obramowania dla dni tygodnia
         foreach (Group::all() as $group) {
             $userCount = $group->members()->where('users.role', 'user')->count();
             $capacity = (int) ($group->max_size ?? 0);
             $color = 'primary';
             $description = 'Liczba przypisanych użytkowników';
             $title = "Status: {$group->status}\nBrak ustawionego limitu miejsc";
+
+            // 🎨 Określ kolor obramowania i tła na podstawie dnia tygodnia
+            $borderColor = $this->getDayBorderColor($group->name);
+            $backgroundColor = $this->getDayBackgroundColor($group->name);
 
             if ($capacity > 0) {
                 $fillPct = (int) round(($userCount / max($capacity, 1)) * 100);
@@ -94,9 +98,71 @@ class StatsOverview extends BaseWidget
                 ->color($color)
                 ->description($description)
                 ->url(route('filament.admin.resources.groups.edit', ['record' => $group->id]))
-                ->extraAttributes(['class' => 'cursor-pointer', 'title' => $title]);
+                ->extraAttributes([
+                    'class' => 'cursor-pointer', 
+                    'title' => $title,
+                    'style' => "border-left: 4px solid {$borderColor}; background-color: {$backgroundColor};"
+                ]);
         }
 
         return $cards;
+    }
+
+    /**
+     * 🎨 Zwraca kolor obramowania na podstawie dnia tygodnia w nazwie grupy
+     */
+    private function getDayBorderColor(string $groupName): string
+    {
+        $groupName = mb_strtolower($groupName);
+        
+        // Kolory dla każdego dnia tygodnia
+        $dayColors = [
+            'poniedziałek' => '#ef4444', // Czerwony
+            'wtorek' => '#f97316',       // Pomarańczowy  
+            'środa' => '#eab308',        // Żółty
+            'czwartek' => '#22c55e',     // Zielony
+            'piątek' => '#06b6d4',       // Cyjan
+            'sobota' => '#8b5cf6',       // Fioletowy
+            'niedziela' => '#ec4899',    // Różowy
+        ];
+        
+        // Sprawdź który dzień tygodnia występuje w nazwie
+        foreach ($dayColors as $day => $color) {
+            if (str_contains($groupName, $day)) {
+                return $color;
+            }
+        }
+        
+        // Domyślny kolor dla grup bez określonego dnia (np. "Bez grupy")
+        return '#6b7280'; // Szary
+    }
+
+    /**
+     * 🎨 Zwraca jasniejszy kolor tła na podstawie dnia tygodnia w nazwie grupy
+     */
+    private function getDayBackgroundColor(string $groupName): string
+    {
+        $groupName = mb_strtolower($groupName);
+        
+        // Jasniejsze kolory tła dla każdego dnia tygodnia (z przezroczystością)
+        $dayBackgroundColors = [
+            'poniedziałek' => 'rgba(239, 68, 68, 0.1)',   // Jasny czerwony
+            'wtorek' => 'rgba(249, 115, 22, 0.1)',        // Jasny pomarańczowy  
+            'środa' => 'rgba(234, 179, 8, 0.1)',          // Jasny żółty
+            'czwartek' => 'rgba(34, 197, 94, 0.1)',       // Jasny zielony
+            'piątek' => 'rgba(6, 182, 212, 0.1)',         // Jasny cyjan
+            'sobota' => 'rgba(139, 92, 246, 0.1)',        // Jasny fioletowy
+            'niedziela' => 'rgba(236, 72, 153, 0.1)',     // Jasny różowy
+        ];
+        
+        // Sprawdź który dzień tygodnia występuje w nazwie
+        foreach ($dayBackgroundColors as $day => $color) {
+            if (str_contains($groupName, $day)) {
+                return $color;
+            }
+        }
+        
+        // Domyślny kolor dla grup bez określonego dnia (np. "Bez grupy")
+        return 'rgba(107, 114, 128, 0.1)'; // Jasny szary
     }
 }
