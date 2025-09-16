@@ -63,7 +63,7 @@ class Group extends Model
 
     public function hasSpace(): bool
     {
-        return $this->members()->count() < $this->max_size;
+        return $this->members()->where('users.is_active', true)->count() < $this->max_size;
     }
 
     protected static function booted()

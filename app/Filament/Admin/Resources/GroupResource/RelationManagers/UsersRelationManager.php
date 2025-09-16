@@ -181,43 +181,93 @@ class UsersRelationManager extends RelationManager
                         return route('admin.groups.print-users', ['group' => $group->id]);
                     })
                     ->openUrlInNewTab(),
-                Tables\Actions\Action::make('addUser')
-                    ->label('Dodaj użytkownika')
+                Tables\Actions\Action::make('addUsers')
+                    ->label('Dodaj użytkowników')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
                     ->form([
-                        Forms\Components\Select::make('user_id')
-                            ->label('Użytkownik')
-                            ->options(
-                                User::query()
-                                    ->whereNull('group_id')
-                                    ->whereNot('role', 'admin')
-                                    ->orderBy('name')
-                                    ->pluck('name', 'id')
-                            )
-                            ->required()
+                        Forms\Components\Select::make('user_ids')
+                            ->label('Użytkownicy')
+                            ->multiple()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->options(function () {
+                                $group = $this->getOwnerRecord();
+                                return User::where('role', 'user')
+                                    ->where('is_active', true)
+                                    ->whereDoesntHave('groups', function ($q) use ($group) {
+                                        $q->where('groups.id', $group->id);
+                                    })
+                                    ->get()
+                                    ->mapWithKeys(function ($user) {
+                                        $currentGroups = $user->groups->pluck('name')->implode(', ');
+                                        $groupInfo = $currentGroups ? " (obecnie: {$currentGroups})" : " (bez grup)";
+                                        return [$user->id => $user->name . $groupInfo];
+                                    });
+                            })
+                            ->required()
+                            ->helperText('Możesz wyszukać użytkownika po imieniu. W nawiasach pokazane są obecne grupy użytkownika.'),
+                        
+                        Forms\Components\Placeholder::make('group_info')
+                            ->label('Informacje o grupie')
+                            ->content(function () {
+                                $group = $this->getOwnerRecord();
+                                $currentCount = $group->members()->where('users.is_active', true)->count();
+                                $maxSize = $group->max_size ?? 0;
+                                $availableSlots = $maxSize - $currentCount;
+                                
+                                return "Obecnie w grupie: {$currentCount}/{$maxSize} użytkowników" . 
+                                       ($availableSlots > 0 ? " (dostępne miejsca: {$availableSlots})" : " (grupa pełna)");
+                            })
+                            ->columnSpanFull(),
                     ])
-                    ->action(function (array $data, Group $group): void {
-                        if (!$group->hasSpace()) {
-                            Notification::make()
-                                ->title('Grupa jest pełna')
-                                ->warning()
-                                ->send();
-                            return;
+                    ->action(function (array $data): void {
+                        /** @var Group $group */
+                        $group = $this->getOwnerRecord();
+                        
+                        $userIds = $data['user_ids'];
+                        $users = User::whereIn('id', $userIds)->get();
+                        
+                        $addedCount = 0;
+                        $alreadyInGroup = 0;
+                        $groupFull = false;
+                        
+                        foreach ($users as $user) {
+                            if (!$group->members()->where('user_id', $user->id)->exists()) {
+                                $group->members()->attach($user->id);
+                                $addedCount++;
+                                
+                                // Sprawdź czy grupa jest teraz pełna
+                                if (!$group->hasSpace()) {
+                                    $groupFull = true;
+                                }
+                            } else {
+                                $alreadyInGroup++;
+                            }
                         }
-
-                        $user = User::find($data['user_id']);
-                        // Przypnij przez pivot
-                        $group->members()->syncWithoutDetaching([$user->id]);
                         
                         $group->updateStatusBasedOnCapacity();
-
+                        
+                        $message = "Dodano {$addedCount} użytkowników do grupy '{$group->name}'";
+                        if ($alreadyInGroup > 0) {
+                            $message .= " ({$alreadyInGroup} już było w grupie)";
+                        }
+                        if ($groupFull) {
+                            $message .= " - grupa osiągnęła maksymalną liczbę członków";
+                        }
+                        
                         Notification::make()
-                            ->title('Użytkownik został dodany do grupy')
+                            ->title('Użytkownicy dodani do grupy')
+                            ->body($message)
                             ->success()
                             ->send();
+                            
+                        // Odśwież tabelę i stronę
+                        $this->dispatch('$refresh');
+                        $this->dispatch('refreshComponent');
                     })
-                    ->visible(fn (Group $group) => $group->status !== 'inactive' && $group->hasSpace()),
+                    ->visible(fn () => $this->getOwnerRecord()->status !== 'inactive'),
+                
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -228,6 +278,9 @@ class UsersRelationManager extends RelationManager
                         ->successNotificationTitle('Użytkownik został usunięty z grupy')
                         ->after(function (Group $group) {
                             $group->updateStatusBasedOnCapacity();
+                            // Odśwież tabelę i stronę
+                            $this->dispatch('$refresh');
+                        $this->dispatch('refreshComponent');
                         }),
                 ])
                     ->button()
@@ -241,6 +294,9 @@ class UsersRelationManager extends RelationManager
                     ->icon('heroicon-o-trash')
                     ->after(function (Group $group) {
                         $group->updateStatusBasedOnCapacity();
+                        // Odśwież tabelę i stronę
+                        $this->dispatch('$refresh');
+                        $this->dispatch('refreshComponent');
                     })
                     ->successNotificationTitle('Użytkownicy zostali usunięci z grupy'),
                 Tables\Actions\BulkAction::make('updatePaymentAmount')

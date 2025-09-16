@@ -4,16 +4,21 @@ namespace App\Filament\Admin\Resources\GroupResource\Pages;
 
 use App\Filament\Admin\Resources\GroupResource;
 use App\Models\Group;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Placeholder;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditGroup extends EditRecord
 {
     protected static string $resource = GroupResource::class;
+    
+    protected $listeners = ['refreshComponent' => '$refresh'];
 
     protected function getHeaderActions(): array
     {
