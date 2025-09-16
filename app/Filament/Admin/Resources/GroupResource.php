@@ -36,7 +36,7 @@ class GroupResource extends Resource
                     ->afterStateHydrated(function (Get $get, callable $set) {
                         // Ustaw tylko przy pierwszym załadowaniu, aby utrzymać wartość w kolejnych żądaniach Livewire
                         if ($get('_editMode') === null || $get('_editMode') === false) {
-                            if (request()->boolean('edit', false)) {
+                            if (request()->boolean('edit', false) || request()->routeIs('*.create')) {
                                 $set('_editMode', true);
                             }
                         }
@@ -44,7 +44,7 @@ class GroupResource extends Resource
                     ->dehydrated(false),
 
                 Forms\Components\View::make('filament.admin.groups.group-summary')
-                    ->visible(fn (Get $get) => ! (bool) $get('_editMode'))
+                    ->visible(fn (Get $get) => ! (bool) $get('_editMode') && !request()->routeIs('*.create'))
                     ->columnSpanFull(),
                 Forms\Components\Card::make()
                     ->schema([
@@ -54,7 +54,7 @@ class GroupResource extends Resource
                             ->maxLength(255)
                             ->placeholder('Nazwa grupy')
                             ->columnSpanFull()
-                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode') && !request()->routeIs('*.create')),
 
                         Forms\Components\TextInput::make('description')
                             ->label('Opis')
@@ -63,7 +63,7 @@ class GroupResource extends Resource
                             ->helperText(fn ($state) => strlen($state) . '/30 znaków')
                             ->live()
                             ->columnSpanFull()
-                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+                            ->disabled(fn (Get $get) => ! (bool) $get('_editMode') && !request()->routeIs('*.create')),
 
                         Forms\Components\Grid::make(2)
                             ->schema([
@@ -75,18 +75,18 @@ class GroupResource extends Resource
                                         'full' => 'Pełna',
                                     ])
                                     ->default('active')
-                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode') && !request()->routeIs('*.create')),
 
                                 Forms\Components\TextInput::make('max_size')
                                     ->label('Maksymalna liczba uczestników')
                                     ->numeric()
                                     ->minValue(1)
                                     ->default(7)
-                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode')),
+                                    ->disabled(fn (Get $get) => ! (bool) $get('_editMode') && !request()->routeIs('*.create')),
                             ]),
                     ])
                     ->columns(2)
-                    ->visible(fn (Get $get) => (bool) $get('_editMode')),
+                    ->visible(fn (Get $get) => (bool) $get('_editMode') || request()->routeIs('*.create')),
             ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\GroupResource\Pages;
 
 use App\Filament\Admin\Resources\GroupResource;
 use App\Filament\Admin\Resources\GroupResource\Widgets\GroupStats;
+use App\Filament\Admin\Resources\GroupResource\Widgets\GroupedByDayWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -29,6 +30,13 @@ class ListGroups extends ListRecords
     {
         return [
             GroupStats::class,
+        ];
+    }
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            GroupedByDayWidget::class,
         ];
     }
 }
