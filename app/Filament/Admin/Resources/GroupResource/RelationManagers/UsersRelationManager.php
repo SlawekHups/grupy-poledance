@@ -145,7 +145,7 @@ class UsersRelationManager extends RelationManager
                 Tables\Actions\Action::make('exportCsv')
                     ->label('Pobierz listę CSV')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
+                    ->color('warning')
                     ->action(function () {
                         /** @var Group $group */
                         $group = $this->getOwnerRecord();
