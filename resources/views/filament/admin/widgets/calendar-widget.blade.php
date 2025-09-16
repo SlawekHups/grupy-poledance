@@ -32,12 +32,12 @@
             </div>
         </x-slot>
 
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border border-blue-200 shadow-sm">
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-4 sm:p-6 border border-blue-200 shadow-sm">
             <!-- Główna karta kalendarza -->
-            <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border border-gray-200">
                 <!-- Nagłówek z dniem tygodnia -->
                 <div class="text-center mb-4">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-1">
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
                         {{ ucfirst($this->getViewData()['dayOfWeek']) }}
                     </h3>
                     <p class="text-sm text-gray-600">
@@ -55,39 +55,39 @@
                         $bgColor = $viewData['isToday'] ? 'from-green-500 to-green-600' : 
                                    ($viewData['isPast'] ? 'from-gray-500 to-gray-600' : 'from-blue-500 to-indigo-600');
                     @endphp
-                    <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br {{ $bgColor }} rounded-full shadow-lg">
-                        <span class="text-3xl font-bold text-white">
+                    <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br {{ $bgColor }} rounded-full shadow-lg">
+                        <span class="text-2xl sm:text-3xl font-bold text-white">
                             {{ $this->getViewData()['dayOfMonth'] }}
                         </span>
                     </div>
                 </div>
 
                 <!-- Informacje dodatkowe -->
-                <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-center">
                     <a 
                         href="{{ route('filament.admin.resources.users.index') }}"
-                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-colors duration-200 cursor-pointer"
+                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer"
                     >
                         <div class="text-xs text-gray-500 mb-1">Wszyscy użytkownicy</div>
-                        <div class="text-lg font-semibold text-gray-700">
+                        <div class="text-base sm:text-lg font-semibold text-gray-700">
                             {{ $this->getViewData()['totalUsers'] }}
                         </div>
                     </a>
                     <a 
                         href="{{ route('filament.admin.resources.groups.index') }}"
-                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-colors duration-200 cursor-pointer"
+                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer"
                     >
                         <div class="text-xs text-gray-500 mb-1">Grupy</div>
-                        <div class="text-lg font-semibold text-gray-700">
+                        <div class="text-base sm:text-lg font-semibold text-gray-700">
                             {{ $this->getViewData()['totalGroups'] }}
                         </div>
                     </a>
                     <a 
                         href="{{ route('filament.admin.resources.attendances.index') }}"
-                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-colors duration-200 cursor-pointer"
+                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer"
                     >
                         <div class="text-xs text-gray-500 mb-1">Obecność</div>
-                        <div class="text-lg font-semibold text-gray-700">
+                        <div class="text-base sm:text-lg font-semibold text-gray-700">
                             {{ $this->getViewData()['selectedDayAttendance'] }}
                         </div>
                     </a>
@@ -156,12 +156,12 @@
                     @endphp
                     <button 
                         wire:click="$set('selectedDate', '{{ $prevDateFormatted }}')"
-                        class="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors duration-200 cursor-pointer flex-1"
+                        class="text-center hover:bg-gray-50 rounded-lg p-1 sm:p-2 transition-colors duration-200 cursor-pointer flex-1"
                     >
                         <div class="text-xs text-gray-500 mb-1">
                             {{ $prevDate->locale('pl')->dayName }}
                         </div>
-                        <div class="text-lg font-semibold text-gray-600">
+                        <div class="text-base sm:text-lg font-semibold text-gray-600">
                             {{ $prevDate->day }}
                         </div>
                         <div class="text-xs text-gray-400">
@@ -176,12 +176,12 @@
                         @endphp
                         <button 
                             wire:click="$set('selectedDate', '{{ $todayFormatted }}')"
-                            class="text-center hover:bg-green-50 rounded-lg p-2 transition-colors duration-200 cursor-pointer flex-1"
+                            class="text-center hover:bg-green-50 rounded-lg p-1 sm:p-2 transition-colors duration-200 cursor-pointer flex-1"
                         >
                             <div class="text-xs text-green-600 mb-1 font-medium">
                                 {{ $today->locale('pl')->dayName }}
                             </div>
-                            <div class="text-lg font-bold text-green-700">
+                            <div class="text-base sm:text-lg font-bold text-green-700">
                                 {{ $today->day }}
                             </div>
                             <div class="text-xs text-green-500">
@@ -197,12 +197,12 @@
                     @endphp
                     <button 
                         wire:click="$set('selectedDate', '{{ $nextDateFormatted }}')"
-                        class="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors duration-200 cursor-pointer flex-1"
+                        class="text-center hover:bg-gray-50 rounded-lg p-1 sm:p-2 transition-colors duration-200 cursor-pointer flex-1"
                     >
                         <div class="text-xs text-gray-500 mb-1">
                             {{ $nextDate->locale('pl')->dayName }}
                         </div>
-                        <div class="text-lg font-semibold text-gray-600">
+                        <div class="text-base sm:text-lg font-semibold text-gray-600">
                             {{ $nextDate->day }}
                         </div>
                         <div class="text-xs text-gray-400">
@@ -220,17 +220,17 @@
                         Zajęcia w dniu {{ ucfirst($this->getViewData()['dayOfWeek']) }}
                     </h4>
                     
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                         @foreach($this->getViewData()['dayGroups'] as $hour => $groups)
                             @php
                                 $group = $groups[0]; // Weź pierwszą grupę z tej godziny
                             @endphp
                             <a 
                                 href="{{ route('filament.admin.resources.groups.edit', ['record' => $group->id]) }}"
-                                class="block p-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-lg border border-blue-200 transition-all duration-200 hover:shadow-md group"
+                                class="block p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-lg border border-blue-200 transition-all duration-200 hover:shadow-md group"
                             >
                                 <div class="text-center">
-                                    <div class="text-lg font-bold text-blue-700 group-hover:text-blue-800">
+                                    <div class="text-base sm:text-lg font-bold text-blue-700 group-hover:text-blue-800">
                                         {{ $hour }}
                                     </div>
                                     <div class="text-xs text-gray-600 mt-1">
@@ -259,10 +259,10 @@
             <div class="mt-4 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
                 <a 
                     href="{{ route('filament.admin.pages.attendance-group-page') }}"
-                    class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-colors duration-200 cursor-pointer text-center"
+                    class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer text-center"
                 >
                     <div class="text-xs text-gray-500 mb-1">Obecność grupy</div>
-                    <div class="text-lg font-semibold text-gray-700">
+                    <div class="text-base sm:text-lg font-semibold text-gray-700">
                         {{ ucfirst($this->getViewData()['dayOfWeek']) }}
                     </div>
                 </a>
