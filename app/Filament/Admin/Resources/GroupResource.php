@@ -92,283 +92,18 @@ class GroupResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // Tabela wyłączona - używamy tylko widżetów
         return $table
-            ->contentGrid([
-                'md' => 1,
-                'lg' => 1,
-                'xl' => 1,
-            ])
-            ->recordUrl(fn ($record) => route('filament.admin.resources.groups.edit', ['record' => $record]))
-            ->recordClasses('rounded-xl border bg-white shadow-sm hover:shadow-md transition hover:bg-gray-50')
-            ->columns([
-                Tables\Columns\Layout\Panel::make([
-                    Tables\Columns\Layout\Stack::make([
-                        // Status w osobnej linii, wyrównany do prawej
-                        Tables\Columns\TextColumn::make('status')
-                            ->label('')
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'active' => 'success',
-                                'inactive' => 'danger',
-                                'full' => 'warning',
-                                default => 'gray',
-                            })
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'active' => 'Aktywna',
-                                'inactive' => 'Nieaktywna',
-                                'full' => 'Pełna',
-                                default => $state,
-                            })
-                            ->alignRight()
-                            ->extraAttributes(['class' => 'text-lg font-semibold mb-0 !mb-0']),
-
-                        // Nazwa grupy - na lewą stronę
-                        Tables\Columns\TextColumn::make('name')
-                            ->label('')
-                            ->searchable()
-                            ->weight('bold')
-                            ->size('xl')
-                            ->alignLeft()
-                            ->extraAttributes(['class' => 'text-2xl mb-0 !mb-0']),
-
-                        Tables\Columns\ViewColumn::make('metrics')
-                            ->label('')
-                            ->view('filament.admin.groups.group-metrics')
-                            ->extraAttributes(['class' => 'mb-0 !mb-0']),
-
-                        Tables\Columns\TextColumn::make('description')
-                            ->label('')
-                            ->limit(160)
-                            ->formatStateUsing(fn (?string $state) => $state ?: 'Brak opisu')
-                            ->alignCenter()
-                            ->extraAttributes(['class' => 'text-sm text-gray-600 mt-0 !mt-0']),
-                    ])->space(0),
-                ])->extraAttributes(['class' => 'p-2 !p-2']),
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'active' => 'Aktywna',
-                        'inactive' => 'Nieaktywna',
-                        'full' => 'Pełna',
-                    ]),
-            ])
-            ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('update_payment_amount')
-                        ->label('Zmień kwotę')
-                        ->icon('heroicon-o-banknotes')
-                        ->color('warning')
-                        ->size('sm')
-                        ->tooltip('Zmień kwotę płatności dla grupy')
-                        ->form([
-                            Forms\Components\TextInput::make('amount')
-                                ->label('Nowa kwota miesięczna (zł)')
-                                ->numeric()
-                                ->required()
-                                ->minValue(0)
-                                ->step(0.01)
-                                ->suffix('zł'),
-                            Forms\Components\Select::make('scope')
-                                ->label('Zakres zmian')
-                                ->options([
-                                    'current_month' => 'Tylko płatności bieżącego miesiąca',
-                                    'future_months' => 'Płatności przyszłych miesięcy + nowa kwota domyślna',
-                                    'all_months' => 'Wszystkie płatności + nowa kwota domyślna (ostrożnie!)',
-                                ])
-                                ->default('current_month')
-                                ->required(),
-                            Forms\Components\Toggle::make('confirm')
-                                ->label('Potwierdzam zmianę kwoty dla wszystkich użytkowników w grupie')
-                                ->required()
-                                ->helperText('Ta operacja zmieni kwotę płatności dla wszystkich użytkowników w tej grupie.'),
-                        ])
-                        ->action(function (Group $record, array $data): void {
-                            \Illuminate\Support\Facades\Log::info('Updating payment amount for group', [
-                                'group_id' => $record->id,
-                                'group_name' => $record->name,
-                                'new_amount' => $data['amount'],
-                                'scope' => $data['scope']
-                            ]);
-                            
-                            $amount = (float) $data['amount'];
-                            $scope = $data['scope'];
-                            
-                            // Pobierz wszystkich użytkowników w grupie (pivot members)
-                            $users = $record->members()->where('users.is_active', true)->get();
-                            
-                            \Illuminate\Support\Facades\Log::info('Found users in group', [
-                                'group_id' => $record->id,
-                                'users_count' => $users->count(),
-                                'users' => $users->pluck('name', 'id')->toArray()
-                            ]);
-                            
-                            $updatedUsers = 0;
-                            $updatedPayments = 0;
-                            
-                            foreach ($users as $user) {
-                                \Illuminate\Support\Facades\Log::info('Processing user', [
-                                    'user_id' => $user->id,
-                                    'user_name' => $user->name,
-                                    'current_amount' => $user->amount
-                                ]);
-                                
-                                // Aktualizuj płatności w zależności od zakresu
-                                $paymentQuery = $user->payments();
-                                
-                                switch ($scope) {
-                                    case 'current_month':
-                                        $paymentQuery->where('month', now()->format('Y-m'));
-                                        break;
-                                    case 'future_months':
-                                        $paymentQuery->where('month', '>=', now()->format('Y-m'));
-                                        break;
-                                    case 'all_months':
-                                        // Wszystkie płatności
-                                        break;
-                                }
-                                
-                                $paymentCount = $paymentQuery->update(['amount' => $amount]);
-                                $updatedPayments += $paymentCount;
-                                
-                                // Jeśli aktualizujemy przyszłe miesiące lub wszystkie, zaktualizuj też kwotę użytkownika
-                                if ($scope === 'future_months' || $scope === 'all_months') {
-                                    $user->update(['amount' => $amount]);
-                                    $updatedUsers++;
-                                    \Illuminate\Support\Facades\Log::info('Updated user amount for future payments', [
-                                        'user_id' => $user->id,
-                                        'new_amount' => $amount
-                                    ]);
-                                }
-                                
-                                \Illuminate\Support\Facades\Log::info('Updated user payments', [
-                                    'user_id' => $user->id,
-                                    'payment_count' => $paymentCount,
-                                    'scope' => $scope
-                                ]);
-                            }
-                            
-                            \Illuminate\Support\Facades\Log::info('Payment amount update completed', [
-                                'group_id' => $record->id,
-                                'updated_users' => $updatedUsers,
-                                'updated_payments' => $updatedPayments,
-                                'scope' => $scope
-                            ]);
-                            
-                            $message = "Zaktualizowano {$updatedPayments} płatności";
-                            if ($updatedUsers > 0) {
-                                $message .= " i kwotę dla {$updatedUsers} użytkowników";
-                            }
-                            $message .= " w grupie '{$record->name}'";
-                            
-                            \Filament\Notifications\Notification::make()
-                                ->title('Kwota płatności zaktualizowana')
-                                ->body($message)
-                                ->success()
-                                ->send();
-                        })
-                        ->requiresConfirmation()
-                        ->modalHeading('Zmień kwotę płatności dla grupy')
-                        ->modalDescription(fn (Group $record) => "Zmienisz kwotę płatności dla wszystkich użytkowników w grupie '{$record->name}'")
-                        ->modalSubmitActionLabel('Zmień kwotę'),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
-                ])
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->button()
-                    ->label('Actions'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-                Tables\Actions\BulkAction::make('update_payment_amount_bulk')
-                    ->label('Zmień kwotę')
-                    ->icon('heroicon-o-banknotes')
-                    ->color('warning')
-                    ->size('sm')
-                    ->tooltip('Zmień kwotę płatności dla zaznaczonych grup')
-                    ->form([
-                        Forms\Components\TextInput::make('amount')
-                            ->label('Nowa kwota miesięczna (zł)')
-                            ->numeric()
-                            ->required()
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->suffix('zł'),
-                        Forms\Components\Select::make('scope')
-                            ->label('Zakres zmian')
-                            ->options([
-                                'current_month' => 'Tylko płatności bieżącego miesiąca',
-                                'future_months' => 'Płatności przyszłych miesięcy + nowa kwota domyślna',
-                                'all_months' => 'Wszystkie płatności + nowa kwota domyślna (ostrożnie!)',
-                            ])
-                            ->default('current_month')
-                            ->required(),
-                        Forms\Components\Toggle::make('confirm')
-                            ->label('Potwierdzam zmianę kwoty dla wszystkich użytkowników w zaznaczonych grupach')
-                            ->required()
-                            ->helperText('Ta operacja zmieni kwotę płatności dla wszystkich użytkowników w zaznaczonych grupach.'),
-                    ])
-                    ->action(function (Collection $records, array $data): void {
-                        $amount = (float) $data['amount'];
-                        $scope = $data['scope'];
-                        $totalUpdatedUsers = 0;
-                        $totalUpdatedPayments = 0;
-                        
-                        foreach ($records as $group) {
-                            $users = $group->members()->where('users.is_active', true)->get();
-                            $updatedUsers = 0;
-                            $updatedPayments = 0;
-                            
-                            foreach ($users as $user) {
-                                // Aktualizuj płatności w zależności od zakresu
-                                $paymentQuery = $user->payments();
-                                
-                                switch ($scope) {
-                                    case 'current_month':
-                                        $paymentQuery->where('month', now()->format('Y-m'));
-                                        break;
-                                    case 'future_months':
-                                        $paymentQuery->where('month', '>=', now()->format('Y-m'));
-                                        break;
-                                    case 'all_months':
-                                        // Wszystkie płatności
-                                        break;
-                                }
-                                
-                                $paymentCount = $paymentQuery->update(['amount' => $amount]);
-                                $updatedPayments += $paymentCount;
-                                
-                                // Jeśli aktualizujemy przyszłe miesiące lub wszystkie, zaktualizuj też kwotę użytkownika
-                                if ($scope === 'future_months' || $scope === 'all_months') {
-                                    $user->update(['amount' => $amount]);
-                                    $updatedUsers++;
-                                }
-                            }
-                            
-                            $totalUpdatedUsers += $updatedUsers;
-                            $totalUpdatedPayments += $updatedPayments;
-                        }
-                        
-                        $message = "Zaktualizowano {$totalUpdatedPayments} płatności";
-                        if ($totalUpdatedUsers > 0) {
-                            $message .= " i kwotę dla {$totalUpdatedUsers} użytkowników";
-                        }
-                        $message .= " w {$records->count()} grupach";
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Kwota płatności zaktualizowana')
-                            ->body($message)
-                            ->success()
-                            ->send();
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Zmień kwotę płatności dla grup')
-                    ->modalDescription('Zmienisz kwotę płatności dla wszystkich użytkowników w zaznaczonych grupach')
-                    ->modalSubmitActionLabel('Zmień kwotę'),
-            ]);
+            ->columns([])
+            ->paginated(false)
+            ->searchable(false)
+            ->filters([])
+            ->actions([])
+            ->bulkActions([])
+            ->headerActions([])
+            ->emptyStateHeading('Grupy wyświetlane w widżetach poniżej')
+            ->emptyStateDescription('Kliknij na grupę w widżecie "Grupy według dni tygodnia" aby przejść do edycji.')
+            ->emptyStateIcon('heroicon-o-calendar-days');
     }
 
     public static function getRelations(): array
@@ -389,13 +124,14 @@ class GroupResource extends Resource
             'edit' => Pages\EditGroup::route('/{record}/edit'),
         ];
     }
+
     public static function getWidgets(): array
     {
         return [
             \App\Filament\Admin\Resources\GroupResource\Widgets\GroupStats::class,
-
         ];
     }
+
     public static function getModelLabel(): string
     {
         return 'Grupy';
