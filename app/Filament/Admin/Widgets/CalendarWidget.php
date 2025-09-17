@@ -12,8 +12,8 @@ class CalendarWidget extends Widget
 {
     protected static string $view = 'filament.admin.widgets.calendar-widget';
     protected int | string | array $columnSpan = [
-        'md' => 1,
-        'xl' => 1,
+        'md' => 3,
+        'xl' => 3,
     ];
 
     protected static ?int $sort = 1;
