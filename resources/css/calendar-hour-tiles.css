@@ -1,0 +1,116 @@
+/* 
+ * Style kafelków godzin - do wykorzystania w innych zakładkach
+ * 
+ * Użycie:
+ * 1. Dodaj link do tego pliku CSS w layout
+ * 2. Użyj klas .calendar-hour-XXXX dla konkretnych godzin
+ * 3. Użyj .calendar-hour-tile jako podstawowej klasy kafelka
+ */
+
+/* Podstawowa klasa kafelka godziny */
+.calendar-hour-tile {
+    display: block;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    color: white !important;
+    text-decoration: none;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-hour-tile:hover {
+    transform: scale(1.05) !important;
+    transition: all 0.3s ease !important;
+}
+
+.calendar-hour-tile .text-center {
+    text-align: center !important;
+}
+
+.calendar-hour-tile .hour-time {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.25rem !important;
+    color: white !important;
+}
+
+.calendar-hour-tile .hour-name {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    color: white !important;
+}
+
+.calendar-hour-tile .hour-badge {
+    font-size: 0.75rem !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(8px) !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 9999px !important;
+    display: inline-block !important;
+    color: white !important;
+}
+
+/* Kolory dla godzin - spójne z systemem grup */
+.calendar-hour-16 { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; }
+.calendar-hour-17 { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+.calendar-hour-18 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; }
+.calendar-hour-19 { background: linear-gradient(135deg, #ef4444, #dc2626) !important; }
+.calendar-hour-20 { background: linear-gradient(135deg, #f97316, #ea580c) !important; }
+.calendar-hour-21 { background: linear-gradient(135deg, #eab308, #ca8a04) !important; }
+.calendar-hour-22 { background: linear-gradient(135deg, #22c55e, #16a34a) !important; }
+.calendar-hour-23 { background: linear-gradient(135deg, #14b8a6, #0d9488) !important; }
+.calendar-hour-00 { background: linear-gradient(135deg, #6366f1, #4f46e5) !important; }
+.calendar-hour-01 { background: linear-gradient(135deg, #84cc16, #65a30d) !important; }
+.calendar-hour-02 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+.calendar-hour-03 { background: linear-gradient(135deg, #dc2626, #b91c1c) !important; }
+.calendar-hour-04 { background: linear-gradient(135deg, #a855f7, #9333ea) !important; }
+.calendar-hour-05 { background: linear-gradient(135deg, #0ea5e9, #0284c7) !important; }
+.calendar-hour-06 { background: linear-gradient(135deg, #10b981, #059669) !important; }
+.calendar-hour-07 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+.calendar-hour-08 { background: linear-gradient(135deg, #eab308, #ca8a04) !important; }
+.calendar-hour-09 { background: linear-gradient(135deg, #ef4444, #dc2626) !important; }
+.calendar-hour-10 { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+.calendar-hour-11 { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; }
+.calendar-hour-12 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; }
+.calendar-hour-13 { background: linear-gradient(135deg, #22c55e, #16a34a) !important; }
+.calendar-hour-14 { background: linear-gradient(135deg, #14b8a6, #0d9488) !important; }
+.calendar-hour-15 { background: linear-gradient(135deg, #84cc16, #65a30d) !important; }
+
+/* Wymuszone kolory tekstu dla wszystkich godzin */
+.calendar-hour-16 *, .calendar-hour-17 *, .calendar-hour-18 *, .calendar-hour-19 *, 
+.calendar-hour-20 *, .calendar-hour-21 *, .calendar-hour-22 *, .calendar-hour-23 *, 
+.calendar-hour-00 *, .calendar-hour-01 *, .calendar-hour-02 *, .calendar-hour-03 *, 
+.calendar-hour-04 *, .calendar-hour-05 *, .calendar-hour-06 *, .calendar-hour-07 *, 
+.calendar-hour-08 *, .calendar-hour-09 *, .calendar-hour-10 *, .calendar-hour-11 *, 
+.calendar-hour-12 *, .calendar-hour-13 *, .calendar-hour-14 *, .calendar-hour-15 * { 
+    color: white !important; 
+}
+
+/* Grid layout dla kafelków */
+.calendar-hours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.calendar-hours-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.calendar-hours-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.calendar-hours-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.calendar-hours-grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* Responsywność */
+@media (max-width: 640px) {
+    .calendar-hours-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-hours-grid {
+        grid-template-columns: 1fr;
+    }
+}

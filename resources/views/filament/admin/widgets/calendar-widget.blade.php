@@ -1,8 +1,88 @@
 <x-filament-widgets::widget>
     <style>
+        /* WYMUSZONE STYLE KAFELKÓW GODZIN */
+        .calendar-hour-tile,
+        .calendar-hour-tile *,
+        .calendar-hour-tile div,
+        .calendar-hour-tile span {
+            color: white !important;
+            text-decoration: none !important;
+        }
+
+        .calendar-hour-tile {
+            display: block !important;
+            padding: 1rem !important;
+            border-radius: 0.75rem !important;
+            transition: all 0.3s ease !important;
+            color: white !important;
+            text-decoration: none !important;
+            min-height: 80px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+        }
+
+        .calendar-hour-tile:hover {
+            transform: scale(1.05) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .calendar-hour-tile .text-center {
+            text-align: center !important;
+        }
+
+        .calendar-hour-tile .hour-time {
+            font-size: 1.125rem !important;
+            font-weight: 700 !important;
+            margin-bottom: 0.25rem !important;
+            color: white !important;
+        }
+
+        .calendar-hour-tile .hour-name {
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+            margin-bottom: 0.5rem !important;
+            color: white !important;
+        }
+
+        .calendar-hour-tile .hour-badge {
+            font-size: 0.75rem !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(8px) !important;
+            padding: 0.25rem 0.5rem !important;
+            border-radius: 9999px !important;
+            display: inline-block !important;
+            color: white !important;
+        }
+
+        /* WYMUSZONE KOLORY GODZIN - ORYGINALNE */
+        .calendar-hour-1600 { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; }
+        .calendar-hour-1700 { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+        .calendar-hour-1800 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; }
+        .calendar-hour-1900 { background: linear-gradient(135deg, #ef4444, #dc2626) !important; }
+        .calendar-hour-2000 { background: linear-gradient(135deg, #f97316, #ea580c) !important; }
+        .calendar-hour-2100 { background: linear-gradient(135deg, #eab308, #ca8a04) !important; }
         /* WYMUSZONE STYLE - nadpisują wszystkie inne */
         .calendar-widget * {
             color: inherit !important;
+        }
+        
+        /* SUPER WYMUSZONE STYLE DLA KAFELKÓW */
+        .calendar-hour-tile,
+        .calendar-hour-tile .hour-time,
+        .calendar-hour-tile .hour-name,
+        .calendar-hour-tile .hour-badge,
+        .calendar-hour-tile div,
+        .calendar-hour-tile span {
+            color: white !important;
+            text-decoration: none !important;
+            font-weight: 700 !important;
+        }
+        
+        /* Wymuszenie kolorów tła */
+        .calendar-hour-tile[class*="calendar-hour-"] {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
         }
         
         /* Wymuszone gradienty dla kart */
@@ -42,31 +122,31 @@
         }
         .calendar-card-teal * { color: white !important; }
         
-        /* Kolory dla godzin - każda godzina ma swój kolor */
+        /* Kolory dla godzin - spójne z kolorami dni tygodnia */
         .calendar-hour-16 { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; }
         .calendar-hour-17 { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; color: white !important; }
-        .calendar-hour-18 { background: linear-gradient(135deg, #ec4899, #db2777) !important; color: white !important; }
+        .calendar-hour-18 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; color: white !important; }
         .calendar-hour-19 { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: white !important; }
-        .calendar-hour-20 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: white !important; }
+        .calendar-hour-20 { background: linear-gradient(135deg, #f97316, #ea580c) !important; color: white !important; }
         .calendar-hour-21 { background: linear-gradient(135deg, #eab308, #ca8a04) !important; color: white !important; }
         .calendar-hour-22 { background: linear-gradient(135deg, #22c55e, #16a34a) !important; color: white !important; }
-        .calendar-hour-23 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; color: white !important; }
+        .calendar-hour-23 { background: linear-gradient(135deg, #14b8a6, #0d9488) !important; color: white !important; }
         .calendar-hour-00 { background: linear-gradient(135deg, #6366f1, #4f46e5) !important; color: white !important; }
-        .calendar-hour-01 { background: linear-gradient(135deg, #14b8a6, #0d9488) !important; color: white !important; }
-        .calendar-hour-02 { background: linear-gradient(135deg, #84cc16, #65a30d) !important; color: white !important; }
-        .calendar-hour-03 { background: linear-gradient(135deg, #f97316, #ea580c) !important; color: white !important; }
-        .calendar-hour-04 { background: linear-gradient(135deg, #f43f5e, #e11d48) !important; color: white !important; }
-        .calendar-hour-05 { background: linear-gradient(135deg, #a855f7, #9333ea) !important; color: white !important; }
-        .calendar-hour-06 { background: linear-gradient(135deg, #0ea5e9, #0284c7) !important; color: white !important; }
-        .calendar-hour-07 { background: linear-gradient(135deg, #10b981, #059669) !important; color: white !important; }
+        .calendar-hour-01 { background: linear-gradient(135deg, #84cc16, #65a30d) !important; color: white !important; }
+        .calendar-hour-02 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: white !important; }
+        .calendar-hour-03 { background: linear-gradient(135deg, #dc2626, #b91c1c) !important; color: white !important; }
+        .calendar-hour-04 { background: linear-gradient(135deg, #a855f7, #9333ea) !important; color: white !important; }
+        .calendar-hour-05 { background: linear-gradient(135deg, #0ea5e9, #0284c7) !important; color: white !important; }
+        .calendar-hour-06 { background: linear-gradient(135deg, #10b981, #059669) !important; color: white !important; }
+        .calendar-hour-07 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: white !important; }
         .calendar-hour-08 { background: linear-gradient(135deg, #eab308, #ca8a04) !important; color: white !important; }
-        .calendar-hour-09 { background: linear-gradient(135deg, #f59e0b, #d97706) !important; color: white !important; }
-        .calendar-hour-10 { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: white !important; }
-        .calendar-hour-11 { background: linear-gradient(135deg, #ec4899, #db2777) !important; color: white !important; }
-        .calendar-hour-12 { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; color: white !important; }
-        .calendar-hour-13 { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; }
-        .calendar-hour-14 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; color: white !important; }
-        .calendar-hour-15 { background: linear-gradient(135deg, #22c55e, #16a34a) !important; color: white !important; }
+        .calendar-hour-09 { background: linear-gradient(135deg, #ef4444, #dc2626) !important; color: white !important; }
+        .calendar-hour-10 { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; color: white !important; }
+        .calendar-hour-11 { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; }
+        .calendar-hour-12 { background: linear-gradient(135deg, #06b6d4, #0891b2) !important; color: white !important; }
+        .calendar-hour-13 { background: linear-gradient(135deg, #22c55e, #16a34a) !important; color: white !important; }
+        .calendar-hour-14 { background: linear-gradient(135deg, #14b8a6, #0d9488) !important; color: white !important; }
+        .calendar-hour-15 { background: linear-gradient(135deg, #84cc16, #65a30d) !important; color: white !important; }
         
         /* Wymuszone kolory tekstu dla wszystkich godzin */
         .calendar-hour-16 *, .calendar-hour-17 *, .calendar-hour-18 *, .calendar-hour-19 *, 
@@ -246,22 +326,24 @@
                                 @endphp
                                 <a 
                                     href="{{ route('filament.admin.resources.groups.edit', ['record' => $group->id]) }}"
-                                    class="group block p-4 rounded-xl transition-all duration-300 calendar-hover {{ $hourClass }}"
-                                    style="background: linear-gradient(135deg, 
-                                        @if($hourFormatted == '1800') #ec4899, #db2777
-                                        @elseif($hourFormatted == '1900') #ef4444, #dc2626
-                                        @elseif($hourFormatted == '2000') #f59e0b, #d97706
-                                        @elseif($hourFormatted == '2100') #eab308, #ca8a04
-                                        @elseif($hourFormatted == '2200') #22c55e, #16a34a
-                                        @else #3b82f6, #2563eb
-                                        @endif) !important; color: white !important;"
+                                    class="calendar-hour-tile {{ $hourClass }}"
+                                    style="
+                                        background: @if($hour == '16:00') linear-gradient(135deg, #3b82f6, #2563eb) 
+                                        @elseif($hour == '17:00') linear-gradient(135deg, #8b5cf6, #7c3aed) 
+                                        @elseif($hour == '18:00') linear-gradient(135deg, #06b6d4, #0891b2) 
+                                        @elseif($hour == '19:00') linear-gradient(135deg, #ef4444, #dc2626) 
+                                        @elseif($hour == '20:00') linear-gradient(135deg, #f97316, #ea580c) 
+                                        @elseif($hour == '21:00') linear-gradient(135deg, #eab308, #ca8a04) 
+                                        @else linear-gradient(135deg, #3b82f6, #1d4ed8) 
+                                        @endif !important;
+                                        color: white !important;
+                                        text-decoration: none !important;
+                                    "
                                 >
-                                    <div class="text-center text-white">
-                                        <div class="text-lg font-bold mb-1">{{ $hour }}</div>
-                                        <div class="text-sm font-medium mb-2">{{ $group->name }}</div>
-                                        <div class="text-xs bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full inline-block">
-                                            {{ $memberCount }}/{{ $group->max_size }}
-                                        </div>
+                                    <div class="text-center">
+                                        <div class="hour-time" style="color: white !important; font-weight: 700 !important;">{{ $hour }}</div>
+                                        <div class="hour-name" style="color: white !important; font-weight: 500 !important;">{{ $group->name }}</div>
+                                        <div class="hour-badge" style="color: white !important; background: rgba(255, 255, 255, 0.2) !important; backdrop-filter: blur(8px) !important; padding: 0.25rem 0.5rem !important; border-radius: 9999px !important; display: inline-block !important;">{{ $memberCount }}/{{ $group->max_size }}</div>
                                     </div>
                                 </a>
                             @endforeach
