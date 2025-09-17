@@ -28,8 +28,6 @@ class ListPayments extends ListRecords
 
     protected function getHeaderWidgets(): array
     {
-        return [
-            PaymentStats::class,
-        ];
+        return [];
     }
 }

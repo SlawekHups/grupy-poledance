@@ -96,9 +96,7 @@ class ListUsers extends ListRecords
 
     protected function getHeaderWidgets(): array
     {
-        return [
-            UserStats::class,
-        ];
+        return [];
     }
 
     public function exportUsers()

@@ -20,8 +20,6 @@ class ListPasswordResetLogs extends ListRecords
     
     protected function getHeaderWidgets(): array
     {
-        return [
-            PasswordResetLogStatsWidget::class,
-        ];
+        return [];
     }
 }

@@ -34,10 +34,6 @@ class EditUser extends EditRecord
 
     protected function getHeaderWidgets(): array
     {
-        return [
-            UserIndividualStats::make([
-                'record' => $this->record,
-            ]),
-        ];
+        return [];
     }
 }

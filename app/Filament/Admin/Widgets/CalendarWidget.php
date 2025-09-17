@@ -134,7 +134,7 @@ class CalendarWidget extends Widget
             ->count();
     }
 
-    private function getDayColors(string $dayName): array
+    public function getDayColors(string $dayName): array
     {
         $colors = [
             'poniedziałek' => [

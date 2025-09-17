@@ -213,9 +213,7 @@ class ListPreRegistrations extends ListRecords
     
     protected function getHeaderWidgets(): array
     {
-        return [
-            PreRegistrationStatsWidget::class,
-        ];
+        return [];
     }
     
     public function getHeader(): ?\Illuminate\Contracts\View\View
