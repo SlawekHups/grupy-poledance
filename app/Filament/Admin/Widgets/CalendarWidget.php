@@ -62,6 +62,7 @@ class CalendarWidget extends Widget
             'isFuture' => $date->isFuture(),
             'formattedDate' => $date->format('d.m.Y'),
             'dayGroups' => $dayGroups,
+            'dayColors' => $this->getDayColors($date->locale('pl')->dayName),
         ];
     }
 
@@ -131,5 +132,69 @@ class CalendarWidget extends Widget
         return Attendance::whereDate('date', $date->format('Y-m-d'))
             ->where('present', true)
             ->count();
+    }
+
+    private function getDayColors(string $dayName): array
+    {
+        $colors = [
+            'poniedziałek' => [
+                'primary' => 'from-blue-500 to-blue-600',
+                'secondary' => 'from-blue-50 to-blue-100',
+                'text' => 'text-blue-700',
+                'border' => 'border-blue-200',
+                'bg' => 'bg-blue-50',
+                'hover' => 'hover:bg-blue-100',
+            ],
+            'wtorek' => [
+                'primary' => 'from-green-500 to-green-600',
+                'secondary' => 'from-green-50 to-green-100',
+                'text' => 'text-green-700',
+                'border' => 'border-green-200',
+                'bg' => 'bg-green-50',
+                'hover' => 'hover:bg-green-100',
+            ],
+            'środa' => [
+                'primary' => 'from-purple-500 to-purple-600',
+                'secondary' => 'from-purple-50 to-purple-100',
+                'text' => 'text-purple-700',
+                'border' => 'border-purple-200',
+                'bg' => 'bg-purple-50',
+                'hover' => 'hover:bg-purple-100',
+            ],
+            'czwartek' => [
+                'primary' => 'from-orange-500 to-orange-600',
+                'secondary' => 'from-orange-50 to-orange-100',
+                'text' => 'text-orange-700',
+                'border' => 'border-orange-200',
+                'bg' => 'bg-orange-50',
+                'hover' => 'hover:bg-orange-100',
+            ],
+            'piątek' => [
+                'primary' => 'from-red-500 to-red-600',
+                'secondary' => 'from-red-50 to-red-100',
+                'text' => 'text-red-700',
+                'border' => 'border-red-200',
+                'bg' => 'bg-red-50',
+                'hover' => 'hover:bg-red-100',
+            ],
+            'sobota' => [
+                'primary' => 'from-pink-500 to-pink-600',
+                'secondary' => 'from-pink-50 to-pink-100',
+                'text' => 'text-pink-700',
+                'border' => 'border-pink-200',
+                'bg' => 'bg-pink-50',
+                'hover' => 'hover:bg-pink-100',
+            ],
+            'niedziela' => [
+                'primary' => 'from-yellow-500 to-yellow-600',
+                'secondary' => 'from-yellow-50 to-yellow-100',
+                'text' => 'text-yellow-700',
+                'border' => 'border-yellow-200',
+                'bg' => 'bg-yellow-50',
+                'hover' => 'hover:bg-yellow-100',
+            ],
+        ];
+
+        return $colors[strtolower($dayName)] ?? $colors['poniedziałek'];
     }
 }

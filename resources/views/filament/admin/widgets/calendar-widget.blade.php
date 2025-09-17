@@ -1,4 +1,79 @@
 <x-filament-widgets::widget>
+    <style>
+        /* Kolory zgodne z grupami */
+        .calendar-day-colors-poniedziałek {
+            background: linear-gradient(to right, #fef2f2, #fee2e2) !important;
+            border: 1px solid #fca5a5 !important;
+        }
+        .calendar-day-colors-wtorek {
+            background: linear-gradient(to right, #fff7ed, #fed7aa) !important;
+            border: 1px solid #fdba74 !important;
+        }
+        .calendar-day-colors-środa {
+            background: linear-gradient(to right, #fefce8, #fef3c7) !important;
+            border: 1px solid #fde68a !important;
+        }
+        .calendar-day-colors-czwartek {
+            background: linear-gradient(to right, #f0fdf4, #dcfce7) !important;
+            border: 1px solid #bbf7d0 !important;
+        }
+        .calendar-day-colors-piątek {
+            background: linear-gradient(to right, #ecfeff, #cffafe) !important;
+            border: 1px solid #67e8f9 !important;
+        }
+        .calendar-day-colors-sobota {
+            background: linear-gradient(to right, #faf5ff, #f3e8ff) !important;
+            border: 1px solid #e9d5ff !important;
+        }
+        .calendar-day-colors-niedziela {
+            background: linear-gradient(to right, #fdf2f8, #fce7f3) !important;
+            border: 1px solid #f9a8d4 !important;
+        }
+        
+        .calendar-day-colors:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .calendar-day-text-poniedziałek { color: #dc2626 !important; }
+        .calendar-day-text-wtorek { color: #ea580c !important; }
+        .calendar-day-text-środa { color: #ca8a04 !important; }
+        .calendar-day-text-czwartek { color: #16a34a !important; }
+        .calendar-day-text-piątek { color: #0891b2 !important; }
+        .calendar-day-text-sobota { color: #7c3aed !important; }
+        .calendar-day-text-niedziela { color: #db2777 !important; }
+        
+        .calendar-info-buttons-poniedziałek { background-color: #fef2f2 !important; }
+        .calendar-info-buttons-wtorek { background-color: #fff7ed !important; }
+        .calendar-info-buttons-środa { background-color: #fefce8 !important; }
+        .calendar-info-buttons-czwartek { background-color: #f0fdf4 !important; }
+        .calendar-info-buttons-piątek { background-color: #ecfeff !important; }
+        .calendar-info-buttons-sobota { background-color: #faf5ff !important; }
+        .calendar-info-buttons-niedziela { background-color: #fdf2f8 !important; }
+        
+        .calendar-info-buttons-poniedziałek:hover { background-color: #fee2e2 !important; }
+        .calendar-info-buttons-wtorek:hover { background-color: #fed7aa !important; }
+        .calendar-info-buttons-środa:hover { background-color: #fef3c7 !important; }
+        .calendar-info-buttons-czwartek:hover { background-color: #dcfce7 !important; }
+        .calendar-info-buttons-piątek:hover { background-color: #cffafe !important; }
+        .calendar-info-buttons-sobota:hover { background-color: #f3e8ff !important; }
+        .calendar-info-buttons-niedziela:hover { background-color: #fce7f3 !important; }
+        
+        .calendar-info-text-poniedziałek { color: #dc2626 !important; }
+        .calendar-info-text-wtorek { color: #ea580c !important; }
+        .calendar-info-text-środa { color: #ca8a04 !important; }
+        .calendar-info-text-czwartek { color: #16a34a !important; }
+        .calendar-info-text-piątek { color: #0891b2 !important; }
+        .calendar-info-text-sobota { color: #7c3aed !important; }
+        .calendar-info-text-niedziela { color: #db2777 !important; }
+        
+        .calendar-main-circle-poniedziałek { background: linear-gradient(to bottom right, #ef4444, #dc2626) !important; }
+        .calendar-main-circle-wtorek { background: linear-gradient(to bottom right, #f97316, #ea580c) !important; }
+        .calendar-main-circle-środa { background: linear-gradient(to bottom right, #eab308, #ca8a04) !important; }
+        .calendar-main-circle-czwartek { background: linear-gradient(to bottom right, #22c55e, #16a34a) !important; }
+        .calendar-main-circle-piątek { background: linear-gradient(to bottom right, #06b6d4, #0891b2) !important; }
+        .calendar-main-circle-sobota { background: linear-gradient(to bottom right, #8b5cf6, #7c3aed) !important; }
+        .calendar-main-circle-niedziela { background: linear-gradient(to bottom right, #ec4899, #db2777) !important; }
+    </style>
     <x-filament::section>
         <x-slot name="heading">
             <div class="flex items-center justify-between w-full">
@@ -52,10 +127,14 @@
                 <div class="text-center mb-6">
                     @php
                         $viewData = $this->getViewData();
+                        $dayColors = $viewData['dayColors'];
                         $bgColor = $viewData['isToday'] ? 'from-green-500 to-green-600' : 
-                                   ($viewData['isPast'] ? 'from-gray-500 to-gray-600' : 'from-blue-500 to-indigo-600');
+                                   ($viewData['isPast'] ? 'from-gray-500 to-gray-600' : $dayColors['primary']);
                     @endphp
-                    <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br {{ $bgColor }} rounded-full shadow-lg">
+                    @php
+                        $currentDay = strtolower($this->getViewData()['dayOfWeek']);
+                    @endphp
+                    <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-lg calendar-main-circle-{{ $currentDay }}">
                         <span class="text-2xl sm:text-3xl font-bold text-white">
                             {{ $this->getViewData()['dayOfMonth'] }}
                         </span>
@@ -64,30 +143,36 @@
 
                 <!-- Informacje dodatkowe -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-center">
+                    @php
+                        $dayColors = $this->getViewData()['dayColors'];
+                    @endphp
+                    @php
+                        $currentDay = strtolower($this->getViewData()['dayOfWeek']);
+                    @endphp
                     <a 
                         href="{{ route('filament.admin.resources.users.index') }}"
-                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer"
+                        class="block rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer calendar-info-buttons-{{ $currentDay }}"
                     >
                         <div class="text-xs text-gray-500 mb-1">Wszyscy użytkownicy</div>
-                        <div class="text-base sm:text-lg font-semibold text-gray-700">
+                        <div class="text-base sm:text-lg font-semibold calendar-info-text-{{ $currentDay }}">
                             {{ $this->getViewData()['totalUsers'] }}
                         </div>
                     </a>
                     <a 
                         href="{{ route('filament.admin.resources.groups.index') }}"
-                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer"
+                        class="block rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer calendar-info-buttons-{{ $currentDay }}"
                     >
                         <div class="text-xs text-gray-500 mb-1">Grupy</div>
-                        <div class="text-base sm:text-lg font-semibold text-gray-700">
+                        <div class="text-base sm:text-lg font-semibold calendar-info-text-{{ $currentDay }}">
                             {{ $this->getViewData()['totalGroups'] }}
                         </div>
                     </a>
                     <a 
                         href="{{ route('filament.admin.resources.attendances.index') }}"
-                        class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer"
+                        class="block rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer calendar-info-buttons-{{ $currentDay }}"
                     >
                         <div class="text-xs text-gray-500 mb-1">Obecność</div>
-                        <div class="text-base sm:text-lg font-semibold text-gray-700">
+                        <div class="text-base sm:text-lg font-semibold calendar-info-text-{{ $currentDay }}">
                             {{ $this->getViewData()['selectedDayAttendance'] }}
                         </div>
                     </a>
@@ -214,23 +299,42 @@
 
             <!-- Godziny grup na wybrany dzień -->
             @if(count($this->getViewData()['dayGroups']) > 0)
-                <div class="mt-4 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+                <div class="mt-4 bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
                     <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
                         <x-heroicon-o-clock class="w-4 h-4" />
                         Zajęcia w dniu {{ ucfirst($this->getViewData()['dayOfWeek']) }}
                     </h4>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                    <div class="grid grid-cols-1 gap-3 sm:gap-4">
                         @foreach($this->getViewData()['dayGroups'] as $hour => $groups)
                             @php
                                 $group = $groups[0]; // Weź pierwszą grupę z tej godziny
                             @endphp
+                            @php
+                                $dayColors = $this->getViewData()['dayColors'];
+                                // Mapuj kolory na wartości hex
+                                $colorMap = [
+                                    'poniedziałek' => ['bg' => '#eff6ff', 'hover' => '#dbeafe', 'text' => '#1e40af', 'border' => '#bfdbfe'],
+                                    'wtorek' => ['bg' => '#f0fdf4', 'hover' => '#dcfce7', 'text' => '#166534', 'border' => '#bbf7d0'],
+                                    'środa' => ['bg' => '#faf5ff', 'hover' => '#f3e8ff', 'text' => '#6b21a8', 'border' => '#e9d5ff'],
+                                    'czwartek' => ['bg' => '#fff7ed', 'hover' => '#fed7aa', 'text' => '#c2410c', 'border' => '#fdba74'],
+                                    'piątek' => ['bg' => '#fef2f2', 'hover' => '#fecaca', 'text' => '#dc2626', 'border' => '#fca5a5'],
+                                    'sobota' => ['bg' => '#fdf2f8', 'hover' => '#fce7f3', 'text' => '#be185d', 'border' => '#f9a8d4'],
+                                    'niedziela' => ['bg' => '#fefce8', 'hover' => '#fef3c7', 'text' => '#a16207', 'border' => '#fde68a'],
+                                ];
+                                $currentDay = strtolower($this->getViewData()['dayOfWeek']);
+                                $colors = $colorMap[$currentDay] ?? $colorMap['środa'];
+                            @endphp
+                            @php
+                                $currentDay = strtolower($this->getViewData()['dayOfWeek']);
+                            @endphp
                             <a 
                                 href="{{ route('filament.admin.resources.groups.edit', ['record' => $group->id]) }}"
-                                class="block p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-lg border border-blue-200 transition-all duration-200 hover:shadow-md group"
+                                class="block p-3 sm:p-4 hover:shadow-md rounded-lg transition-all duration-200 group w-full calendar-day-colors-{{ $currentDay }}"
+                                style="min-height: 80px; display: flex; align-items: center; justify-content: center;"
                             >
                                 <div class="text-center">
-                                    <div class="text-base sm:text-lg font-bold text-blue-700 group-hover:text-blue-800">
+                                    <div class="text-base sm:text-lg font-bold group-hover:opacity-80 calendar-day-text-{{ $currentDay }}">
                                         {{ $hour }}
                                     </div>
                                     <div class="text-xs text-gray-600 mt-1">
@@ -257,12 +361,18 @@
 
             <!-- Przycisk Obecność grupy pod zajęciami -->
             <div class="mt-4 bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+                @php
+                    $dayColors = $this->getViewData()['dayColors'];
+                @endphp
+                @php
+                    $currentDay = strtolower($this->getViewData()['dayOfWeek']);
+                @endphp
                 <a 
                     href="{{ route('filament.admin.pages.attendance-group-page') }}"
-                    class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer text-center"
+                    class="block rounded-lg p-2 sm:p-3 transition-colors duration-200 cursor-pointer text-center calendar-info-buttons-{{ $currentDay }}"
                 >
                     <div class="text-xs text-gray-500 mb-1">Obecność grupy</div>
-                    <div class="text-base sm:text-lg font-semibold text-gray-700">
+                    <div class="text-base sm:text-lg font-semibold calendar-info-text-{{ $currentDay }}">
                         {{ ucfirst($this->getViewData()['dayOfWeek']) }}
                     </div>
                 </a>
