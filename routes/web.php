@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SetPasswordController;
 use App\Http\Controllers\PreRegistrationController;
+use App\Http\Controllers\DataCorrectionController;
 use App\Models\User;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
@@ -94,6 +95,13 @@ Route::get('/pre-register/{token}', [PreRegistrationController::class, 'showForm
 
 Route::post('/pre-register/{token}', [PreRegistrationController::class, 'store'])
     ->name('pre-register.store');
+
+// Trasy dla poprawy danych
+Route::get('/data-correction/{token}', [DataCorrectionController::class, 'show'])
+    ->name('data-correction');
+
+Route::post('/data-correction/{token}', [DataCorrectionController::class, 'update'])
+    ->name('data-correction.update');
 
 // Route do generowania tokenów (dla testów)
 Route::get('/admin/generate-pre-register-token', [PreRegistrationController::class, 'generateToken'])

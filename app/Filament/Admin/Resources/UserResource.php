@@ -846,6 +846,93 @@ class UserResource extends Resource
                         ->modalHeading('Wyślij ponownie zaproszenie')
                         ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
                         ->modalSubmitActionLabel('Wyślij zaproszenie'),
+
+                    Tables\Actions\Action::make('send_data_correction_link')
+                        ->label('Wyślij link do poprawy danych')
+                        ->icon('heroicon-o-pencil-square')
+                        ->color('warning')
+                        ->size('sm')
+                        ->tooltip('Wyślij link umożliwiający użytkownikowi poprawę swoich danych')
+                        ->visible(fn (User $record) => $record->is_active)
+                        ->form([
+                            Forms\Components\CheckboxList::make('allowed_fields')
+                                ->label('Pola do edycji')
+                                ->options([
+                                    'name' => 'Imię i nazwisko (zawsze dostępne)',
+                                    'email' => 'Email',
+                                    'phone' => 'Telefon',
+                                    'address' => 'Adres',
+                                    'city' => 'Miasto',
+                                    'postal_code' => 'Kod pocztowy',
+                                ])
+                                ->columns(2)
+                                ->default(['name', 'email', 'phone'])
+                                ->required()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    // Zawsze dodaj 'name' do zaznaczonych pól
+                                    if (!in_array('name', $state ?? [])) {
+                                        $state = array_merge($state ?? [], ['name']);
+                                        $set('allowed_fields', $state);
+                                    }
+                                }),
+                            Forms\Components\Select::make('hours_valid')
+                                ->label('Ważność linku (godziny)')
+                                ->options([
+                                    24 => '24 godziny',
+                                    48 => '48 godzin',
+                                    72 => '72 godziny (3 dni)',
+                                    168 => '7 dni',
+                                ])
+                                ->default(24)
+                                ->required(),
+                            Forms\Components\Textarea::make('notes')
+                                ->label('Notatki (opcjonalnie)')
+                                ->rows(3)
+                                ->placeholder('Np. Użytkownik ma niepoprawny email, proszę o poprawę'),
+                        ])
+                        ->action(function (User $record, array $data) {
+                            try {
+                                // Usuń stare linki dla tego użytkownika
+                                \App\Models\DataCorrectionLink::where('user_id', $record->id)->delete();
+                                
+                                // Utwórz nowy link
+                                $link = \App\Models\DataCorrectionLink::createForUser(
+                                    $record, 
+                                    $data['allowed_fields'], 
+                                    $data['hours_valid']
+                                );
+                                
+                                // Dodaj notatki jeśli podano
+                                if (!empty($data['notes'])) {
+                                    $link->update(['notes' => $data['notes']]);
+                                }
+                                
+                                Notification::make()
+                                    ->title('Link do poprawy danych utworzony')
+                                    ->body("Link został utworzony i jest ważny przez {$data['hours_valid']} godzin. Skopiuj link i wyślij użytkownikowi.")
+                                    ->success()
+                                    ->send();
+                                    
+                                // Pokaż link do skopiowania
+                                $correctionUrl = $link->getCorrectionUrl();
+                                Notification::make()
+                                    ->title('Link do skopiowania')
+                                    ->body("Link: {$correctionUrl}")
+                                    ->info()
+                                    ->persistent()
+                                    ->send();
+                                    
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Błąd')
+                                    ->body("Błąd podczas tworzenia linku: " . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->modalHeading(fn (User $record) => "Wyślij link do poprawy danych dla {$record->name}")
+                        ->modalDescription('Użytkownik otrzyma link umożliwiający samodzielną poprawę swoich danych. Wybierz pola, które użytkownik będzie mógł edytować.')
+                        ->modalSubmitActionLabel('Utwórz link'),
                 ])
                     ->visible(fn (User $record) => $record->role !== 'admin')
                     ->button()
