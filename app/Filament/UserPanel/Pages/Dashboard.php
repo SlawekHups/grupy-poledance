@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Payment;
 use App\Models\Attendance;
 use App\Models\UserMailMessage;
+use App\Models\User;
 
 class Dashboard extends BaseDashboard
 {
@@ -33,15 +34,30 @@ class Dashboard extends BaseDashboard
 
     protected static string $view = 'filament.user.dashboard';
 
+    public function getWidgets(): array
+    {
+        return [
+            \App\Filament\UserPanel\Widgets\AttendanceStatsWidget::class,
+            \App\Filament\UserPanel\Widgets\PaymentsStatsWidget::class,
+            \App\Filament\UserPanel\Widgets\ProfileCardWidget::class,
+        ];
+    }
+
+    public function getWidgetColumns(): int | string | array
+    {
+        return 1;
+    }
+
     public function mount()
     {
+        /** @var User|null $user */
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('filament.user.auth.login');
         }
         
         if (
-            $user->addresses()->count() === 0 ||
+            $user->addresses->count() === 0 ||
             is_null($user->rodo_accepted_at) ||
             is_null($user->terms_accepted_at)
         ) {
@@ -49,16 +65,16 @@ class Dashboard extends BaseDashboard
         }
 
         // Dane z konta na dashboard
-        $unpaid = Payment::where('user_id', $user->id)
+        $unpaid = Payment::where('user_id', $user->getKey())
             ->where('paid', false)
             ->get();
         $this->unpaidCount = $unpaid->count();
         $this->totalDue = (float) $unpaid->sum('amount');
-        $this->paymentLink = $this->getPaymentLink($user->id);
+        $this->paymentLink = $this->getPaymentLink($user->getKey());
         $this->groupName = $user->groups->pluck('name')->implode(', ');
 
         // Ostatnie 3 płatności
-        $this->recentPayments = Payment::where('user_id', $user->id)
+        $this->recentPayments = Payment::where('user_id', $user->getKey())
             ->orderBy('month', 'desc')
             ->limit(3)
             ->get(['month', 'amount', 'paid', 'payment_link'])
@@ -71,20 +87,20 @@ class Dashboard extends BaseDashboard
                 ];
             })->toArray();
 
-        $this->presentCount = Attendance::where('user_id', $user->id)->where('present', true)->count();
-        $this->absentCount = Attendance::where('user_id', $user->id)->where('present', false)->count();
+        $this->presentCount = Attendance::where('user_id', $user->getKey())->where('present', true)->count();
+        $this->absentCount = Attendance::where('user_id', $user->getKey())->where('present', false)->count();
 
         // Płatności: liczba wszystkich i suma wszystkich
-        $paymentsQuery = Payment::where('user_id', $user->id);
+        $paymentsQuery = Payment::where('user_id', $user->getKey());
         $this->paymentsCount = (clone $paymentsQuery)->count();
         $this->paymentsSum = (float) (clone $paymentsQuery)->sum('amount');
 
         // Wiadomości: liczniki i ostatnie pozycje
-        $messagesQuery = UserMailMessage::where('user_id', $user->id);
+        $messagesQuery = UserMailMessage::where('user_id', $user->getKey());
         $this->messagesCount = (clone $messagesQuery)->count();
         $this->messagesInCount = (clone $messagesQuery)->where('direction', 'in')->count();
         $this->messagesOutCount = (clone $messagesQuery)->where('direction', 'out')->count();
-        $this->recentMessages = UserMailMessage::where('user_id', $user->id)
+        $this->recentMessages = UserMailMessage::where('user_id', $user->getKey())
             ->orderBy('sent_at', 'desc')
             ->limit(3)
             ->get(['id', 'subject', 'direction', 'email', 'sent_at'])

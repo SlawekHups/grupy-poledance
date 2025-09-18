@@ -53,8 +53,13 @@
 
 ### System Obecności
 - **Rejestracja**: zapisywanie obecności na zajęciach
-- **Statystyki**: podsumowania frekwencji
-- **Raportowanie**: zestawienia dla grup
+- **Statystyki**: 
+  - Frekwencja użytkowników (procent obecności)
+  - Statystyki grup (średnia frekwencja)
+  - Historia obecności z filtrowaniem
+  - Widgety statystyczne w panelu użytkownika
+- **Raportowanie**: zestawienia dla grup i administratorów
+- **Kontrola**: automatyczne przypisywanie do grup na podstawie obecności
 
 ### System Komunikacji
 - **Email**: wysyłanie przypomnień i powiadomień

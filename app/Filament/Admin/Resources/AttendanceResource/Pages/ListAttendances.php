@@ -14,6 +14,16 @@ class ListAttendances extends ListRecords
 {
     protected static string $resource = AttendanceResource::class;
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AttendanceStats::class,
+            AttendanceGroupChart::class,
+            TopAttendersChart::class,
+            MonthlyTrendChart::class,
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -91,10 +101,6 @@ class ListAttendances extends ListRecords
         ];
     }
 
-    protected function getHeaderWidgets(): array
-    {
-        return [];
-    }
 
     public function getHeaderWidgetsColumns(): int | array
     {

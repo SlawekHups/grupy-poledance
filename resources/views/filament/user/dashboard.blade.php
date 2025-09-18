@@ -12,6 +12,12 @@
         </x-filament::button>
     </div>
 
+    <!-- Widżety Filament -->
+    <x-filament-widgets::widgets
+        :widgets="$this->getWidgets()"
+        :columns="$this->getWidgetColumns()"
+    />
+
     <div class="space-y-6">
         <!-- Konto użytkownika (kafelki) -->
         <div class="rounded-xl border bg-white">
