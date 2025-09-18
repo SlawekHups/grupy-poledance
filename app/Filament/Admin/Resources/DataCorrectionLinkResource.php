@@ -176,6 +176,11 @@ class DataCorrectionLinkResource extends Resource
                     ->label('Ważne')
                     ->query(fn (Builder $query): Builder => $query->where('expires_at', '>', now())->where('used', false))
                     ->toggle(),
+                    
+                Tables\Filters\Filter::make('old')
+                    ->label('Stare (30+ dni)')
+                    ->query(fn (Builder $query): Builder => $query->where('created_at', '<', now()->subDays(30)))
+                    ->toggle(),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -218,6 +223,64 @@ class DataCorrectionLinkResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    
+                    Tables\Actions\BulkAction::make('delete_used')
+                        ->label('Usuń użyte')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Usuń użyte linki')
+                        ->modalDescription('Czy na pewno chcesz usunąć wszystkie zaznaczone użyte linki?')
+                        ->modalSubmitActionLabel('Tak, usuń użyte')
+                        ->action(function ($records) {
+                            $count = $records->where('used', true)->count();
+                            $records->where('used', true)->each->delete();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Użyte linki usunięte')
+                                ->body("Usunięto {$count} użytych linków")
+                                ->success()
+                                ->send();
+                        }),
+                        
+                    Tables\Actions\BulkAction::make('delete_expired')
+                        ->label('Usuń przeterminowane')
+                        ->icon('heroicon-o-clock')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Usuń przeterminowane linki')
+                        ->modalDescription('Czy na pewno chcesz usunąć wszystkie zaznaczone przeterminowane linki?')
+                        ->modalSubmitActionLabel('Tak, usuń przeterminowane')
+                        ->action(function ($records) {
+                            $count = $records->where('expires_at', '<', now())->count();
+                            $records->where('expires_at', '<', now())->each->delete();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Przeterminowane linki usunięte')
+                                ->body("Usunięto {$count} przeterminowanych linków")
+                                ->success()
+                                ->send();
+                        }),
+                        
+                    Tables\Actions\BulkAction::make('delete_old')
+                        ->label('Usuń stare (30+ dni)')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Usuń stare linki')
+                        ->modalDescription('Czy na pewno chcesz usunąć wszystkie zaznaczone linki starsze niż 30 dni?')
+                        ->modalSubmitActionLabel('Tak, usuń stare')
+                        ->action(function ($records) {
+                            $cutoffDate = now()->subDays(30);
+                            $count = $records->where('created_at', '<', $cutoffDate)->count();
+                            $records->where('created_at', '<', $cutoffDate)->each->delete();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Stare linki usunięte')
+                                ->body("Usunięto {$count} starych linków")
+                                ->success()
+                                ->send();
+                        }),
                 ])
                 ->extraAttributes(['class' => 'flex flex-col sm:flex-row gap-2 w-full sm:w-auto'])
             ])

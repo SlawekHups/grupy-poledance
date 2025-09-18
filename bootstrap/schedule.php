@@ -211,6 +211,21 @@ Schedule::command('pre-registrations:cleanup --used-only --days=7')
         \Illuminate\Support\Facades\Log::error('Zadanie: Czyszczenie używanych pre-rejestracji - Błąd wykonania');
     });
 
+// Czyszczenie linków do poprawy danych - codziennie o 7:30
+Schedule::command('data-correction-links:cleanup --all --days=30')
+    ->daily()
+    ->at('07:30')
+    ->timezone('Europe/Warsaw')
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->description('Czyszczenie niepotrzebnych linków do poprawy danych (użyte i przeterminowane starsze niż 30 dni)')
+    ->onSuccess(function () {
+        \Illuminate\Support\Facades\Log::info('Zadanie: Czyszczenie linków do poprawy danych - Ukończone pomyślnie');
+    })
+    ->onFailure(function () {
+        \Illuminate\Support\Facades\Log::error('Zadanie: Czyszczenie linków do poprawy danych - Błąd wykonania');
+    });
+
 // ============================================================================
 // BACKUP I BEZPIECZEŃSTWO
 // ============================================================================
