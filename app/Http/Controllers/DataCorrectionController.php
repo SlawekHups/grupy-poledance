@@ -70,7 +70,12 @@ class DataCorrectionController extends Controller
         }
         
         if (in_array('phone', $allowedFields)) {
-            $rules['phone'] = 'required|string|max:20';
+            $rules['phone'] = [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($user->id)
+            ];
             $data['phone'] = $request->input('phone');
         }
         
