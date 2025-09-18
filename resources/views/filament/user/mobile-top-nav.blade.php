@@ -12,19 +12,17 @@
 
     <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
-            <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Panel użytkownika</div>
-                <a href="{{ route('filament.user.pages.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
-                    <x-filament::icon icon="heroicon-o-user-circle" class="h-5 w-5" />
-                    <span>Panel użytkownika</span>
-                </a>
-            </div>
+            <!-- Panel użytkownika -->
             <div>
                 <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Panel użytkownika</div>
                 <div class="grid grid-cols-2 gap-2">
+                    <a href="{{ route('filament.user.pages.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-user-circle" class="h-5 w-5" />
+                        <span>Dashboard</span>
+                    </a>
                     <a href="{{ route('filament.user.resources.users.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                         <x-filament::icon icon="heroicon-o-identification" class="h-5 w-5" />
-                        <span>Konto użytkownika</span>
+                        <span>Konto</span>
                     </a>
                     <a href="{{ route('filament.user.resources.addresses.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                         <x-filament::icon icon="heroicon-o-map-pin" class="h-5 w-5" />
@@ -40,16 +38,21 @@
                     </a>
                 </div>
             </div>
+            <!-- Informacje -->
             <div>
                 <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Informacje</div>
                 <div class="grid grid-cols-2 gap-2">
                     <a href="{{ route('filament.user.resources.lessons.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                         <x-filament::icon icon="heroicon-o-academic-cap" class="h-5 w-5" />
-                        <span>Zadania (grupa)</span>
+                        <span>Zadania</span>
                     </a>
                     <a href="{{ route('filament.user.resources.user-mail-messages.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
                         <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" />
-                        <span>Moje Wiadomości</span>
+                        <span>Wiadomości</span>
+                    </a>
+                    <a href="{{ route('filament.user.pages.terms') }}" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5" />
+                        <span>Regulamin</span>
                     </a>
                 </div>
             </div>

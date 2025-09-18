@@ -37,6 +37,12 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
                         <x-filament::icon icon="heroicon-o-user-plus" class="h-5 w-5" />
                         <span>Pre-rejestracje</span>
                     </a>
+                    <a href="{{ route('filament.admin.resources.data-correction-links.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
+onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
+onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
+                        <x-filament::icon icon="heroicon-o-pencil-square" class="h-5 w-5" />
+                        <span>Linki poprawy</span>
+                    </a>
                 </div>
             </div>
 
@@ -94,6 +100,12 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
                         <x-filament::icon icon="heroicon-o-academic-cap" class="h-5 w-5" />
                         <span>Zadania</span>
                     </a>
+                    <a href="{{ route('filament.admin.resources.terms.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
+onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
+onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
+                        <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5" />
+                        <span>Regulaminy</span>
+                    </a>
                 </div>
             </div>
 
@@ -107,17 +119,17 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
                         <x-filament::icon icon="heroicon-o-shield-check" class="h-5 w-5" />
                         <span>Ustawienia admin</span>
                     </a>
-                    <a href="{{ route('filament.admin.resources.terms.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5" />
-                        <span>Regulaminy</span>
-                    </a>
                     <a href="{{ route('filament.admin.resources.user-mail-messages.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
 onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
 onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
                         <x-filament::icon icon="heroicon-o-envelope" class="h-5 w-5" />
                         <span>Wiadomości</span>
+                    </a>
+                    <a href="{{ route('filament.admin.resources.files.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
+onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
+onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
+                        <x-filament::icon icon="heroicon-o-document" class="h-5 w-5" />
+                        <span>Pliki</span>
                     </a>
                 </div>
             </div>
