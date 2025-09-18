@@ -24,6 +24,7 @@ class UserPanelProvider extends PanelProvider
             ->authGuard('web')
             ->login()
             ->profile()
+            ->favicon(asset('favicon.ico'))
             ->homeUrl(fn (): string => route('filament.user.pages.dashboard'))
             ->pages([])
             ->discoverResources(app_path('Filament/UserPanel/Resources'), 'App\\Filament\\UserPanel\\Resources')
