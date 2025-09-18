@@ -56,8 +56,11 @@
                             <input id="name" name="name" type="text" required
                                 value="{{ old('name', $user->name) }}"
                                 placeholder="Wprowadź pełne imię i nazwisko"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm @error('name') border-red-500 @enderror">
                         </div>
+                        @error('name')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                         <p class="mt-1 text-sm text-gray-500">
                             <i class="fas fa-info-circle"></i>
                             To pole jest zawsze dostępne - możesz poprawić imię lub dodać brakujące dane
@@ -73,8 +76,11 @@
                             <input id="email" name="email" type="email" required
                                 value="{{ old('email') }}"
                                 placeholder="Wprowadź poprawny adres email"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm @error('email') border-red-500 @enderror">
                         </div>
+                        @error('email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                         <p class="mt-1 text-sm text-gray-500">
                             <i class="fas fa-info-circle"></i>
                             To jest najważniejsze pole - upewnij się, że email jest poprawny!
@@ -91,8 +97,11 @@
                             <input id="phone" name="phone" type="tel" required
                                 value="{{ old('phone') }}"
                                 placeholder="Wprowadź poprawny numer telefonu"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm @error('phone') border-red-500 @enderror">
                         </div>
+                        @error('phone')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                     @endif
                     

@@ -13,6 +13,12 @@ class EditDataCorrectionLink extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('back_to_list')
+                ->label('Powrót do listy')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url(fn () => route('filament.admin.resources.data-correction-links.index'))
+                ->button(),
             Actions\DeleteAction::make(),
         ];
     }

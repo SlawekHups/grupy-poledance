@@ -27,14 +27,67 @@
                 id="link-input" 
                 value="{{ $url }}" 
                 readonly
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm bg-gray-50 text-sm font-mono"
             >
             <button 
                 type="button"
-                onclick="copyToClipboard()"
-                class="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                onclick="
+                    console.log('Przycisk kliknięty');
+                    const input = document.getElementById('link-input');
+                    const button = document.getElementById('copyBtn');
+                    const text = document.getElementById('copyText');
+                    
+                    if (!input || !button || !text) {
+                        console.error('Nie znaleziono elementów');
+                        alert('Błąd: Nie znaleziono elementów');
+                        return;
+                    }
+                    
+                    input.select();
+                    input.setSelectionRange(0, 99999);
+                    
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText('{{ $url }}').then(() => {
+                                console.log('Kopiowanie udane');
+                                button.style.backgroundColor = '#16a34a';
+                                text.innerHTML = '✅ Skopiowano!';
+                                setTimeout(() => {
+                                    button.style.backgroundColor = '#4b5563';
+                                    text.innerHTML = '📋 Kopiuj';
+                                }, 2000);
+                            }).catch(() => {
+                                document.execCommand('copy');
+                                button.style.backgroundColor = '#16a34a';
+                                text.innerHTML = '✅ Skopiowano!';
+                                setTimeout(() => {
+                                    button.style.backgroundColor = '#4b5563';
+                                    text.innerHTML = '📋 Kopiuj';
+                                }, 2000);
+                            });
+                        } else {
+                            const success = document.execCommand('copy');
+                            if (success) {
+                                button.style.backgroundColor = '#16a34a';
+                                text.innerHTML = '✅ Skopiowano!';
+                                setTimeout(() => {
+                                    button.style.backgroundColor = '#4b5563';
+                                    text.innerHTML = '📋 Kopiuj';
+                                }, 2000);
+                            } else {
+                                alert('Nie udało się skopiować. Zaznacz tekst i skopiuj ręcznie (Ctrl+C)');
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Błąd:', err);
+                        alert('Nie udało się skopiować. Zaznacz tekst i skopiuj ręcznie (Ctrl+C)');
+                    }
+                "
+                id="copyBtn"
+                class="px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-gray-600 hover:bg-gray-700"
+                style="color: white !important; background-color: #4b5563 !important;"
             >
-                <i class="fas fa-copy"></i>
+                <span id="copyText" style="color: white !important; font-weight: 500 !important;">📋 Kopiuj</span>
             </button>
         </div>
         <p class="mt-1 text-sm text-gray-500">
@@ -64,28 +117,71 @@
 
 <script>
 function copyToClipboard() {
+    console.log('Funkcja copyToClipboard została wywołana');
+    
     const input = document.getElementById('link-input');
+    const button = document.getElementById('copyBtn');
+    const text = document.getElementById('copyText');
+    
+    if (!input || !button || !text) {
+        console.error('Nie znaleziono elementów:', { input, button, text });
+        alert('Błąd: Nie znaleziono elementów do kopiowania');
+        return;
+    }
+    
+    console.log('Elementy znalezione:', { input, button, text });
+    
     input.select();
-    input.setSelectionRange(0, 99999); // For mobile devices
+    input.setSelectionRange(0, 99999);
     
     try {
-        document.execCommand('copy');
-        
-        // Pokaż komunikat o sukcesie
-        const button = event.target.closest('button');
-        const originalHTML = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check"></i> Skopiowano!';
-        button.classList.add('bg-green-600', 'hover:bg-green-700');
-        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-        
-        setTimeout(() => {
-            button.innerHTML = originalHTML;
-            button.classList.remove('bg-green-600', 'hover:bg-green-700');
-            button.classList.add('bg-blue-600', 'hover:bg-blue-700');
-        }, 2000);
-        
+        // Najpierw spróbuj nowoczesnego API
+        if (navigator.clipboard && window.isSecureContext) {
+            console.log('Używam navigator.clipboard');
+            navigator.clipboard.writeText('{{ $url }}').then(() => {
+                console.log('Kopiowanie z navigator.clipboard udane');
+                showSuccess(button, text);
+            }).catch((err) => {
+                console.error('Błąd navigator.clipboard:', err);
+                fallbackCopy(input, button, text);
+            });
+        } else {
+            console.log('Używam document.execCommand');
+            fallbackCopy(input, button, text);
+        }
     } catch (err) {
+        console.error('Błąd w try-catch:', err);
+        alert('Nie udało się skopiować linku. Skopiuj go ręcznie.');
+    }
+}
+
+function fallbackCopy(input, button, text) {
+    try {
+        const success = document.execCommand('copy');
+        if (success) {
+            console.log('Kopiowanie z document.execCommand udane');
+            showSuccess(button, text);
+        } else {
+            console.error('document.execCommand zwróciło false');
+            alert('Nie udało się skopiować. Zaznacz tekst i skopiuj ręcznie (Ctrl+C)');
+        }
+    } catch (err) {
+        console.error('Błąd document.execCommand:', err);
         alert('Nie udało się skopiować. Zaznacz tekst i skopiuj ręcznie (Ctrl+C)');
     }
+}
+
+function showSuccess(button, text) {
+    button.style.backgroundColor = '#16a34a';
+    button.style.color = 'white';
+    text.innerHTML = '✅ Skopiowano!';
+    text.style.color = 'white';
+    
+    setTimeout(() => {
+        button.style.backgroundColor = '#4b5563';
+        button.style.color = 'white';
+        text.innerHTML = '📋 Kopiuj';
+        text.style.color = 'white';
+    }, 2000);
 }
 </script>

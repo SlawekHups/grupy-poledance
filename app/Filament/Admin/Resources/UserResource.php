@@ -909,15 +909,30 @@ class UserResource extends Resource
                                 
                                 Notification::make()
                                     ->title('Link do poprawy danych utworzony')
-                                    ->body("Link został utworzony i jest ważny przez {$data['hours_valid']} godzin. Skopiuj link i wyślij użytkownikowi.")
+                                    ->body("Link został utworzony i jest ważny przez {$data['hours_valid']} godzin.")
                                     ->success()
                                     ->send();
                                     
-                                // Pokaż link do skopiowania
+                                // Pokaż link do skopiowania w notyfikacji
                                 $correctionUrl = $link->getCorrectionUrl();
                                 Notification::make()
                                     ->title('Link do skopiowania')
                                     ->body("Link: {$correctionUrl}")
+                                    ->info()
+                                    ->persistent()
+                                    ->send();
+                                    
+                                // Dodaj przycisk powrotu
+                                Notification::make()
+                                    ->title('Powrót do listy')
+                                    ->body('Kliknij aby wrócić do listy linków')
+                                    ->actions([
+                                        \Filament\Notifications\Actions\Action::make('go_to_list')
+                                            ->label('Powrót do listy linków')
+                                            ->url('/admin/data-correction-links')
+                                            ->button()
+                                            ->color('primary'),
+                                    ])
                                     ->info()
                                     ->persistent()
                                     ->send();

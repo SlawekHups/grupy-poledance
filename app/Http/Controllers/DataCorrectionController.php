@@ -94,9 +94,29 @@ class DataCorrectionController extends Controller
             $data['postal_code'] = $request->input('postal_code');
         }
         
-        // Walidacja
-        $validator = Validator::make($request->all(), $rules);
-        
+        // Walidacja z niestandardowymi komunikatami
+        $messages = [
+            'name.required' => 'Imię i nazwisko jest wymagane.',
+            'name.string' => 'Imię i nazwisko musi być tekstem.',
+            'name.max' => 'Imię i nazwisko nie może być dłuższe niż 255 znaków.',
+            'email.required' => 'Adres email jest wymagany.',
+            'email.email' => 'Adres email musi być prawidłowy.',
+            'email.max' => 'Adres email nie może być dłuższy niż 255 znaków.',
+            'email.unique' => 'Ten adres email jest już używany przez innego użytkownika.',
+            'phone.required' => 'Numer telefonu jest wymagany.',
+            'phone.string' => 'Numer telefonu musi być tekstem.',
+            'phone.max' => 'Numer telefonu nie może być dłuższy niż 20 znaków.',
+            'phone.unique' => 'Ten numer telefonu jest już używany przez innego użytkownika.',
+            'address.string' => 'Adres musi być tekstem.',
+            'address.max' => 'Adres nie może być dłuższy niż 255 znaków.',
+            'city.string' => 'Miasto musi być tekstem.',
+            'city.max' => 'Miasto nie może być dłuższe niż 100 znaków.',
+            'postal_code.string' => 'Kod pocztowy musi być tekstem.',
+            'postal_code.max' => 'Kod pocztowy nie może być dłuższy niż 10 znaków.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
