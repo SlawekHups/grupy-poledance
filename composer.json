@@ -10,8 +10,11 @@
         "filament/actions": "^3.3",
         "filament/filament": "^3.0",
         "filament/infolists": "^3.3",
+        "laravel-notification-channels/smsapi": "^0.9.0",
         "laravel/framework": "^12.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "smsapi.pl/php-client": "^3.0",
+        "smsapi/php-client": "^1.8"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

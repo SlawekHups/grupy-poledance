@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41c4903e07b1862c1922ef3838e66522",
+    "content-hash": "b8be3e6ce6f5d6f2ee35114e43794ea0",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1761,16 +1761,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.7.1",
+            "version": "2.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "c2270caaabe631b3b44c85f99e5a04bbb8060d16"
+                "reference": "21dc724a0583619cd1652f673303492272778051"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/c2270caaabe631b3b44c85f99e5a04bbb8060d16",
-                "reference": "c2270caaabe631b3b44c85f99e5a04bbb8060d16",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/21dc724a0583619cd1652f673303492272778051",
+                "reference": "21dc724a0583619cd1652f673303492272778051",
                 "shasum": ""
             },
             "require": {
@@ -1786,7 +1786,7 @@
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "http-interop/http-factory-tests": "0.9.0",
-                "phpunit/phpunit": "^8.5.39 || ^9.6.20"
+                "phpunit/phpunit": "^8.5.44 || ^9.6.25"
             },
             "suggest": {
                 "laminas/laminas-httphandlerrunner": "Emit PSR-7 responses"
@@ -1857,7 +1857,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.7.1"
+                "source": "https://github.com/guzzle/psr7/tree/2.8.0"
             },
             "funding": [
                 {
@@ -1873,7 +1873,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-03-27T12:30:47+00:00"
+            "time": "2025-08-23T21:21:41+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -2023,6 +2023,63 @@
                 "source": "https://github.com/kirschbaum-development/eloquent-power-joins/tree/4.2.3"
             },
             "time": "2025-04-01T14:41:56+00:00"
+        },
+        {
+            "name": "laravel-notification-channels/smsapi",
+            "version": "0.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel-notification-channels/smsapi.git",
+                "reference": "76bde31f74aaaea212bfc61f176cd7942bca21ac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel-notification-channels/smsapi/zipball/76bde31f74aaaea212bfc61f176cd7942bca21ac",
+                "reference": "76bde31f74aaaea212bfc61f176cd7942bca21ac",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/notifications": "~6.0 || ~7.0 || ~8.0 || ~9.0 || ~10.0 || ^11.0 || ^12.0",
+                "illuminate/support": "~6.0 || ~7.0 || ~8.0 || ~9.0 || ~10.0 || ^11.0 || ^12.0",
+                "php": ">=7.2",
+                "smsapi/php-client": "^1.8 || ^3.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.0",
+                "phpunit/phpunit": "^8.0 || ^10.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NotificationChannels\\Smsapi\\SmsapiServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NotificationChannels\\Smsapi\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mateusz Drost",
+                    "email": "mat.drost@gmail.com",
+                    "homepage": "https://github.com/mdrost",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Smsapi Notifications Channel for Laravel",
+            "homepage": "https://github.com/laravel-notification-channels/smsapi",
+            "support": {
+                "issues": "https://github.com/laravel-notification-channels/smsapi/issues",
+                "source": "https://github.com/laravel-notification-channels/smsapi/tree/0.9.0"
+            },
+            "time": "2025-04-24T01:01:43+00:00"
         },
         {
             "name": "laravel/framework",
@@ -4709,6 +4766,117 @@
                 }
             ],
             "time": "2025-02-25T09:09:36+00:00"
+        },
+        {
+            "name": "smsapi.pl/php-client",
+            "version": "v3.0.12",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smsapi/smsapi-php-client.git",
+                "reference": "b4305a817083a43a58affa2502f47fee78602bfb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smsapi/smsapi-php-client/zipball/b4305a817083a43a58affa2502f47fee78602bfb",
+                "reference": "b4305a817083a43a58affa2502f47fee78602bfb",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "^7 || ~8.0 || ~8.1 || ~8.2 || ~8.3 || ~8.4",
+                "psr/http-client": "^1",
+                "psr/http-factory": "^1",
+                "psr/http-message": "~1.0 || ~1.1 || ~2.0",
+                "psr/log": "^1 || ^2 || ^3"
+            },
+            "require-dev": {
+                "doctrine/instantiator": "1.0.5 || ^1.4.0",
+                "ext-curl": "*",
+                "ext-mbstring": "*",
+                "guzzlehttp/psr7": "^1 || ^2",
+                "phpdocumentor/reflection-docblock": "^4.3 || ^5.2.0",
+                "phpdocumentor/type-resolver": "^0.5 || ^1.3.0",
+                "phpspec/prophecy": "^1.7",
+                "phpunit/phpunit": "^6 || ~8.5",
+                "roave/security-advisories": "dev-latest",
+                "symfony/yaml": "^3"
+            },
+            "suggest": {
+                "ext-curl": "To use Curl HttpClient",
+                "guzzlehttp/psr7": "To use Curl HttpClient and HTTP message factories"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Smsapi\\Client\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "SMSAPI API PHP Client",
+            "homepage": "https://github.com/smsapi/smsapi-php-client",
+            "keywords": [
+                "api client",
+                "hlr",
+                "mms",
+                "sms",
+                "smsapi",
+                "smsapi.com",
+                "smsapi.pl",
+                "url shortener",
+                "vms"
+            ],
+            "support": {
+                "issues": "https://github.com/smsapi/smsapi-php-client/issues",
+                "source": "https://github.com/smsapi/smsapi-php-client/tree/v3.0.12"
+            },
+            "time": "2025-07-03T11:47:02+00:00"
+        },
+        {
+            "name": "smsapi/php-client",
+            "version": "v1.8.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smsapi/smsapi-php-client.git",
+                "reference": "580aa0f376522ff72493b1397be8ea6db63d0126"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smsapi/smsapi-php-client/zipball/580aa0f376522ff72493b1397be8ea6db63d0126",
+                "reference": "580aa0f376522ff72493b1397be8ea6db63d0126",
+                "shasum": ""
+            },
+            "require-dev": {
+                "apigen/apigen": "^4",
+                "phpunit/phpunit": "^4.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SMSApi\\": "smsapi"
+                },
+                "classmap": [
+                    "smsapi"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Library for communicating with provider",
+            "homepage": "http://smsapi.pl",
+            "keywords": [
+                "mms",
+                "sms",
+                "vms"
+            ],
+            "support": {
+                "issues": "https://github.com/smsapi/smsapi-php-client/issues",
+                "source": "https://github.com/smsapi/smsapi-php-client/tree/v1.8.7"
+            },
+            "time": "2018-01-03T10:13:48+00:00"
         },
         {
             "name": "spatie/color",
