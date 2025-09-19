@@ -27,7 +27,10 @@
 
 ### 🆕 Najnowsze Funkcjonalności
 
-- **System Pre-rejestracji** - generowanie krótkoterminowych linków (30 min) do wypełnienia podstawowych danych przez potencjalnych użytkowników
+- **System Pre-rejestracji z SMS i Email** - generowanie linków pre-rejestracji z możliwością wysyłania przez SMS i email
+- **Wysyłanie SMS** - integracja z SMSAPI, wysyłanie linków pre-rejestracji i resetu hasła przez SMS
+- **Wysyłanie Email** - profesjonalne szablony HTML, wysyłanie linków przez email
+- **Masowe wysyłanie** - możliwość wysyłania SMS i email do wielu użytkowników jednocześnie
 - **System Zaproszeń Użytkowników** - automatyczne wysyłanie zaproszeń email z linkami do ustawienia hasła
 - **Zarządzanie Wiadomościami Email** - kompleksowy system logowania i importu maili
 - **Automatyczne Generowanie Płatności** - miesięczne płatności dla grup
@@ -39,15 +42,22 @@
 ## 🚀 Funkcjonalności
 
 ### Panel Administratora (`/admin`)
-- **System Pre-rejestracji**
+- **System Pre-rejestracji z SMS i Email**
   - Generowanie pojedynczych i masowych linków pre-rejestracji (7-10 linków)
   - Linki ważne przez 30 minut z konkretną godziną wygaśnięcia
   - Kopiowanie linków do schowka (pojedynczo i wszystkie naraz)
+  - **Wysyłanie SMS** - integracja z SMSAPI, wysyłanie linków pre-rejestracji przez SMS
+  - **Wysyłanie Email** - profesjonalne szablony HTML, wysyłanie linków przez email
+  - **Masowe wysyłanie** - możliwość wysyłania SMS i email do wielu użytkowników jednocześnie
+  - **Niestandardowe wiadomości** - możliwość dodania własnego tekstu do SMS i email
+  - **Walidacja danych** - sprawdzanie formatów telefonów i adresów email
   - Konwersja wypełnionych pre-rejestracji na pełnych użytkowników
   - Automatyczne czyszczenie wygasłych i używanych linków
 - **Zarządzanie Użytkownikami**
   - Tworzenie użytkowników bez hasła
   - Automatyczne wysyłanie zaproszeń email
+  - **Wysyłanie SMS z linkiem** - wysyłanie linków resetu hasła przez SMS
+  - **Wysyłanie Email z linkiem** - wysyłanie linków resetu hasła przez email
   - Ponowne wysyłanie zaproszeń (pojedyncze i masowe)
   - Zarządzanie profilami i uprawnieniami
 - **Zarządzanie Grupami** - tworzenie, edycja, przypisywanie użytkowników
@@ -150,6 +160,14 @@ MAIL_IMAP_PASSWORD=your-password
 MAIL_IMAP_ENCRYPTION=ssl
 ```
 
+### SMS (SMSAPI)
+```env
+SMSAPI_AUTH_TOKEN=your_smsapi_token
+SMSAPI_FROM_NAME=Poledance
+SMSAPI_TEST_MODE=true
+SMSAPI_DEBUG=false
+```
+
 ### Kolejki
 ```env
 QUEUE_CONNECTION=redis  # lub database
@@ -164,6 +182,7 @@ REDIS_PORT=6379
 - [Instrukcja Uruchomienia](docs/instrukcja-uruchomienia.md) - podstawowa konfiguracja
 - [Konfiguracja Import Maili](docs/konfiguracja-import-maili.md) - system wiadomości email
 - [Konfiguracja Kolejki Produkcja](docs/konfiguracja-kolejki-produkcja.md) - zarządzanie kolejkami
+- [Konfiguracja SMSAPI](docs/konfiguracja-smsapi.md) - system wysyłania SMS
 
 ### 🎯 Status Projektu
 - [Aktualny Status Projektu](docs/projekt_status.md)
@@ -177,6 +196,7 @@ REDIS_PORT=6379
 - [Zadania Cron](docs/zadania-cron.md) - automatyczne zadania systemowe
 - [Zadania System Zajęć](docs/zadania-system-zajec.md) - zarządzanie harmonogramem
 - [Instrukcja Pre-rejestracji](docs/instrukcja-pre-rejestracja.md) - szczegółowy przewodnik systemu pre-rejestracji
+- [Funkcja Pre-rejestracji z SMS i Email](docs/funkcja-pre-rejestracja.md) - kompletna dokumentacja funkcji pre-rejestracji
 
 ### 📧 System Wiadomości Email
 - [System Wiadomości Email](docs/system-wiadomosci-email.md) - kompleksowa dokumentacja
@@ -211,6 +231,7 @@ php artisan test --filter=PreRegistrationTest
 - **PaymentGenerationTest** - testy generowania płatności
 - **PreRegistrationTest** - testy systemu pre-rejestracji (nowe)
 - **PreRegistrationCleanupTest** - testy czyszczenia pre-rejestracji (nowe)
+- **SmsServiceTest** - testy systemu wysyłania SMS (nowe)
 
 ## 📊 Struktura Projektu
 
@@ -235,7 +256,11 @@ grupy-poledance/
 │   ├── Models/                    # Modele Eloquent
 │   │   ├── PreRegistration.php    # Model pre-rejestracji
 │   │   ├── PasswordResetLog.php   # Model logów resetów
+│   │   ├── SmsLog.php            # Model logów SMS (nowe)
 │   │   └── ...                    # Inne modele
+│   ├── Services/                  # Serwisy aplikacji
+│   │   ├── SmsService.php         # Serwis wysyłania SMS (nowe)
+│   │   └── EmailService.php       # Serwis wysyłania email (nowe)
 │   └── Providers/                 # Dostawcy usług
 ├── config/                        # Pliki konfiguracyjne
 ├── database/                      # Migracje, seedery, factory
@@ -267,6 +292,7 @@ grupy-poledance/
 - **UserMailMessage** - wiadomości email
 - **PreRegistration** - pre-rejestracje (nowe)
 - **PasswordResetLog** - logi resetów haseł (nowe)
+- **SmsLog** - logi SMS (nowe)
 
 ## 🔒 Bezpieczeństwo
 
@@ -301,6 +327,10 @@ grupy-poledance/
 - **Automatyczne czyszczenie pre-rejestracji** - usuwanie wygasłych i używanych linków
 - **Kopiowanie linków do schowka** - funkcjonalność JavaScript z wizualnym feedbackiem
 - **Walidacja wygaśnięcia linków** - zarówno po stronie frontend jak i backend
+- **System SMS i Email** - kompletna integracja z SMSAPI i Laravel Mail
+- **Masowe wysyłanie** - możliwość wysyłania SMS i email do wielu użytkowników
+- **Niestandardowe wiadomości** - możliwość dodania własnego tekstu
+- **Walidacja danych** - sprawdzanie formatów telefonów i adresów email
 
 ### 🔄 W Trakcie
 - Dalsza optymalizacja wydajności dashboardu
@@ -333,6 +363,13 @@ php artisan route:list --name=pre-register
 # Sprawdzenie konfiguracji
 php artisan config:show
 
+# Testowanie SMS
+php artisan sms:test-connection
+php artisan sms:test 48123456789
+
+# Testowanie Email
+php artisan email:test test@example.com --type=pre-registration
+
 # Reset hasła admina (jednorazowo)
 php artisan tinker --execute "App\\Models\\User::where('email','admin@hups.pl')->update(['password' => '12hups34'])"
 ```
@@ -364,4 +401,4 @@ Laravel framework is open-sourced software licensed under the [MIT license](http
 ---
 
 **Grupy Poledance** - System zarządzania szkołą tańca  
-*Wersja:* 1.1.0 | *Ostatnia aktualizacja:* Styczeń 2025
+*Wersja:* 1.2.0 | *Ostatnia aktualizacja:* Wrzesień 2025
