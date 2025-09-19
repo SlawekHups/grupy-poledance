@@ -272,6 +272,82 @@ class PreRegistrationResource extends Resource
                         })
                         ->visible(fn ($record) => $record->isValid()),
                         
+                    Tables\Actions\Action::make('send_email')
+                        ->label('Wyślij Email')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->modalHeading('Wyślij Email z linkiem pre-rejestracji')
+                        ->modalDescription(fn ($record) => $record->email ? "Email zostanie wysłany na adres: {$record->email}" : 'Wprowadź adres email, na który ma zostać wysłany email')
+                        ->form([
+                            \Filament\Forms\Components\TextInput::make('email')
+                                ->label('Adres email')
+                                ->email()
+                                ->required()
+                                ->default(fn ($record) => $record->email ?: '')
+                                ->placeholder('Wprowadź adres email')
+                                ->helperText('Adres email w formacie: user@example.com')
+                                ->rules([
+                                    'required',
+                                    'email',
+                                    'max:255',
+                                ])
+                                ->validationMessages([
+                                    'required' => 'Adres email jest wymagany',
+                                    'email' => 'Adres email musi być prawidłowy',
+                                    'max' => 'Adres email może mieć maksymalnie 255 znaków',
+                                ]),
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon email z linkiem pre-rejestracji'),
+                            \Filament\Forms\Components\Placeholder::make('link_preview')
+                                ->label('Podgląd linku')
+                                ->content(fn ($record) => 'Link: ' . route('pre-register', $record->token))
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function ($record, array $data) {
+                            try {
+                                $emailService = new \App\Services\EmailService();
+                                $url = route('pre-register', $record->token);
+                                
+                                // Jeśli podano niestandardową wiadomość, użyj jej
+                                if (!empty($data['custom_message'])) {
+                                    $result = $emailService->sendCustomEmailWithLink(
+                                        $data['email'],
+                                        'Zaproszenie do rejestracji - Grupy Poledance',
+                                        $data['custom_message'],
+                                        $url
+                                    );
+                                } else {
+                                    // Użyj domyślnego szablonu pre-rejestracji
+                                    $result = $emailService->sendPreRegistrationLink($data['email'], $url);
+                                }
+                                
+                                if ($result) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Email wysłany pomyślnie')
+                                        ->body("Email został wysłany na adres {$data['email']}")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Błąd wysyłania Email')
+                                        ->body('Nie udało się wysłać email. Sprawdź logi.')
+                                        ->danger()
+                                        ->send();
+                                }
+                                
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd wysyłania Email')
+                                    ->body('Błąd: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->visible(fn ($record) => $record->isValid()),
+                        
                     Tables\Actions\Action::make('convert_to_user')
                         ->label('Konwertuj na użytkownika')
                         ->icon('heroicon-o-user-plus')
@@ -367,6 +443,65 @@ class PreRegistrationResource extends Resource
                             
                             \Filament\Notifications\Notification::make()
                                 ->title('Masowe wysyłanie SMS zakończone')
+                                ->body("Wysłano: {$successCount}, Błędy: {$errorCount}")
+                                ->success()
+                                ->send();
+                        }),
+
+                    Tables\Actions\BulkAction::make('send_email_bulk')
+                        ->label('Wyślij Email (masowo)')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Masowe wysyłanie Emaili z linkami pre-rejestracji')
+                        ->modalDescription('Email zostanie wysłany do wszystkich wybranych pre-rejestracji z adresem email.')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon email z linkiem pre-rejestracji'),
+                        ])
+                        ->action(function ($records, array $data) {
+                            $emailService = new \App\Services\EmailService();
+                            $successCount = 0;
+                            $errorCount = 0;
+                            
+                            foreach ($records as $record) {
+                                if (!$record->isValid() || empty($record->email)) {
+                                    $errorCount++;
+                                    continue;
+                                }
+                                
+                                try {
+                                    $url = route('pre-register', $record->token);
+                                    
+                                    // Jeśli podano niestandardową wiadomość, użyj jej
+                                    if (!empty($data['custom_message'])) {
+                                        $result = $emailService->sendCustomEmailWithLink(
+                                            $record->email,
+                                            'Zaproszenie do rejestracji - Grupy Poledance',
+                                            $data['custom_message'],
+                                            $url
+                                        );
+                                    } else {
+                                        // Użyj domyślnego szablonu pre-rejestracji
+                                        $result = $emailService->sendPreRegistrationLink($record->email, $url);
+                                    }
+                                    
+                                    if ($result) {
+                                        $successCount++;
+                                    } else {
+                                        $errorCount++;
+                                    }
+                                    
+                                } catch (\Exception $e) {
+                                    $errorCount++;
+                                }
+                            }
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Masowe wysyłanie Emaili zakończone')
                                 ->body("Wysłano: {$successCount}, Błędy: {$errorCount}")
                                 ->success()
                                 ->send();

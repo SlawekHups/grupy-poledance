@@ -939,6 +939,84 @@ class UserResource extends Resource
                         ->requiresConfirmation()
                         ->modalSubmitActionLabel('Wyślij SMS'),
 
+                    Tables\Actions\Action::make('send_email_invitation')
+                        ->label('Wyślij Email z linkiem')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->size('sm')
+                        ->tooltip('Wyślij Email z linkiem do ustawienia hasła')
+                        ->visible(fn (User $record) => !$record->password && $record->is_active && !empty($record->email))
+                        ->modalHeading('Wyślij Email z linkiem do ustawienia hasła')
+                        ->modalDescription(fn (User $record) => "Email zostanie wysłany na adres: {$record->email}")
+                        ->form([
+                            \Filament\Forms\Components\TextInput::make('email')
+                                ->label('Adres email')
+                                ->email()
+                                ->required()
+                                ->default(fn (User $record) => $record->email)
+                                ->helperText('Adres email w formacie: user@example.com')
+                                ->rules([
+                                    'required',
+                                    'email',
+                                    'max:255',
+                                ])
+                                ->validationMessages([
+                                    'required' => 'Adres email jest wymagany',
+                                    'email' => 'Adres email musi być prawidłowy',
+                                    'max' => 'Adres email może mieć maksymalnie 255 znaków',
+                                ]),
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon email z linkiem resetu hasła'),
+                            \Filament\Forms\Components\Placeholder::make('link_preview')
+                                ->label('Podgląd linku')
+                                ->content(fn (User $record) => 'Link zostanie wygenerowany automatycznie')
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function (User $record, array $data) {
+                            try {
+                                $emailService = new \App\Services\EmailService();
+                                
+                                // Jeśli podano niestandardową wiadomość, użyj jej
+                                if (!empty($data['custom_message'])) {
+                                    $result = $emailService->sendCustomEmailWithLink(
+                                        $data['email'],
+                                        'Zaproszenie do ustawienia hasła - Grupy Poledance',
+                                        $data['custom_message'],
+                                        'Link zostanie wygenerowany automatycznie'
+                                    );
+                                } else {
+                                    // Użyj domyślnego szablonu resetu hasła
+                                    $result = $emailService->sendUserInvitation($data['email']);
+                                }
+                                
+                                if ($result) {
+                                    Notification::make()
+                                        ->title('Email wysłany pomyślnie')
+                                        ->body("Email z linkiem został wysłany na adres {$data['email']}")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    Notification::make()
+                                        ->title('Błąd wysyłania Email')
+                                        ->body('Nie udało się wysłać email. Sprawdź logi.')
+                                        ->danger()
+                                        ->send();
+                                }
+                                
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Błąd wysyłania Email')
+                                    ->body('Błąd: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->requiresConfirmation()
+                        ->modalSubmitActionLabel('Wyślij Email'),
+
                     Tables\Actions\Action::make('send_data_correction_link')
                         ->label('Wyślij link do poprawy danych')
                         ->icon('heroicon-o-pencil-square')
