@@ -28,6 +28,12 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('back_to_list')
+                ->label('Powrót do tabeli')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url(fn () => static::getResource()::getUrl('index'))
+                ->tooltip('Powrót do listy użytkowników'),
             Actions\DeleteAction::make(),
         ];
     }

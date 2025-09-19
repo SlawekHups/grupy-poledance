@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\UserResource\Pages;
 
 use App\Events\UserInvited;
 use App\Filament\Admin\Resources\UserResource;
+use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -105,6 +106,18 @@ class CreateUser extends CreateRecord
                             ]),
                     ]),
             ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\Action::make('back_to_list')
+                ->label('Powrót do tabeli')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url(fn () => static::getResource()::getUrl('index'))
+                ->tooltip('Powrót do listy użytkowników'),
+        ];
     }
 
     protected function afterCreate(): void
