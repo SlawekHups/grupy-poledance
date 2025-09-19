@@ -847,6 +847,81 @@ class UserResource extends Resource
                         ->modalDescription(fn (User $record) => "Czy na pewno chcesz wysłać ponownie link do ustawienia hasła dla aktywnego użytkownika {$record->name}?")
                         ->modalSubmitActionLabel('Wyślij zaproszenie'),
 
+                    Tables\Actions\Action::make('send_sms_invitation')
+                        ->label('Wyślij SMS z linkiem')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->size('sm')
+                        ->tooltip('Wyślij SMS z linkiem do ustawienia hasła')
+                        ->visible(fn (User $record) => !$record->password && $record->is_active && !empty($record->phone))
+                        ->modalHeading('Wyślij SMS z linkiem do ustawienia hasła')
+                        ->modalDescription(fn (User $record) => "SMS zostanie wysłany na numer: {$record->phone}")
+                        ->form([
+                            \Filament\Forms\Components\TextInput::make('phone')
+                                ->label('Numer telefonu')
+                                ->tel()
+                                ->required()
+                                ->default(fn (User $record) => $record->phone)
+                                ->helperText('Numer w formacie: 123456789'),
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon SMS z linkiem resetu hasła'),
+                            \Filament\Forms\Components\Placeholder::make('link_preview')
+                                ->label('Podgląd linku')
+                                ->content(fn (User $record) => 'Link zostanie wygenerowany automatycznie')
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function (User $record, array $data) {
+                            try {
+                                $smsService = new \App\Services\SmsService();
+                                
+                                // Generuj token resetowania hasła
+                                $rawToken = \Illuminate\Support\Str::random(64);
+                                \Illuminate\Support\Facades\DB::table('password_reset_tokens')->insert([
+                                    'email' => $record->email,
+                                    'token' => \Illuminate\Support\Facades\Hash::make($rawToken),
+                                    'raw_token' => $rawToken,
+                                    'created_at' => now(),
+                                ]);
+                                
+                                $url = route('set-password', ['token' => $rawToken, 'email' => $record->email]);
+                                
+                                // Jeśli podano niestandardową wiadomość, dodaj do niej link
+                                if (!empty($data['custom_message'])) {
+                                    $messageWithLink = $data['custom_message'] . "\n\nLink: " . $url;
+                                    $result = $smsService->sendCustomMessage($data['phone'], $messageWithLink);
+                                } else {
+                                    // Użyj domyślnego szablonu resetu hasła
+                                    $result = $smsService->sendPasswordResetLink($data['phone'], $url);
+                                }
+                                
+                                if ($result) {
+                                    Notification::make()
+                                        ->title('SMS wysłany pomyślnie')
+                                        ->body("SMS z linkiem został wysłany na numer {$data['phone']}")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    Notification::make()
+                                        ->title('Błąd wysyłania SMS')
+                                        ->body('Nie udało się wysłać SMS. Sprawdź logi.')
+                                        ->danger()
+                                        ->send();
+                                }
+                                
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Błąd wysyłania SMS')
+                                    ->body('Błąd: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->requiresConfirmation()
+                        ->modalSubmitActionLabel('Wyślij SMS'),
+
                     Tables\Actions\Action::make('send_data_correction_link')
                         ->label('Wyślij link do poprawy danych')
                         ->icon('heroicon-o-pencil-square')

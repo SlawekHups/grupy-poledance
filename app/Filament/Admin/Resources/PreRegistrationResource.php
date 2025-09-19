@@ -33,20 +33,20 @@ class PreRegistrationResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('Imię i nazwisko')
-                    ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->placeholder('Opcjonalne - można dodać później'),
                     
                 Forms\Components\TextInput::make('email')
                     ->label('Email')
                     ->email()
-                    ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->placeholder('Opcjonalne - można dodać później'),
                     
                 Forms\Components\TextInput::make('phone')
                     ->label('Telefon')
                     ->tel()
-                    ->required()
-                    ->maxLength(20),
+                    ->maxLength(20)
+                    ->placeholder('Opcjonalne - można dodać później'),
                     
                 Forms\Components\TextInput::make('token')
                     ->label('Token')
@@ -184,6 +184,68 @@ class PreRegistrationResource extends Resource
                         ->modalCancelActionLabel('Zamknij')
                         ->visible(fn ($record) => $record->isValid()),
                         
+                    Tables\Actions\Action::make('send_sms')
+                        ->label('Wyślij SMS')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->modalHeading('Wyślij SMS z linkiem pre-rejestracji')
+                        ->modalDescription(fn ($record) => $record->phone ? "SMS zostanie wysłany na numer: {$record->phone}" : 'Wprowadź numer telefonu, na który ma zostać wysłany SMS')
+                        ->form([
+                            \Filament\Forms\Components\TextInput::make('phone')
+                                ->label('Numer telefonu')
+                                ->tel()
+                                ->required()
+                                ->default(fn ($record) => $record->phone ?: '')
+                                ->placeholder('Wprowadź numer telefonu')
+                                ->helperText('Numer w formacie: 123456789'),
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon SMS z linkiem pre-rejestracji'),
+                            \Filament\Forms\Components\Placeholder::make('link_preview')
+                                ->label('Podgląd linku')
+                                ->content(fn ($record) => 'Link: ' . route('pre-register', $record->token))
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function ($record, array $data) {
+                            try {
+                                $smsService = new \App\Services\SmsService();
+                                $url = route('pre-register', $record->token);
+                                
+                                // Jeśli podano niestandardową wiadomość, dodaj do niej link
+                                if (!empty($data['custom_message'])) {
+                                    $messageWithLink = $data['custom_message'] . "\n\nLink: " . $url;
+                                    $result = $smsService->sendCustomMessage($data['phone'], $messageWithLink);
+                                } else {
+                                    // Użyj domyślnego szablonu pre-rejestracji
+                                    $result = $smsService->sendPreRegistrationLink($data['phone'], $url);
+                                }
+                                
+                                if ($result) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('SMS wysłany pomyślnie')
+                                        ->body("SMS został wysłany na numer {$data['phone']}")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Błąd wysyłania SMS')
+                                        ->body('Nie udało się wysłać SMS. Sprawdź logi.')
+                                        ->danger()
+                                        ->send();
+                                }
+                                
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd wysyłania SMS')
+                                    ->body('Błąd: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->visible(fn ($record) => $record->isValid()),
+                        
                     Tables\Actions\Action::make('convert_to_user')
                         ->label('Konwertuj na użytkownika')
                         ->icon('heroicon-o-user-plus')
@@ -232,6 +294,59 @@ class PreRegistrationResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('send_sms_bulk')
+                        ->label('Wyślij SMS (masowo)')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->modalHeading('Masowe wysyłanie SMS')
+                        ->modalDescription('Wyślij SMS z linkami pre-rejestracji do wybranych osób')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon SMS dla każdej osoby'),
+                        ])
+                        ->action(function ($records, array $data) {
+                            $smsService = new \App\Services\SmsService();
+                            $successCount = 0;
+                            $errorCount = 0;
+                            
+                            foreach ($records as $record) {
+                                if (!$record->isValid() || empty($record->phone)) {
+                                    $errorCount++;
+                                    continue;
+                                }
+                                
+                                try {
+                                    $url = route('pre-register', $record->token);
+                                    
+                                    if (!empty($data['custom_message'])) {
+                                        $messageWithLink = $data['custom_message'] . "\n\nLink: " . $url;
+                                        $result = $smsService->sendCustomMessage($record->phone, $messageWithLink);
+                                    } else {
+                                        $result = $smsService->sendPreRegistrationLink($record->phone, $url);
+                                    }
+                                    
+                                    if ($result) {
+                                        $successCount++;
+                                    } else {
+                                        $errorCount++;
+                                    }
+                                    
+                                } catch (\Exception $e) {
+                                    $errorCount++;
+                                }
+                            }
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Masowe wysyłanie SMS zakończone')
+                                ->body("Wysłano: {$successCount}, Błędy: {$errorCount}")
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                        
                     Tables\Actions\DeleteBulkAction::make(),
                 ])
                 ->extraAttributes(['class' => 'flex flex-col sm:flex-row gap-2 w-full sm:w-auto'])
