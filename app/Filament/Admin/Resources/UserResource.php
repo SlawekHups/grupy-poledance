@@ -862,7 +862,24 @@ class UserResource extends Resource
                                 ->tel()
                                 ->required()
                                 ->default(fn (User $record) => $record->phone)
-                                ->helperText('Numer w formacie: 123456789'),
+                                ->helperText('Numer w formacie: 123456789')
+                                ->rules([
+                                    'required',
+                                    'string',
+                                    'min:9',
+                                    'max:15',
+                                    function ($attribute, $value, $fail) {
+                                        // Sprawdź czy numer zawiera tylko cyfry i opcjonalnie + na początku
+                                        if (!preg_match('/^(\+?[0-9]{9,15})$/', $value)) {
+                                            $fail('Numer telefonu musi zawierać 9-15 cyfr i opcjonalnie + na początku');
+                                        }
+                                    },
+                                ])
+                                ->validationMessages([
+                                    'required' => 'Numer telefonu jest wymagany',
+                                    'min' => 'Numer telefonu musi mieć co najmniej 9 cyfr',
+                                    'max' => 'Numer telefonu może mieć maksymalnie 15 cyfr',
+                                ]),
                             \Filament\Forms\Components\Textarea::make('custom_message')
                                 ->label('Niestandardowa wiadomość (opcjonalne)')
                                 ->rows(3)
