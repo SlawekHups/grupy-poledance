@@ -97,6 +97,11 @@ class SmsService
     protected function logSms(string $phone, string $message, string $type, string $status, ?string $messageId = null, ?float $cost = null, ?string $errorMessage = null): void
     {
         try {
+            // Jeśli koszt nie został podany, oblicz go automatycznie
+            if ($cost === null && $status === 'sent') {
+                $cost = config('smsapi.pricing.cost_per_sms', 0.17);
+            }
+            
             SmsLog::create([
                 'phone' => $phone,
                 'message' => $message,
