@@ -14,7 +14,31 @@ class ListSmsLogs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Usunięto CreateAction - logi SMS są tworzone automatycznie
+            \Filament\Actions\Action::make('refresh_balance')
+                ->label('Odśwież saldo')
+                ->icon('heroicon-o-arrow-path')
+                ->color('info')
+                ->action(function () {
+                    // Wyczyść cache salda
+                    cache()->forget('sms_api_balance');
+                    
+                    $smsService = new \App\Services\SmsService();
+                    $balance = $smsService->getBalance();
+                    
+                    if ($balance !== null) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Saldo SMS API zaktualizowane')
+                            ->body("Dostępne środki: " . number_format($balance, 2) . " PLN (" . number_format($balance, 0) . " punktów)")
+                            ->success()
+                            ->send();
+                    } else {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Błąd pobierania salda')
+                            ->body('Nie udało się pobrać salda SMS API. Sprawdź logi.')
+                            ->danger()
+                            ->send();
+                    }
+                }),
         ];
     }
 

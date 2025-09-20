@@ -166,13 +166,66 @@ class SmsService
     }
 
     /**
-     * Pobiera saldo konta SMSAPI (wymaga dodatkowej implementacji)
+     * Pobiera saldo konta SMSAPI
      */
-    public function getBalance(): float
+    public function getBalance(): ?float
     {
-        // TODO: Implementacja pobierania salda
-        Log::info('Pobieranie salda SMSAPI - wymaga implementacji');
-        return 0;
+        try {
+            $token = config('smsapi.auth_token');
+            
+            if (!$token) {
+                Log::error('Brak tokenu SMS API');
+                return null;
+            }
+            
+            $url = 'https://api.smsapi.pl/profile';
+            $ch = curl_init();
+            
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Authorization: Bearer $token",
+                "Content-Type: application/json"
+            ]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $error = curl_error($ch);
+            
+            curl_close($ch);
+            
+            if ($error) {
+                Log::error('Błąd cURL przy pobieraniu salda SMS API', ['error' => $error]);
+                return null;
+            }
+            
+            if ($httpCode !== 200) {
+                Log::error('Błąd HTTP przy pobieraniu salda SMS API', ['http_code' => $httpCode, 'response' => $response]);
+                return null;
+            }
+            
+            $data = json_decode($response, true);
+            
+            if (!$data || !isset($data['points'])) {
+                Log::error('Nieprawidłowa odpowiedź z SMS API', ['response' => $response]);
+                return null;
+            }
+            
+            $balance = (float) $data['points'];
+            
+            Log::info('Pobrano saldo SMS API', [
+                'balance' => $balance,
+                'username' => $data['username'] ?? 'unknown'
+            ]);
+            
+            return $balance;
+            
+        } catch (\Exception $e) {
+            Log::error('Błąd podczas pobierania salda SMS API', ['error' => $e->getMessage()]);
+            return null;
+        }
     }
 
     /**

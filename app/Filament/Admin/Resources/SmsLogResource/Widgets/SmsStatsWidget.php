@@ -56,6 +56,12 @@ class SmsStatsWidget extends BaseWidget
             $monthlyCost = $estimatedCost;
         }
 
+        // Pobierz aktualne saldo SMS API (cache na 5 minut)
+        $balance = cache()->remember('sms_api_balance', 300, function () {
+            $smsService = new \App\Services\SmsService();
+            return $smsService->getBalance();
+        });
+
         return [
             Stat::make('SMS dzisiaj', $todayStats->total ?? 0)
                 ->description('Wysłane: ' . ($todayStats->sent ?? 0) . ', Błędy: ' . ($todayStats->errors ?? 0))
@@ -76,6 +82,11 @@ class SmsStatsWidget extends BaseWidget
                 ->description('Koszt wysłanych SMS-ów (' . number_format($costPerSms, 2) . ' PLN za SMS)')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('info'),
+
+            Stat::make('Saldo SMS API', $balance !== null ? number_format($balance, 2) . ' PLN' : 'Brak danych')
+                ->description($balance !== null ? number_format($balance, 0) . ' punktów dostępnych' : 'Nie można pobrać salda')
+                ->descriptionIcon('heroicon-m-wallet')
+                ->color($balance !== null ? ($balance > 10 ? 'success' : ($balance > 1 ? 'warning' : 'danger')) : 'gray'),
         ];
     }
 }

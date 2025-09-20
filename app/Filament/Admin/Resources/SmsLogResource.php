@@ -159,6 +159,28 @@ class SmsLogResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('status', 'error')),
             ])
             ->actions([
+                Tables\Actions\Action::make('check_balance')
+                    ->label('Sprawdź saldo')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->color('info')
+                    ->action(function () {
+                        $smsService = new \App\Services\SmsService();
+                        $balance = $smsService->getBalance();
+                        
+                        if ($balance !== null) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Saldo SMS API')
+                                ->body("Dostępne środki: " . number_format($balance, 2) . " PLN (" . number_format($balance, 0) . " punktów)")
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Błąd pobierania salda')
+                                ->body('Nie udało się pobrać salda SMS API. Sprawdź logi.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\ViewAction::make()
                     ->modalHeading('Szczegóły SMS')
                     ->modalSubmitAction(false)
