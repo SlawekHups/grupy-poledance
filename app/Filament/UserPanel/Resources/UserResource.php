@@ -118,9 +118,9 @@ class UserResource extends Resource
                     ->label('Imię i nazwisko'),
                 TextColumn::make('email'),
                 TextColumn::make('phone')->label('Telefon'),
-                TextColumn::make('groups')
+                TextColumn::make('groups_display')
                     ->label('Grupy')
-                    ->getStateUsing(fn($record) => $record->groups->pluck('name')->implode(', '))
+                    ->state(fn($record) => $record->groups->pluck('name')->implode(', ') ?: 'Brak przypisania')
                     ->wrap()
                     ->searchable(false)
                     ->sortable(false),

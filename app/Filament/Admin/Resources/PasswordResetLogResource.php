@@ -82,6 +82,7 @@ class PasswordResetLogResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
                 'xl' => 1,
             ])
@@ -95,7 +96,8 @@ class PasswordResetLogResource extends Resource
                                 ->searchable()
                                 ->sortable()
                                 ->weight('bold')
-                                ->limit(40),
+                                ->limit(40)
+                                ->extraAttributes(['class' => 'text-sm sm:text-base']),
                             Tables\Columns\TextColumn::make('token_expires_at')
                                 ->label('Wygasa')
                                 ->dateTime('d.m.Y H:i')
@@ -104,14 +106,16 @@ class PasswordResetLogResource extends Resource
                                     $record->isExpired() ? 'danger' : 
                                     ($record->token_expires_at->diffInHours(now()) < 24 ? 'warning' : 'success')
                                 )
-                                ->alignRight(),
+                                ->alignRight()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                         ])->extraAttributes(['class' => 'justify-between items-start']),
 
                         Tables\Columns\Layout\Split::make([
                             Tables\Columns\TextColumn::make('user_email')
                                 ->label('Email')
                                 ->searchable()
-                                ->limit(30),
+                                ->limit(30)
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                             Tables\Columns\TextColumn::make('status')
                                 ->label('Status')
                                 ->badge()
@@ -134,13 +138,13 @@ class PasswordResetLogResource extends Resource
                             ->label('Powód')
                             ->limit(80)
                             ->searchable()
-                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                            ->extraAttributes(['class' => 'text-xs sm:text-sm text-gray-600']),
 
                         Tables\Columns\TextColumn::make('created_at')
                             ->label('Utworzono')
                             ->dateTime('d.m.Y H:i')
                             ->sortable()
-                            ->extraAttributes(['class' => 'text-sm text-gray-500']),
+                            ->extraAttributes(['class' => 'text-xs sm:text-sm text-gray-500']),
                     ]),
                 ]),
             ])

@@ -128,6 +128,7 @@ class PaymentResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
                 'lg' => 1,
                 'xl' => 1,
@@ -154,8 +155,8 @@ class PaymentResource extends Resource
                                 ->searchable()
                                 ->sortable()
                                 ->weight('bold')
-                                ->size('lg')
-                                ->extraAttributes(['class' => 'md:text-xl']),
+                                ->size('sm')
+                                ->extraAttributes(['class' => 'text-sm sm:text-base md:text-lg lg:text-xl']),
                             Tables\Columns\TextColumn::make('paid')
                                 ->label('Status')
                                 ->badge()
@@ -168,12 +169,14 @@ class PaymentResource extends Resource
                             Tables\Columns\TextColumn::make('month')
                                 ->label('Miesiąc')
                                 ->formatStateUsing(fn (string $state): string => mb_strtoupper(Carbon::createFromFormat('Y-m', $state)->translatedFormat('F Y')))
-                                ->sortable(),
+                                ->sortable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                             Tables\Columns\TextColumn::make('amount')
                                 ->label('Kwota')
                                 ->money('pln')
                                 ->alignRight()
-                                ->sortable(),
+                                ->sortable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm font-medium']),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
                         Tables\Columns\Layout\Split::make([
@@ -181,21 +184,22 @@ class PaymentResource extends Resource
                                 ->label('Data zapłaty')
                                 ->icon('heroicon-o-calendar')
                                 ->state(fn ($record): string => $record->paid && $record->updated_at ? \Carbon\Carbon::parse($record->updated_at)->format('d.m.Y') : '—')
-                                ->color(fn ($record): string => $record->paid ? 'success' : 'danger'),
+                                ->color(fn ($record): string => $record->paid ? 'success' : 'danger')
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                             Tables\Columns\TextColumn::make('')
                                 ->label('')
                                 ->state('')
-                                ->extraAttributes(['class' => 'hidden md:block']),
+                                ->extraAttributes(['class' => 'hidden sm:block']),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
                         Tables\Columns\TextColumn::make('notes')
                             ->label('Notatki')
                             ->wrap()
-                            ->limit(160)
-                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                            ->limit(80)
+                            ->extraAttributes(['class' => 'text-xs sm:text-sm text-gray-600']),
                     ])->space(2),
                 ])->extraAttributes(function ($record) {
-                    $classes = ['p-4', 'border-l-4'];
+                    $classes = ['p-3 sm:p-4', 'border-l-4'];
                     if ($record->paid) {
                         $classes[] = 'border-l-green-400';
                     } else {

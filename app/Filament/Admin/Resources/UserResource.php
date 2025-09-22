@@ -191,6 +191,7 @@ class UserResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
                 'lg' => 1,
                 'xl' => 1,
@@ -254,8 +255,8 @@ class UserResource extends Resource
                                 ->label('Imię i nazwisko')
                                 ->searchable()
                                 ->weight('bold')
-                                ->size('lg')
-                                ->extraAttributes(['class' => 'md:text-xl']),
+                                ->size('sm')
+                                ->extraAttributes(['class' => 'text-sm sm:text-base md:text-lg lg:text-xl']),
                             TextColumn::make('is_active')
                                 ->label('Status')
                                 ->badge()
@@ -270,26 +271,27 @@ class UserResource extends Resource
                             TextColumn::make('email')
                                 ->label('E-mail')
                                 ->icon('heroicon-o-envelope')
-                                ->searchable(),
+                                ->searchable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                             TextColumn::make('phone')
                                 ->label('Telefon')
                                 ->icon('heroicon-o-phone')
-                                ->searchable(),
+                                ->searchable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                         ]),
 
                         Tables\Columns\Layout\Split::make([
-                            Tables\Columns\TagsColumn::make('groups.name')
+                            Tables\Columns\TextColumn::make('groups_display')
                                 ->label('Grupy')
-                                ->separator(', ')
-                                ->limitList(2)
-                                ->expandableLimitedList()
-                                ->getStateUsing(fn($record) => $record->groups->pluck('name')->toArray()),
+                                ->state(fn($record) => $record->groups->pluck('name')->implode(', ') ?: 'Brak przypisania')
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                             TextColumn::make('amount')
                                 ->label('Kwota')
                                 ->suffix(' zł')
                                 ->icon('heroicon-o-banknotes')
                                 ->alignRight()
-                                ->searchable(),
+                                ->searchable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm font-medium']),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
                         // Opis regulaminu na samym dole (ikonka + tekst, kolor zgodny ze statusem)
@@ -299,10 +301,10 @@ class UserResource extends Resource
                             ->icon(fn ($record): string => $record->terms_accepted_at ? 'heroicon-o-document-check' : 'heroicon-o-exclamation-triangle')
                             ->color(fn ($record): string => $record->terms_accepted_at ? 'success' : 'danger')
                             ->tooltip(fn ($record): ?string => $record->terms_accepted_at ? 'Data akceptacji: ' . \Carbon\Carbon::parse($record->terms_accepted_at)->format('d.m.Y H:i') : 'Regulamin nie został zaakceptowany')
-                            ->extraAttributes(['class' => 'mt-2 font-medium']),
+                            ->extraAttributes(['class' => 'mt-2 text-xs sm:text-sm font-medium']),
                     ])->space(2),
                 ])->extraAttributes(function ($record) {
-                    $classes = ['p-4', 'border-l-4'];
+                    $classes = ['p-3 sm:p-4', 'border-l-4'];
                     // Priorytet: jeśli brak akceptacji regulaminu – czerwony pasek
                     if (empty($record->terms_accepted_at)) {
                         $classes[] = 'border-l-red-500';

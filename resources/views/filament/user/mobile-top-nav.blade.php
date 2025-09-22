@@ -1,10 +1,13 @@
-<div class="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur border-b" x-data="{ open: false }" @keydown.escape.window="open=false"          x-init="$watch('open', value => { 
-             if (value) { 
-                 document.documentElement.style.overflow = 'hidden';
-             } else { 
-                 document.documentElement.style.overflow = '';
-             } 
-         })">
+<div class="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur border-b" 
+     x-data="{ open: false }" 
+     @keydown.escape.window="open=false"
+     x-init="$watch('open', value => { 
+         if (value) { 
+             document.documentElement.style.overflow = 'hidden';
+         } else { 
+             document.documentElement.style.overflow = '';
+         } 
+     })">
     <div class="px-4 py-3 flex items-center gap-4">
         <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 shadow-sm">
             <x-filament::icon icon="heroicon-o-bars-3" class="h-5 w-5" />
@@ -19,7 +22,7 @@
     <!-- Overlay -->
     <div x-cloak x-show="open" @click="open = false" class="fixed inset-0 bg-black/20 z-40"></div>
 
-    <div x-cloak x-show="open" x-transition.origin.top class="fixed inset-x-0 top-[60px] bg-white shadow-lg border-b z-50 max-h-96 overflow-y-auto mobile-menu-scroll"></div>
+    <div x-cloak x-show="open" x-transition.origin.top class="fixed inset-x-0 top-[60px] bg-white shadow-lg border-b z-50 max-h-96 overflow-y-auto mobile-menu-scroll">
         <nav class="max-w-screen-xl mx-auto px-4 py-6 pb-24 space-y-6">
             <!-- Panel użytkownika -->
             <div>

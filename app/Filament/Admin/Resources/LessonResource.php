@@ -96,6 +96,7 @@ class LessonResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
             ])
             ->recordClasses(function ($record) {
@@ -117,16 +118,17 @@ class LessonResource extends Resource
                                         Tables\Columns\ImageColumn::make('avatar')
                                             ->label('')
                                             ->circular()
-                                            ->size(60),
+                                            ->size(40)
+                                            ->extraAttributes(['class' => 'sm:w-15 sm:h-15']),
                                         
                                         Tables\Columns\TextColumn::make('title')
                                             ->label('')
                                             ->searchable()
                                             ->sortable()
                                             ->weight('bold')
-                                            ->size('2xl')
+                                            ->size('sm')
                                             ->extraAttributes([
-                                                'class' => 'text-primary-600 whitespace-nowrap overflow-hidden text-ellipsis',
+                                                'class' => 'text-primary-600 whitespace-nowrap overflow-hidden text-ellipsis text-sm sm:text-base md:text-lg lg:text-xl',
                                                 'style' => 'min-width: 0;'
                                             ]),
                                     ])->extraAttributes(['class' => 'items-center gap-x-3 min-w-0 flex-1']),
@@ -135,7 +137,7 @@ class LessonResource extends Resource
                                         ->label('Grupa')
                                         ->icon('heroicon-m-user-group')
                                         ->iconPosition(IconPosition::Before)
-                                        ->extraAttributes(['class' => 'text-gray-600']),
+                                        ->extraAttributes(['class' => 'text-gray-600 text-xs sm:text-sm']),
                                 ])->extraAttributes(['class' => 'flex-1 min-w-0']),
 
                                 // Druga linia: Data, autor i status
@@ -145,13 +147,13 @@ class LessonResource extends Resource
                                         ->date('d.m.Y')
                                         ->icon('heroicon-m-calendar')
                                         ->iconPosition(IconPosition::Before)
-                                        ->extraAttributes(['class' => 'text-gray-600']),
+                                        ->extraAttributes(['class' => 'text-gray-600 text-xs sm:text-sm']),
 
                                     Tables\Columns\TextColumn::make('creator.name')
                                         ->label('')
                                         ->icon('heroicon-m-user')
                                         ->iconPosition(IconPosition::Before)
-                                        ->extraAttributes(['class' => 'text-gray-600']),
+                                        ->extraAttributes(['class' => 'text-gray-600 text-xs sm:text-sm']),
 
                                     Tables\Columns\IconColumn::make('status')
                                         ->label('')
@@ -161,21 +163,21 @@ class LessonResource extends Resource
                                         ->trueColor('success')
                                         ->falseColor('danger')
                                         ->state(fn ($record): bool => $record->status === 'published'),
-                                ])->extraAttributes(['class' => 'gap-x-6 items-center justify-end']),
+                                ])->extraAttributes(['class' => 'gap-x-2 sm:gap-x-6 items-center justify-end']),
                             ])->extraAttributes(['class' => 'justify-between']),
                         ])->space(3),
-                    ])->extraAttributes(['class' => 'bg-gray-50 p-4 rounded-t-xl']),
+                    ])->extraAttributes(['class' => 'bg-gray-50 p-3 sm:p-4 rounded-t-xl']),
 
                     // Opis
                     Tables\Columns\Layout\Panel::make([
                         Tables\Columns\TextColumn::make('description')
                             ->label('')
                             ->html()
-                            ->words(150)
+                            ->words(80)
                             ->wrap()
                             ->extraAttributes([
-                                'class' => 'prose max-w-none p-4',
-                                'style' => 'word-wrap: break-word; white-space: pre-wrap; max-height: 250px; overflow: hidden;'
+                                'class' => 'prose max-w-none p-3 sm:p-4 text-xs sm:text-sm',
+                                'style' => 'word-wrap: break-word; white-space: pre-wrap; max-height: 200px; overflow: hidden;'
                             ]),
                     ])->extraAttributes(['class' => 'bg-white rounded-b-xl']),
                 ]),

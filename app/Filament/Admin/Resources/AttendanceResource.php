@@ -101,6 +101,7 @@ class AttendanceResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
                 'lg' => 1,
                 'xl' => 1,
@@ -114,7 +115,8 @@ class AttendanceResource extends Resource
                                 ->label('Data')
                                 ->date('d.m.Y')
                                 ->weight('bold')
-                                ->sortable(),
+                                ->sortable()
+                                ->extraAttributes(['class' => 'text-sm sm:text-base']),
                             TextColumn::make('present')
                                 ->label('Obecność')
                                 ->badge()
@@ -126,19 +128,21 @@ class AttendanceResource extends Resource
                         Tables\Columns\Layout\Split::make([
                             TextColumn::make('user.name')
                                 ->label('Użytkownik')
-                                ->searchable(),
+                                ->searchable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                             TextColumn::make('group.name')
                                 ->label('Grupa')
                                 ->alignRight()
-                                ->searchable(),
+                                ->searchable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
                         TextColumn::make('note')
                             ->label('Notatka')
                             ->wrap()
-                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                            ->extraAttributes(['class' => 'text-xs sm:text-sm text-gray-600']),
                     ])->space(2),
-                ])->extraAttributes(['class' => 'p-4']),
+                ])->extraAttributes(['class' => 'p-3 sm:p-4']),
             ])
             ->filters([
                 Tables\Filters\Filter::make('date')

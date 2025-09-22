@@ -147,6 +147,7 @@ class UserMailMessageResource extends Resource
     {
         return $table
             ->contentGrid([
+                'sm' => 1,
                 'md' => 1,
                 'xl' => 1,
             ])
@@ -158,13 +159,15 @@ class UserMailMessageResource extends Resource
                             Tables\Columns\TextColumn::make('subject')
                                 ->label('Temat')
                                 ->searchable()
-                                ->limit(80)
-                                ->weight('bold'),
+                                ->limit(40)
+                                ->weight('bold')
+                                ->extraAttributes(['class' => 'text-sm sm:text-base']),
                             Tables\Columns\TextColumn::make('sent_at')
                                 ->label('Data')
                                 ->dateTime('d.m.Y H:i')
                                 ->alignRight()
-                                ->sortable(),
+                                ->sortable()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                         ])->extraAttributes(['class' => 'justify-between items-start']),
 
                         Tables\Columns\Layout\Split::make([
@@ -183,13 +186,14 @@ class UserMailMessageResource extends Resource
                                 }),
                             Tables\Columns\TextColumn::make('email')
                                 ->label('Email')
-                                ->alignRight(),
+                                ->alignRight()
+                                ->extraAttributes(['class' => 'text-xs sm:text-sm']),
                         ])->extraAttributes(['class' => 'justify-between items-center']),
 
                         Tables\Columns\TextColumn::make('content')
                             ->label('Podgląd')
-                            ->formatStateUsing(fn (?string $state) => $state ? \Illuminate\Support\Str::limit(strip_tags(html_entity_decode($state, ENT_QUOTES | ENT_HTML5, 'UTF-8')), 160) : 'Brak treści')
-                            ->extraAttributes(['class' => 'text-sm text-gray-600']),
+                            ->formatStateUsing(fn (?string $state) => $state ? \Illuminate\Support\Str::limit(strip_tags(html_entity_decode($state, ENT_QUOTES | ENT_HTML5, 'UTF-8')), 80) : 'Brak treści')
+                            ->extraAttributes(['class' => 'text-xs sm:text-sm text-gray-600']),
                     ]),
                 ]),
             ])
