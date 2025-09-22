@@ -1,6 +1,6 @@
 # 📌 Status projektu – Grupy Poledance (aktualny)
 
-Data: 2025-09-20
+Data: 2025-09-22
 
 ## 🎯 Cel i zakres
 System do zarządzania szkołą tańca: użytkownicy, grupy, płatności, obecności, regulaminy, wiadomości email i SMS. Dwa panele (Admin i Użytkownik), automatyzacje przez cron i kolejki, integracja z SMS API Poland.
@@ -37,7 +37,7 @@ routes/
 - Regulaminy: zarządzanie treścią i aktywnością, podgląd akceptacji
 - Wiadomości email: logi/operacje na wiadomościach (import IMAP)
 - Logi resetów haseł: ponowne zaproszenia, ponowne resety, zmiana statusów
-- **Logi SMS** (`/admin/sms-logs`): śledzenie wysłanych SMS-ów, statystyki, saldo konta SMS API
+- **Logi SMS** (`/admin/sms-logs`): śledzenie wysłanych SMS-ów, statystyki, saldo konta SMS API (w grupie "Ustawienia")
 
 ### Panel Użytkownika (`/panel`)
 - Profil i dane, adresy
@@ -145,6 +145,10 @@ php artisan test --filter=UserMailMessageTest
 - Podwójne wywołania seederów/haszowania – ujednolicone
 - **Błędy Filament Forms** - naprawione funkcje walidacji z `$attribute`
 - **Integracja SMS API** - pełna implementacja wysyłania i śledzenia SMS-ów
+- **Walidacja formularzy** - dodana walidacja formatu telefonu i kodu pocztowego
+- **Formularz poprawy danych** - uproszczony, usunięto pola adres/miasto/kod pocztowy
+- **Mobile menu** - naprawione przewijanie i dodane wszystkie linki
+- **Nawigacja SMS** - logi SMS przeniesione do grupy "Ustawienia"
 
 ### W toku
 - Optymalizacja dashboardu
@@ -152,7 +156,7 @@ php artisan test --filter=UserMailMessageTest
 - Rozszerzenie raportowania
 - Integracja płatności online
 
-## 🆕 Ostatnie zmiany (2025-09-20)
+## 🆕 Ostatnie zmiany (2025-09-22)
 
 ### System SMS API - Kompletna implementacja
 - **Integracja z SMS API Poland** - wysyłanie SMS-ów z aplikacji
@@ -171,11 +175,24 @@ php artisan test --filter=UserMailMessageTest
 - **Testy SMS** - możliwość testowania wysyłania
 
 ### Panel administracyjny SMS
-- **Logi SMS** (`/admin/sms-logs`) z filtrami i wyszukiwaniem
+- **Logi SMS** (`/admin/sms-logs`) w grupie "Ustawienia" z filtrami i wyszukiwaniem
 - **Szczegóły SMS** - modal z pełnymi informacjami o wiadomości
 - **Statystyki** - dzienne, tygodniowe, miesięczne podsumowania
 - **Saldo konta** - automatyczne sprawdzanie i ostrzeżenia o niskim saldzie
 - **Kolorowe wskaźniki** - status wysłania, typ SMS, poziom salda
+
+### Usprawnienia formularzy i walidacji
+- **Walidacja telefonu** - format polski (9 cyfr, opcjonalnie +48)
+- **Walidacja kodu pocztowego** - format XX-XXX (np. 12-345)
+- **Poprawa danych** - uproszczony formularz (tylko nazwa, email, telefon)
+- **Podświetlanie błędów** - czerwone ramki przy nieprawidłowych danych
+- **Placeholdery z przykładami** - użytkownik wie jak wypełnić pole
+
+### Mobile menu i nawigacja
+- **Przewijanie menu** - naprawione problemy z przewijaniem na mobile
+- **Custom scrollbar** - ładniejszy pasek przewijania z obsługą dark mode
+- **Wszystkie linki podłączone** - kompletne menu mobilne dla admin i user
+- **Logi SMS w menu** - dodane do sekcji "Ustawienia" w mobile menu
 
 ### Konfiguracja SMS API
 ```php
