@@ -73,26 +73,14 @@ class DataCorrectionController extends Controller
             $rules['phone'] = [
                 'required',
                 'string',
-                'max:20',
+                'min:9',
+                'max:15',
+                'regex:/^(\+?48)?[0-9]{9}$/',
                 Rule::unique('users', 'phone')->ignore($user->id)
             ];
             $data['phone'] = $request->input('phone');
         }
         
-        if (in_array('address', $allowedFields)) {
-            $rules['address'] = 'nullable|string|max:255';
-            $data['address'] = $request->input('address');
-        }
-        
-        if (in_array('city', $allowedFields)) {
-            $rules['city'] = 'nullable|string|max:100';
-            $data['city'] = $request->input('city');
-        }
-        
-        if (in_array('postal_code', $allowedFields)) {
-            $rules['postal_code'] = 'nullable|string|max:10';
-            $data['postal_code'] = $request->input('postal_code');
-        }
         
         // Walidacja z niestandardowymi komunikatami
         $messages = [
@@ -105,14 +93,10 @@ class DataCorrectionController extends Controller
             'email.unique' => 'Ten adres email jest już używany przez innego użytkownika.',
             'phone.required' => 'Numer telefonu jest wymagany.',
             'phone.string' => 'Numer telefonu musi być tekstem.',
-            'phone.max' => 'Numer telefonu nie może być dłuższy niż 20 znaków.',
+            'phone.min' => 'Numer telefonu musi mieć minimum 9 cyfr.',
+            'phone.max' => 'Numer telefonu nie może być dłuższy niż 15 znaków.',
+            'phone.regex' => 'Numer telefonu musi zawierać 9 cyfr (np. 123456789 lub +48123456789).',
             'phone.unique' => 'Ten numer telefonu jest już używany przez innego użytkownika.',
-            'address.string' => 'Adres musi być tekstem.',
-            'address.max' => 'Adres nie może być dłuższy niż 255 znaków.',
-            'city.string' => 'Miasto musi być tekstem.',
-            'city.max' => 'Miasto nie może być dłuższe niż 100 znaków.',
-            'postal_code.string' => 'Kod pocztowy musi być tekstem.',
-            'postal_code.max' => 'Kod pocztowy nie może być dłuższy niż 10 znaków.',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);

@@ -56,13 +56,21 @@ class OnboardingWizard extends Page implements HasForms
                             ->label('Telefon')
                             ->tel()
                             ->required()
-                            ->minLength(9)
-                            ->maxLength(15)
+                            ->rules([
+                                'required',
+                                'string',
+                                'min:9',
+                                'max:15',
+                                'regex:/^(\+?48)?[0-9]{9}$/',
+                            ])
                             ->validationMessages([
                                 'required' => 'Numer telefonu jest wymagany.',
-                                'minLength' => 'Numer telefonu musi mieć minimum 9 cyfr.',
-                                'maxLength' => 'Numer telefonu może mieć maksymalnie 15 cyfr.',
+                                'min' => 'Numer telefonu musi mieć minimum 9 cyfr.',
+                                'max' => 'Numer telefonu może mieć maksymalnie 15 znaków.',
+                                'regex' => 'Numer telefonu musi zawierać 9 cyfr (np. 123456789 lub +48123456789).',
                             ])
+                            ->placeholder('np. 123456789 lub +48123456789')
+                            ->helperText('Format: 9 cyfr (opcjonalnie z +48)')
                             ->dehydrateStateUsing(function ($state) {
                                 if (!$state) return null;
                                 $number = preg_replace('/\\D/', '', $state);
@@ -80,9 +88,17 @@ class OnboardingWizard extends Page implements HasForms
                         Forms\Components\TextInput::make('address_postal_code')
                             ->label('Kod pocztowy')
                             ->required()
+                            ->rules([
+                                'required',
+                                'string',
+                                'regex:/^\d{2}-\d{3}$/',
+                            ])
                             ->validationMessages([
                                 'required' => 'Kod pocztowy jest wymagany.',
-                            ]),
+                                'regex' => 'Kod pocztowy musi być w formacie XX-XXX (np. 12-345).',
+                            ])
+                            ->placeholder('np. 12-345')
+                            ->helperText('Format: XX-XXX'),
                         Forms\Components\TextInput::make('address_city')
                             ->label('Miasto')
                             ->required()

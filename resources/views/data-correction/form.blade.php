@@ -96,7 +96,7 @@
                         <div class="mt-1">
                             <input id="phone" name="phone" type="tel" required
                                 value="{{ old('phone') }}"
-                                placeholder="Wprowadź poprawny numer telefonu"
+                                placeholder="np. 123456789 lub +48123456789"
                                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm @error('phone') border-red-500 @enderror">
                         </div>
                         @error('phone')
@@ -105,47 +105,6 @@
                     </div>
                     @endif
                     
-                    @if (in_array('address', $allowedFields))
-                    <div>
-                        <label for="address" class="block text-sm font-medium text-gray-700">
-                            Adres
-                        </label>
-                        <div class="mt-1">
-                            <input id="address" name="address" type="text"
-                                value="{{ old('address') }}"
-                                placeholder="Wprowadź poprawny adres"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                    </div>
-                    @endif
-                    
-                    @if (in_array('city', $allowedFields))
-                    <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700">
-                            Miasto
-                        </label>
-                        <div class="mt-1">
-                            <input id="city" name="city" type="text"
-                                value="{{ old('city') }}"
-                                placeholder="Wprowadź poprawne miasto"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                    </div>
-                    @endif
-                    
-                    @if (in_array('postal_code', $allowedFields))
-                    <div>
-                        <label for="postal_code" class="block text-sm font-medium text-gray-700">
-                            Kod pocztowy
-                        </label>
-                        <div class="mt-1">
-                            <input id="postal_code" name="postal_code" type="text"
-                                value="{{ old('postal_code') }}"
-                                placeholder="Wprowadź poprawny kod pocztowy"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                    </div>
-                    @endif
                     
                     <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
                         <div class="flex">

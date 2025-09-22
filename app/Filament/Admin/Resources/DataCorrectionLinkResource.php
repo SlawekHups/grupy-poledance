@@ -64,11 +64,8 @@ class DataCorrectionLinkResource extends Resource
                         'name' => 'Imię i nazwisko (zawsze dostępne)',
                         'email' => 'Email',
                         'phone' => 'Telefon',
-                        'address' => 'Adres',
-                        'city' => 'Miasto',
-                        'postal_code' => 'Kod pocztowy',
                     ])
-                    ->columns(2)
+                    ->columns(1)
                     ->default(['name', 'email', 'phone'])
                     ->required()
                     ->afterStateUpdated(function ($state, callable $set) {
@@ -137,9 +134,6 @@ class DataCorrectionLinkResource extends Resource
                                         'name' => 'Imię',
                                         'email' => 'Email',
                                         'phone' => 'Telefon',
-                                        'address' => 'Adres',
-                                        'city' => 'Miasto',
-                                        'postal_code' => 'Kod',
                                     ];
                                     return collect($state)->map(fn($field) => $labels[$field] ?? $field)->join(', ');
                                 }),
