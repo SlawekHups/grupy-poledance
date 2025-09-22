@@ -5,14 +5,12 @@
                  document.documentElement.style.overflow = '';
              } 
          })">
-    <div class="px-3 py-2 flex items-center gap-3">
-        <button @click="open = !open" class="mobile-menu-button inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#1f2937'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
+    <div class="px-4 py-3 flex items-center gap-4">
+        <button @click="open = !open" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
             <x-filament::icon icon="heroicon-o-bars-3" class="h-5 w-5" />
             <span>Menu</span>
         </button>
-        <a href="{{ route('filament.admin.pages.dashboard') }}" class="text-sm font-medium text-gray-900 dark:text-white">Panel administratora</a>
+        <a href="{{ route('filament.admin.pages.dashboard') }}" class="text-sm font-semibold text-gray-800 dark:text-white">Panel administratora</a>
         @if (filament()->auth()->check())
             <x-filament-panels::user-menu class="ml-auto" />
         @endif
@@ -22,23 +20,19 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
     <div x-cloak x-show="open" @click="open = false" class="fixed inset-0 bg-black/20 z-40"></div>
 
     <div x-cloak x-show="open" x-transition.origin.top class="fixed inset-x-0 top-[60px] bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto mobile-menu-scroll">
-        <nav class="max-w-screen-xl mx-auto px-3 py-3 pb-20 space-y-4">
+        <nav class="max-w-screen-xl mx-auto px-4 py-6 pb-24 space-y-6">
             
             <!-- Panel administratora -->
             <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-300 px-1 mb-2">Panel administratora</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('filament.admin.pages.dashboard') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-squares-2x2" class="h-5 w-5" />
-                        <span>Dashboard</span>
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 px-2 mb-3">Panel administratora</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{{ route('filament.admin.pages.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-squares-2x2" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Dashboard</span>
                     </a>
-                    <a href="{{ route('filament.admin.pages.attendance-group-page') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5" />
-                        <span>Obecność grupy</span>
+                    <a href="{{ route('filament.admin.pages.attendance-group-page') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-document-text" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Obecność grupy</span>
                     </a>
                     <a href="{{ route('filament.admin.resources.pre-registrations.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
 onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
@@ -57,57 +51,45 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
 
             <!-- Użytkownicy i Grupy -->
             <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-300 px-1 mb-2">Użytkownicy i Grupy</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('filament.admin.resources.users.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-users" class="h-5 w-5" />
-                        <span>Użytkownicy</span>
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 px-2 mb-3">Użytkownicy i Grupy</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{{ route('filament.admin.resources.users.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-users" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Użytkownicy</span>
                     </a>
-                    <a href="{{ route('filament.admin.resources.groups.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-user-group" class="h-5 w-5" />
-                        <span>Grupy</span>
+                    <a href="{{ route('filament.admin.resources.groups.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-user-group" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Grupy</span>
                     </a>
-                    <a href="{{ route('filament.admin.resources.attendances.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-calendar" class="h-5 w-5" />
-                        <span>Obecności</span>
+                    <a href="{{ route('filament.admin.resources.attendances.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-calendar" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Obecności</span>
                     </a>
-                    <a href="{{ route('filament.admin.resources.password-reset-logs.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-key" class="h-5 w-5" />
-                        <span>Logi resetów</span>
+                    <a href="{{ route('filament.admin.resources.password-reset-logs.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-key" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Logi resetów</span>
                     </a>
                 </div>
             </div>
 
             <!-- Finanse -->
             <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-300 px-1 mb-2">Finanse</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('filament.admin.resources.payments.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-banknotes" class="h-5 w-5" />
-                        <span>Płatności</span>
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 px-2 mb-3">Finanse</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{{ route('filament.admin.resources.payments.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-banknotes" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Płatności</span>
                     </a>
                 </div>
             </div>
 
             <!-- Zajęcia -->
             <div>
-                <div class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-300 px-1 mb-2">Zajęcia</div>
-                <div class="grid grid-cols-2 gap-2">
-                    <a href="{{ route('filament.admin.resources.lessons.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
-onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
-onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
-                        <x-filament::icon icon="heroicon-o-academic-cap" class="h-5 w-5" />
-                        <span>Zadania</span>
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300 px-2 mb-3">Zajęcia</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="{{ route('filament.admin.resources.lessons.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500 transition-colors duration-200 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-academic-cap" class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        <span class="text-sm font-medium">Zadania</span>
                     </a>
                     <a href="{{ route('filament.admin.resources.terms.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
 onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
