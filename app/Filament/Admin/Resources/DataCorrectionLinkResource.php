@@ -210,6 +210,157 @@ class DataCorrectionLinkResource extends Resource
                         ->modalCancelActionLabel('Zamknij')
                         ->visible(fn ($record) => $record->isValid()),
                         
+                    Tables\Actions\Action::make('send_sms')
+                        ->label('Wyślij SMS')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->modalHeading('Wyślij SMS z linkiem do poprawy danych')
+                        ->modalDescription(fn ($record) => $record->user->phone ? "SMS zostanie wysłany na numer: {$record->user->phone}" : 'Wprowadź numer telefonu, na który ma zostać wysłany SMS')
+                        ->form([
+                            \Filament\Forms\Components\TextInput::make('phone')
+                                ->label('Numer telefonu')
+                                ->tel()
+                                ->required()
+                                ->default(fn ($record) => $record->user->phone ?: '')
+                                ->placeholder('Wprowadź numer telefonu')
+                                ->helperText('Numer w formacie: 123456789')
+                                ->rules([
+                                    'required',
+                                    'string',
+                                    'min:9',
+                                    'max:15',
+                                    'regex:/^(\+?[0-9]{9,15})$/',
+                                ])
+                                ->validationMessages([
+                                    'required' => 'Numer telefonu jest wymagany',
+                                    'min' => 'Numer telefonu musi mieć co najmniej 9 cyfr',
+                                    'max' => 'Numer telefonu może mieć maksymalnie 15 cyfr',
+                                    'regex' => 'Numer telefonu musi zawierać 9-15 cyfr i opcjonalnie + na początku',
+                                ]),
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon SMS z linkiem do poprawy danych'),
+                            \Filament\Forms\Components\Placeholder::make('link_preview')
+                                ->label('Podgląd linku')
+                                ->content(fn ($record) => 'Link: ' . route('data-correction', $record->token))
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function ($record, array $data) {
+                            try {
+                                $smsService = new \App\Services\SmsService();
+                                $url = route('data-correction', $record->token);
+                                
+                                // Jeśli podano niestandardową wiadomość, dodaj do niej link
+                                if (!empty($data['custom_message'])) {
+                                    $messageWithLink = $data['custom_message'] . "\n\nLink: " . $url;
+                                    $result = $smsService->sendCustomMessage($data['phone'], $messageWithLink);
+                                } else {
+                                    // Użyj domyślnego szablonu poprawy danych
+                                    $result = $smsService->sendDataCorrectionLink($data['phone'], $url);
+                                }
+                                
+                                if ($result) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('SMS wysłany pomyślnie')
+                                        ->body("SMS został wysłany na numer {$data['phone']}")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Błąd wysyłania SMS')
+                                        ->body('Nie udało się wysłać SMS. Sprawdź logi.')
+                                        ->danger()
+                                        ->send();
+                                }
+                                
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd wysyłania SMS')
+                                    ->body('Błąd: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->visible(fn ($record) => $record->isValid()),
+                        
+                    Tables\Actions\Action::make('send_email')
+                        ->label('Wyślij Email')
+                        ->icon('heroicon-o-envelope')
+                        ->color('info')
+                        ->modalHeading('Wyślij Email z linkiem do poprawy danych')
+                        ->modalDescription(fn ($record) => $record->user->email ? "Email zostanie wysłany na adres: {$record->user->email}" : 'Wprowadź adres email, na który ma zostać wysłany email')
+                        ->form([
+                            \Filament\Forms\Components\TextInput::make('email')
+                                ->label('Adres email')
+                                ->email()
+                                ->required()
+                                ->default(fn ($record) => $record->user->email ?: '')
+                                ->placeholder('Wprowadź adres email')
+                                ->helperText('Adres email w formacie: user@example.com')
+                                ->rules([
+                                    'required',
+                                    'email',
+                                    'max:255',
+                                ])
+                                ->validationMessages([
+                                    'required' => 'Adres email jest wymagany',
+                                    'email' => 'Adres email musi być prawidłowy',
+                                    'max' => 'Adres email może mieć maksymalnie 255 znaków',
+                                ]),
+                            \Filament\Forms\Components\Textarea::make('custom_message')
+                                ->label('Niestandardowa wiadomość (opcjonalne)')
+                                ->rows(3)
+                                ->placeholder('Pozostaw puste, aby użyć domyślnego szablonu z linkiem')
+                                ->helperText('Jeśli zostawisz puste, zostanie użyty domyślny szablon email z linkiem do poprawy danych'),
+                            \Filament\Forms\Components\Placeholder::make('link_preview')
+                                ->label('Podgląd linku')
+                                ->content(fn ($record) => 'Link: ' . route('data-correction', $record->token))
+                                ->columnSpanFull(),
+                        ])
+                        ->action(function ($record, array $data) {
+                            try {
+                                $emailService = new \App\Services\EmailService();
+                                $url = route('data-correction', $record->token);
+                                
+                                // Jeśli podano niestandardową wiadomość, użyj jej
+                                if (!empty($data['custom_message'])) {
+                                    $result = $emailService->sendCustomEmailWithLink(
+                                        $data['email'],
+                                        'Link do poprawy danych - Grupy Poledance',
+                                        $data['custom_message'],
+                                        $url
+                                    );
+                                } else {
+                                    // Użyj domyślnego szablonu poprawy danych
+                                    $result = $emailService->sendDataCorrectionLink($data['email'], $url);
+                                }
+                                
+                                if ($result) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Email wysłany pomyślnie')
+                                        ->body("Email został wysłany na adres {$data['email']}")
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Błąd wysyłania Email')
+                                        ->body('Nie udało się wysłać email. Sprawdź logi.')
+                                        ->danger()
+                                        ->send();
+                                }
+                                
+                            } catch (\Exception $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Błąd wysyłania Email')
+                                    ->body('Błąd: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->visible(fn ($record) => $record->isValid()),
+                        
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])

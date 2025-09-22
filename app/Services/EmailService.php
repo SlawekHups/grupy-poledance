@@ -136,6 +136,40 @@ class EmailService
     }
 
     /**
+     * Wysyła email z linkiem do poprawy danych
+     */
+    public function sendDataCorrectionLink(string $email, string $link, ?string $customMessage = null): bool
+    {
+        try {
+            // Użyj prostego podejścia z istniejącym szablonem
+            $message = $customMessage ?: 'Witaj! Oto link do poprawy swoich danych w systemie Grupy Poledance.';
+            
+            Mail::send('emails.pre-registration-link', [
+                'messageText' => $message,
+                'link' => $link,
+                'expiresAt' => now()->addHours(24)->format('d.m.Y H:i'),
+            ], function ($mailMessage) use ($email) {
+                $mailMessage->to($email)
+                        ->subject('Link do poprawy danych - Grupy Poledance');
+            });
+
+            Log::info('Email poprawy danych wysłany pomyślnie', [
+                'email' => $email,
+                'link' => $link
+            ]);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('Błąd wysyłania email poprawy danych', [
+                'email' => $email,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Wysyła email z linkiem pre-rejestracji do użytkownika
      */
     public function sendUserInvitation(string $email, ?string $customMessage = null): bool
