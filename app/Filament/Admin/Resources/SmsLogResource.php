@@ -19,6 +19,8 @@ class SmsLogResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
     
+    protected static ?string $navigationGroup = 'Ustawienia';
+    
     protected static ?string $navigationLabel = 'Logi SMS';
     
     protected static ?string $modelLabel = 'Log SMS';

@@ -10,7 +10,7 @@
         @endif
     </div>
 
-    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50">
+    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50 max-h-[calc(100vh-60px)] overflow-y-auto overscroll-contain mobile-menu-scroll">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
             <!-- Panel użytkownika -->
             <div>
@@ -67,6 +67,32 @@
 </div>
 <style>
   [x-cloak] { display: none !important; }
+  
+  /* Lepsze przewijanie dla menu mobilnego */
+  .mobile-menu-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
   @media (max-width: 767px) {
     /* Ukryj desktopowy sidebar i jego overlay na mobile */
     .fi-sidebar, .fi-sidebar-panel, .fi-sidebar-close-overlay { display: none !important; }

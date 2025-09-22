@@ -12,7 +12,7 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
         @endif
     </div>
 
-    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50">
+    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50 max-h-[calc(100vh-60px)] overflow-y-auto overscroll-contain mobile-menu-scroll">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
             
             <!-- Panel administratora -->
@@ -131,6 +131,12 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
                         <x-filament::icon icon="heroicon-o-document" class="h-5 w-5" />
                         <span>Pliki</span>
                     </a>
+                    <a href="{{ route('filament.admin.resources.sms-logs.index') }}" class="mobile-menu-link flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
+onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#374151'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
+onmouseout="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor=''; } else { this.style.color='#1f2937'; this.style.backgroundColor=''; }">
+                        <x-filament::icon icon="heroicon-o-chat-bubble-left-right" class="h-5 w-5" />
+                        <span>Logi SMS</span>
+                    </a>
                 </div>
             </div>
 
@@ -147,6 +153,48 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
 </div>
 <style>
   [x-cloak] { display: none !important; }
+  
+  /* Lepsze przewijanie dla menu mobilnego */
+  .mobile-menu-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  .mobile-menu-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  
+  .dark .mobile-menu-scroll {
+    scrollbar-color: #4b5563 #1f2937;
+  }
+  
+  .dark .mobile-menu-scroll::-webkit-scrollbar-track {
+    background: #1f2937;
+  }
+  
+  .dark .mobile-menu-scroll::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
+  
+  .dark .mobile-menu-scroll::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+  
   @media (max-width: 767px) {
     /* Ukryj desktopowy sidebar i jego overlay na mobile */
     .fi-sidebar, .fi-sidebar-panel, .fi-sidebar-close-overlay { display: none !important; }
