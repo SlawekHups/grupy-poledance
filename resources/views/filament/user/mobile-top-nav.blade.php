@@ -11,7 +11,7 @@
     </div>
 
     <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50 max-h-[calc(100vh-60px)] overflow-y-auto overscroll-contain mobile-menu-scroll">
-        <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
+        <nav class="max-w-screen-xl mx-auto px-3 py-3 pb-20 space-y-4">
             <!-- Panel użytkownika -->
             <div>
                 <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Panel użytkownika</div>
@@ -56,6 +56,10 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Dodatkowy margines na końcu menu -->
+            <div class="h-16"></div>
+
             <div class="flex justify-end">
                 <button @click="open=false" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50">
                     <x-filament::icon icon="heroicon-o-x-mark" class="h-5 w-5" />

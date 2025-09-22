@@ -13,7 +13,7 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
     </div>
 
     <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50 max-h-[calc(100vh-60px)] overflow-y-auto overscroll-contain mobile-menu-scroll">
-        <nav class="max-w-screen-xl mx-auto px-3 py-3 space-y-4">
+        <nav class="max-w-screen-xl mx-auto px-3 py-3 pb-20 space-y-4">
             
             <!-- Panel administratora -->
             <div>
@@ -139,6 +139,9 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
                     </a>
                 </div>
             </div>
+
+            <!-- Dodatkowy margines na końcu menu -->
+            <div class="h-16"></div>
 
             <div class="flex justify-end">
                 <button @click="open=false" class="mobile-menu-button inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 hover:!text-black dark:hover:!text-white"
