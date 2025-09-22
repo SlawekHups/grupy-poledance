@@ -344,6 +344,32 @@ class PreRegistrationResource extends Resource
                         })
                         ->visible(fn ($record) => $record->isValid()),
                         
+                    Tables\Actions\Action::make('send_messenger')
+                        ->label('Wyślij w Messenger')
+                        ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                        ->color('primary')
+                        ->modalHeading('Wyślij w Messenger')
+                        ->modalDescription('Udostępnij link pre-rejestracji przez Messenger')
+                        ->modalContent(function ($record) {
+                            $url = route('pre-register', $record->token);
+                            $encodedUrl = urlencode($url);
+                            $appId = config('services.meta.app_id');
+                            $appUrl = config('app.url');
+                            $pageUsername = config('services.meta.page_username');
+                            
+                            return view('filament.admin.resources.pre-registration-resource.modals.send-messenger', [
+                                'url' => $url,
+                                'encodedUrl' => $encodedUrl,
+                                'appId' => $appId,
+                                'appUrl' => $appUrl,
+                                'pageUsername' => $pageUsername,
+                                'record' => $record
+                            ]);
+                        })
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel('Zamknij')
+                        ->visible(fn ($record) => $record->isValid()),
+                        
                     Tables\Actions\Action::make('convert_to_user')
                         ->label('Konwertuj na użytkownika')
                         ->icon('heroicon-o-user-plus')
@@ -503,6 +529,38 @@ class PreRegistrationResource extends Resource
                                 ->send();
                         })
                         ->deselectRecordsAfterCompletion(),
+                        
+                    Tables\Actions\BulkAction::make('send_messenger_bulk')
+                        ->label('Wyślij w Messenger (masowo)')
+                        ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                        ->color('primary')
+                        ->modalHeading('Masowe udostępnianie w Messengerze')
+                        ->modalDescription('Udostępnij linki pre-rejestracji przez Messenger')
+                        ->modalContent(function ($records) {
+                            $urls = [];
+                            foreach ($records as $record) {
+                                if ($record->isValid()) {
+                                    $urls[] = [
+                                        'name' => $record->name ?: 'Bez imienia',
+                                        'url' => route('pre-register', $record->token),
+                                        'encodedUrl' => urlencode(route('pre-register', $record->token))
+                                    ];
+                                }
+                            }
+                            
+                            $appId = config('services.meta.app_id');
+                            $appUrl = config('app.url');
+                            $pageUsername = config('services.meta.page_username');
+                            
+                            return view('filament.admin.resources.pre-registration-resource.modals.send-messenger-bulk', [
+                                'urls' => $urls,
+                                'appId' => $appId,
+                                'appUrl' => $appUrl,
+                                'pageUsername' => $pageUsername
+                            ]);
+                        })
+                        ->modalSubmitAction(false)
+                        ->modalCancelActionLabel('Zamknij'),
                         
                     Tables\Actions\DeleteBulkAction::make(),
                 ])

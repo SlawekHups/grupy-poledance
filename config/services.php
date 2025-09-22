@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'meta' => [
+        'app_id' => env('META_APP_ID'),
+        'page_username' => env('META_PAGE_USERNAME'),
+    ],
+
 ];
