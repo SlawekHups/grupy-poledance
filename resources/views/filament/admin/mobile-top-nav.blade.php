@@ -1,4 +1,10 @@
-<div class="md:hidden sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-700" x-data="{ open: false }" @keydown.escape.window="open=false">
+<div class="md:hidden sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-700" x-data="{ open: false }" @keydown.escape.window="open=false"          x-init="$watch('open', value => { 
+             if (value) { 
+                 document.documentElement.style.overflow = 'hidden';
+             } else { 
+                 document.documentElement.style.overflow = '';
+             } 
+         })">
     <div class="px-3 py-2 flex items-center gap-3">
         <button @click="open = !open" class="mobile-menu-button inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 hover:!text-black dark:hover:!text-white"
 onmouseover="if(document.documentElement.classList.contains('dark')) { this.style.color='#ffffff'; this.style.backgroundColor='#1f2937'; } else { this.style.color='#000000'; this.style.backgroundColor='#f9fafb'; }"
@@ -12,7 +18,10 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
         @endif
     </div>
 
-    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50 max-h-[calc(100vh-60px)] overflow-y-auto overscroll-contain mobile-menu-scroll">
+    <!-- Overlay -->
+    <div x-cloak x-show="open" @click="open = false" class="fixed inset-0 bg-black/20 z-40"></div>
+
+    <div x-cloak x-show="open" x-transition.origin.top class="fixed inset-x-0 top-[60px] bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto mobile-menu-scroll">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 pb-20 space-y-4">
             
             <!-- Panel administratora -->
@@ -162,6 +171,7 @@ onmouseout="if(document.documentElement.classList.contains('dark')) { this.style
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f5f9;
+    overscroll-behavior: auto;
   }
   
   .mobile-menu-scroll::-webkit-scrollbar {

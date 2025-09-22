@@ -1,4 +1,10 @@
-<div class="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur border-b" x-data="{ open: false }" @keydown.escape.window="open=false">
+<div class="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur border-b" x-data="{ open: false }" @keydown.escape.window="open=false"          x-init="$watch('open', value => { 
+             if (value) { 
+                 document.documentElement.style.overflow = 'hidden';
+             } else { 
+                 document.documentElement.style.overflow = '';
+             } 
+         })">
     <div class="px-3 py-2 flex items-center gap-3">
         <button @click="open = !open" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-sm hover:bg-gray-50">
             <x-filament::icon icon="heroicon-o-bars-3" class="h-5 w-5" />
@@ -10,7 +16,10 @@
         @endif
     </div>
 
-    <div x-cloak x-show="open" x-transition.origin.top class="absolute inset-x-0 top-full bg-white shadow-lg border-b z-50 max-h-[calc(100vh-60px)] overflow-y-auto overscroll-contain mobile-menu-scroll">
+    <!-- Overlay -->
+    <div x-cloak x-show="open" @click="open = false" class="fixed inset-0 bg-black/20 z-40"></div>
+
+    <div x-cloak x-show="open" x-transition.origin.top class="fixed inset-x-0 top-[60px] bg-white shadow-lg border-b z-50 max-h-96 overflow-y-auto mobile-menu-scroll">
         <nav class="max-w-screen-xl mx-auto px-3 py-3 pb-20 space-y-4">
             <!-- Panel użytkownika -->
             <div>
@@ -57,6 +66,29 @@
                 </div>
             </div>
 
+            <!-- Więcej treści do przewijania -->
+            <div>
+                <div class="text-xs uppercase tracking-wide text-gray-500 px-1 mb-2">Dodatkowe opcje</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-cog-6-tooth" class="h-5 w-5" />
+                        <span>Ustawienia</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-question-mark-circle" class="h-5 w-5" />
+                        <span>Pomoc</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-arrow-right-on-rectangle" class="h-5 w-5" />
+                        <span>Wyloguj</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-md border hover:bg-gray-50">
+                        <x-filament::icon icon="heroicon-o-information-circle" class="h-5 w-5" />
+                        <span>Info</span>
+                    </a>
+                </div>
+            </div>
+
             <!-- Dodatkowy margines na końcu menu -->
             <div class="h-16"></div>
 
@@ -77,6 +109,7 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f5f9;
+    overscroll-behavior: auto;
   }
   
   .mobile-menu-scroll::-webkit-scrollbar {
