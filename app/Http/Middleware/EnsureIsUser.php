@@ -27,7 +27,7 @@ class EnsureIsUser
                 'email' => $user?->email,
                 'role' => $user?->role,
             ]);
-            return redirect()->route('filament.admin.auth.login');
+            return redirect()->route('filament.user.auth.login');
         }
         return $next($request);
     }

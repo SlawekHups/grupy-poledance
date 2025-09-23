@@ -30,8 +30,8 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Grupy Poledance</h1>
         <p class="text-gray-500 mb-8 text-center">Witaj w systemie zarządzania grupami i płatnościami.<br>Wybierz panel, do którego chcesz się zalogować.</p>
         <div class="flex flex-col gap-4 w-full">
-            <a href="/admin" class="w-full inline-block px-6 py-4 rounded-lg bg-orange-500 text-white font-semibold text-lg text-center shadow hover:bg-orange-600 transition">Panel Admina</a>
-            <a href="/panel" class="w-full inline-block px-6 py-4 rounded-lg bg-gray-800 text-white font-semibold text-lg text-center shadow hover:bg-gray-900 transition">Panel Użytkownika</a>
+            <a href="/admin/login" class="w-full inline-block px-6 py-4 rounded-lg bg-orange-500 text-white font-semibold text-lg text-center shadow hover:bg-orange-600 transition">Panel Admina</a>
+            <a href="/panel/login" class="w-full inline-block px-6 py-4 rounded-lg bg-gray-800 text-white font-semibold text-lg text-center shadow hover:bg-gray-900 transition">Panel Użytkownika</a>
         </div>
     </div>
     <footer class="mt-8 text-gray-400 text-xs">&copy; {{ date('Y') }} Grupy Poledance. Powered by Laravel.</footer>

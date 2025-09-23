@@ -22,6 +22,7 @@ use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -64,10 +65,6 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-                \App\Http\Middleware\EnsureIsAdmin::class,
             ])
             ->navigationGroups([
                 'Użytkownicy i Grupy',

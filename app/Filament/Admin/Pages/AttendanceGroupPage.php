@@ -15,6 +15,11 @@ class AttendanceGroupPage extends Page
     protected static ?string $navigationLabel = 'Obecność grupy';
     protected static ?string $title = 'Obecność grupy';
     protected static string $view = 'filament.admin.pages.attendance-group-page';
+    
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
+    }
 
     public $group_id = '';
     public $date = '';

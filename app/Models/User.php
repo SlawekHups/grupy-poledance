@@ -157,6 +157,18 @@ class User extends Authenticatable
     }
 
     /**
+     * Sprawdza czy użytkownik może uzyskać dostęp do panelu Filament
+     */
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'admin' => $this->isAdmin(),
+            'user' => $this->isUser(),
+            default => false,
+        };
+    }
+
+    /**
      * Mutator dla hasła - haszuje tylko jeśli nie jest null
      */
     public function setPasswordAttribute($value)
