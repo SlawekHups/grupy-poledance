@@ -31,6 +31,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->authGuard('web')
+            ->authMiddleware([
+                Authenticate::class,
+                \App\Http\Middleware\EnsureIsAdmin::class,
+            ])
             ->favicon(asset('favicon.ico'))
             ->colors([
                 'primary' => Color::Amber,
