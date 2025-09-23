@@ -29,12 +29,12 @@ class PasswordResetLogResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'pending')->count();
+        return \App\Services\NavigationBadgeCacheService::getPasswordResetBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $pendingCount = static::getModel()::where('status', 'pending')->count();
+        $pendingCount = \App\Services\NavigationBadgeCacheService::getPasswordResetBadge();
         $expiredCount = static::getModel()::where('status', 'expired')->count();
         
         if ($expiredCount > 0) return 'danger';

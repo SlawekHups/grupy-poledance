@@ -42,9 +42,7 @@ class UserResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('is_active', true)
-            ->whereNot('role', 'admin')
-            ->count();
+        return \App\Services\NavigationBadgeCacheService::getUserBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -1235,6 +1233,7 @@ class UserResource extends Resource
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()
+            ->with(['groups', 'payments', 'addresses', 'attendances'])
             ->where('role', '!=', 'admin');
     }
 

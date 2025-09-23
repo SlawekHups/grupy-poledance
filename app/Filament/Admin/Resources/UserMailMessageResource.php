@@ -33,7 +33,7 @@ class UserMailMessageResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return \App\Services\NavigationBadgeCacheService::getAdminUserMailBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string

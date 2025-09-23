@@ -32,13 +32,12 @@ class PaymentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('paid', false)
-            ->count();
+        return \App\Services\NavigationBadgeCacheService::getPaymentBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        $unpaidCount = static::getModel()::where('paid', false)->count();
+        $unpaidCount = \App\Services\NavigationBadgeCacheService::getPaymentBadge();
         return $unpaidCount > 0 ? 'danger' : 'success';
     }
 
@@ -359,6 +358,7 @@ class PaymentResource extends Resource
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()
+            ->with(['user'])
             ->orderBy('paid') // false (0) na górze, true (1) niżej
             ->orderByDesc('updated_at'); // dodatkowo sortuj wg daty
     }

@@ -25,9 +25,7 @@ class LessonResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereDate('date', today())
-            ->where('status', 'published')
-            ->count();
+        return \App\Services\NavigationBadgeCacheService::getLessonBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -251,6 +249,13 @@ class LessonResource extends Resource
                         ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => 'draft']))),
                 ]),
             ]);
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['group', 'creator'])
+            ->orderBy('date', 'asc');
     }
 
     public static function getPages(): array

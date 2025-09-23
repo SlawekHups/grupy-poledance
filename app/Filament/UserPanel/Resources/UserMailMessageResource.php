@@ -29,7 +29,7 @@ class UserMailMessageResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('user_id', Auth::id())->count();
+        return \App\Services\NavigationBadgeCacheService::getUserMailBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string

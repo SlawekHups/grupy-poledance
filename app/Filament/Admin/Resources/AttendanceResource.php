@@ -29,9 +29,7 @@ class AttendanceResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereDate('created_at', today())
-            ->where('present', true)
-            ->count();
+        return \App\Services\NavigationBadgeCacheService::getAttendanceBadge();
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -246,6 +244,13 @@ class AttendanceResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['user', 'group'])
+            ->orderByDesc('created_at');
     }
 
     public static function getPages(): array

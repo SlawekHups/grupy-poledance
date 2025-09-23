@@ -5,82 +5,23 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SetPasswordController;
 use App\Http\Controllers\PreRegistrationController;
 use App\Http\Controllers\DataCorrectionController;
+use App\Http\Controllers\FileController;
+use App\Http\Controllers\ExportController;
 use App\Models\User;
-use App\Models\File;
-use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 // Route do miniatur obrazków (działa dla wszystkich plików obrazków)
-Route::get('/admin-files/thumbnails/{path}', function ($path) {
-    // Znajdź plik po ścieżce - sprawdź oba formaty
-    $file = File::where('path', 'uploads/' . $path)->first();
-    
-    if (!$file) {
-        // Spróbuj bez prefiksu uploads/
-        $file = File::where('path', $path)->first();
-    }
-    
-    if (!$file) {
-        abort(404, 'Plik nie został znaleziony');
-    }
-    
-    // Sprawdź czy to obrazek
-    if (strpos($file->mime_type, 'image/') !== 0) {
-        abort(404, 'Plik nie jest obrazkiem');
-    }
-    
-    // Obsłuż różne formaty ścieżek
-    $filePath = $file->path;
-    if (strpos($filePath, 'uploads/') !== 0) {
-        $filePath = 'uploads/' . $filePath;
-    }
-    
-    $fullPath = Storage::disk('admin_files')->path($filePath);
-    
-    if (!file_exists($fullPath)) {
-        abort(404, 'Plik nie istnieje na dysku');
-    }
-    
-    // Zwróć obrazek jako response (nie download)
-    return response()->file($fullPath);
-})->where('path', '.*')->name('admin.files.thumbnail');
+Route::get('/admin-files/thumbnails/{path}', [FileController::class, 'thumbnail'])
+    ->where('path', '.*')
+    ->name('admin.files.thumbnail');
 
 // Route do pobierania plików publicznych z oryginalną nazwą
-Route::get('/admin-files/{path}', function ($path) {
-    // Znajdź plik po ścieżce - sprawdź oba formaty
-    $file = File::where('path', 'uploads/' . $path)->first();
-    
-    if (!$file) {
-        // Spróbuj bez prefiksu uploads/
-        $file = File::where('path', $path)->first();
-    }
-    
-    if (!$file) {
-        abort(404, 'Plik nie został znaleziony');
-    }
-    
-    // Sprawdź czy plik jest publiczny
-    if (!$file->is_public) {
-        abort(403, 'Plik nie jest publiczny');
-    }
-    
-    // Obsłuż różne formaty ścieżek
-    $filePath = $file->path;
-    if (strpos($filePath, 'uploads/') !== 0) {
-        $filePath = 'uploads/' . $filePath;
-    }
-    
-    $fullPath = Storage::disk('admin_files')->path($filePath);
-    
-    if (!file_exists($fullPath)) {
-        abort(404, 'Plik nie istnieje na dysku');
-    }
-    
-    return response()->download($fullPath, $file->original_name);
-})->where('path', '.*')->name('admin.files.public.download');
+Route::get('/admin-files/{path}', [FileController::class, 'download'])
+    ->where('path', '.*')
+    ->name('admin.files.public.download');
 
 // Trasy dla ustawiania hasła
 Route::get('/set-password/{token}', [SetPasswordController::class, 'showSetPasswordForm'])
@@ -108,82 +49,20 @@ Route::get('/admin/generate-pre-register-token', [PreRegistrationController::cla
     ->name('admin.generate-pre-register-token');
 
 // Route do pobierania CSV (sesyjny)
-Route::get('/download-csv', function () {
-    if (!session('export_csv')) {
-        abort(404, 'Plik CSV nie został wygenerowany');
-    }
-
-    $csvContent = session('export_csv');
-    $filename = session('export_filename', 'export.csv');
-
-    // Wyczyść sesję po pobraniu
-    session()->forget(['export_csv', 'export_filename']);
-
-    return response($csvContent)
-        ->header('Content-Type', 'text/csv')
-        ->header('Content-Disposition', "attachment; filename=\"$filename\"");
-})->name('download-csv');
+Route::get('/download-csv', [ExportController::class, 'downloadCsv'])
+    ->name('download-csv');
 
 // Route bezpośredniego eksportu CSV dla pojedynczego użytkownika
-Route::get('/admin/export-user-csv/{user}', function (User $user) {
-    $filename = 'user_' . $user->id . '_' . now()->format('Ymd_His') . '.csv';
-
-    $callback = function() use ($user) {
-        $handle = fopen('php://output', 'w');
-        fputcsv($handle, ['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active']);
-        fputcsv($handle, [
-            $user->name,
-            $user->email,
-            $user->phone,
-            $user->group_id,
-            $user->amount,
-            $user->joined_at,
-            $user->is_active ? 1 : 0,
-        ]);
-        fclose($handle);
-    };
-
-    $headers = [
-        'Content-Type' => 'text/csv',
-        'Content-Disposition' => "attachment; filename=\"$filename\"",
-    ];
-
-    return response()->stream($callback, 200, $headers);
-})->middleware(['web', 'auth'])->name('admin.export-user-csv');
+Route::get('/admin/export-user-csv/{user}', [ExportController::class, 'exportUserCsv'])
+    ->middleware(['web', 'auth'])
+    ->name('admin.export-user-csv');
 
 // Route eksportu danych użytkownika (CSV)
-Route::get('/panel/export-my-csv', function () {
-    $user = Auth::user();
-    abort_unless((bool) $user, 403);
-
-    $filename = 'my_data_' . now()->format('Ymd_His') . '.csv';
-
-    $callback = function() use ($user) {
-        $handle = fopen('php://output', 'w');
-        fputcsv($handle, ['name', 'email', 'phone', 'group_id', 'amount', 'joined_at', 'is_active']);
-        fputcsv($handle, [
-            $user->name,
-            $user->email,
-            $user->phone,
-            $user->group_id,
-            $user->amount,
-            $user->joined_at,
-            $user->is_active ? 1 : 0,
-        ]);
-        fclose($handle);
-    };
-
-    $headers = [
-        'Content-Type' => 'text/csv',
-        'Content-Disposition' => "attachment; filename=\"$filename\"",
-    ];
-
-    return response()->stream($callback, 200, $headers);
-})->middleware(['web', 'auth'])->name('user.export-my-csv');
+Route::get('/panel/export-my-csv', [ExportController::class, 'exportMyCsv'])
+    ->middleware(['web', 'auth'])
+    ->name('user.export-my-csv');
 
 Route::middleware(['web', 'auth'])->group(function () {
-    Route::get('/admin/groups/{group}/print-users', function (\App\Models\Group $group) {
-        $members = $group->members()->orderBy('name')->get();
-        return view('filament.admin.groups.print-users', compact('group', 'members'));
-    })->name('admin.groups.print-users');
+    Route::get('/admin/groups/{group}/print-users', [ExportController::class, 'printGroupUsers'])
+        ->name('admin.groups.print-users');
 });
