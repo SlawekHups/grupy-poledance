@@ -5,6 +5,8 @@ namespace App\Filament\Admin\Resources\FileResource\Pages;
 use App\Filament\Admin\Resources\FileResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class CreateFile extends CreateRecord
 {
@@ -13,7 +15,7 @@ class CreateFile extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Debug: sprawdź dane przed przetworzeniem
-        \Log::info('=== CREATE FILE - Data before processing ===', [
+        Log::info('=== CREATE FILE - Data before processing ===', [
             'file' => $data['file'] ?? 'NOT SET',
             'name' => $data['name'] ?? 'NOT SET',
             'original_name' => $data['original_name'] ?? 'NOT SET',
@@ -22,7 +24,7 @@ class CreateFile extends CreateRecord
         ]);
         
         // Ustaw uploaded_by na ID aktualnie zalogowanego użytkownika
-        $data['uploaded_by'] = auth()->id();
+        $data['uploaded_by'] = Auth::check() ? Auth::id() : 1;
         
         // Plik domyślnie prywatny - użytkownik może zmienić w formularzu
         // $data['is_public'] = false; // domyślnie false
@@ -34,7 +36,7 @@ class CreateFile extends CreateRecord
             // Ustaw original_name z nowego pliku
             $data['original_name'] = basename($data['file']);
             
-            // Ustaw name z original_name (bez rozszerzenia)
+            // Ustaw name z original_name (bez rozszerzenia) - zachowaj spacje
             $data['name'] = pathinfo($data['original_name'], PATHINFO_FILENAME);
             
             unset($data['file']);
@@ -45,7 +47,7 @@ class CreateFile extends CreateRecord
             throw new \Exception('Nazwa pliku jest wymagana. Zostaw puste pole aby użyć oryginalnej nazwy pliku.');
         }
         
-        \Log::info('Final name and original_name:', [
+        Log::info('Final name and original_name:', [
             'name' => $data['name'] ?? 'NOT SET',
             'original_name' => $data['original_name'] ?? 'NOT SET'
         ]);
@@ -111,7 +113,6 @@ class CreateFile extends CreateRecord
                     'md' => 'text/markdown',
                     'rtf' => 'application/rtf',
                     'sh' => 'application/x-sh',
-                    'doc' => 'application/msword',
                 ];
                 $data['mime_type'] = $mimeTypes[$extension] ?? 'application/octet-stream';
             } else {
@@ -139,7 +140,7 @@ class CreateFile extends CreateRecord
         }
 
         // Debug: sprawdź dane po przetworzeniu
-        \Log::info('File upload data after processing:', $data);
+        Log::info('File upload data after processing:', $data);
 
         return $data;
     }
@@ -148,7 +149,7 @@ class CreateFile extends CreateRecord
     {
         // Utwórz symbolic link jeśli nie istnieje
         if (!file_exists(public_path('admin-files'))) {
-            \Artisan::call('storage:link');
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
         }
         
         // Przekieruj do tabeli po utworzeniu

@@ -13,12 +13,15 @@ class FileController extends Controller
      */
     public function thumbnail($path)
     {
+        // Dekoduj URL - spacje mogą być zakodowane jako %20
+        $decodedPath = urldecode($path);
+        
         // Znajdź plik po ścieżce - sprawdź oba formaty
-        $file = File::where('path', 'uploads/' . $path)->first();
+        $file = File::where('path', 'uploads/' . $decodedPath)->first();
         
         if (!$file) {
             // Spróbuj bez prefiksu uploads/
-            $file = File::where('path', $path)->first();
+            $file = File::where('path', $decodedPath)->first();
         }
         
         if (!$file) {
@@ -51,12 +54,15 @@ class FileController extends Controller
      */
     public function download($path)
     {
+        // Dekoduj URL - spacje mogą być zakodowane jako %20
+        $decodedPath = urldecode($path);
+        
         // Znajdź plik po ścieżce - sprawdź oba formaty
-        $file = File::where('path', 'uploads/' . $path)->first();
+        $file = File::where('path', 'uploads/' . $decodedPath)->first();
         
         if (!$file) {
             // Spróbuj bez prefiksu uploads/
-            $file = File::where('path', $path)->first();
+            $file = File::where('path', $decodedPath)->first();
         }
         
         if (!$file) {

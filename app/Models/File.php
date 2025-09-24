@@ -47,8 +47,11 @@ class File extends Model
         // Usuń 'uploads/' z początku ścieżki dla URL
         $urlPath = str_replace('uploads/', '', $path);
         
+        // Zakoduj URL - spacje będą zakodowane jako %20
+        $encodedUrlPath = rawurlencode($urlPath);
+        
         // Użyj secure_url() aby wymusić HTTPS
-        return secure_url('admin-files/' . $urlPath);
+        return secure_url('admin-files/' . $encodedUrlPath);
     }
 
     /**
@@ -65,8 +68,11 @@ class File extends Model
         // Usuń 'uploads/' z początku ścieżki dla URL
         $urlPath = str_replace('uploads/', '', $path);
         
+        // Zakoduj URL - spacje będą zakodowane jako %20
+        $encodedUrlPath = rawurlencode($urlPath);
+        
         // Użyj secure_url() aby wymusić HTTPS
-        return secure_url('admin-files/thumbnails/' . $urlPath);
+        return secure_url('admin-files/thumbnails/' . $encodedUrlPath);
     }
 
     /**
